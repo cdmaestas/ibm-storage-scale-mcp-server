@@ -1,57 +1,27 @@
-"""IBM Storage Scale Quota operations."""
+"""IBM Storage Scale Active File Management to Cloud Object Storage (AFMCOS) operations.
+
+AFMCOS endpoints for managing Active File Management to Cloud Object Storage operations.
+"""
 
 from typing import Optional, Any, Dict
 from scale_mcp_server.utils.client import StorageScaleClient, StorageScaleAPIError
 
 
-async def list_quotas_api(
+async def list_afmcos_filesets_api(
     filesystem: str,
     domain: Optional[str] = None,
 ) -> Any:
-    """List all quotas for a filesystem.
+    """List all AFMCOS filesets in a filesystem.
 
     Args:
         filesystem: Filesystem name
         domain: Domain to be authorized against (default 'StorageScaleDomain')
 
     Returns:
-        Dictionary containing quotas information
+        Dictionary containing AFMCOS filesets information
 
     Raises:
-        StorageScaleAPIError: If the API request fails
-    """
-    headers = {}
-    if domain:
-        headers["X-StorageScaleDomain"] = domain
-
-    try:
-        async with StorageScaleClient() as client:
-            return await client.get(
-                f"/scalemgmt/v3/filesystems/{filesystem}/quotas", headers=headers
-            )
-    except StorageScaleAPIError as e:
-        raise StorageScaleAPIError(
-            f"Failed to list quotas for filesystem '{filesystem}': {str(e)}"
-        ) from e
-
-
-async def get_quota_api(
-    filesystem: str,
-    quota_id: str,
-    domain: Optional[str] = None,
-) -> Any:
-    """Get information about a specific quota.
-
-    Args:
-        filesystem: Filesystem name
-        quota_id: Quota identifier (format: type:objectName or type:objectId)
-        domain: Domain to be authorized against (default 'StorageScaleDomain')
-
-    Returns:
-        Dictionary containing quota information
-
-    Raises:
-        StorageScaleAPIError: If the API request fails
+        StorageScaleAPIError: If API call fails
     """
     headers: Dict[str, str] = {}
     if domain:
@@ -60,32 +30,103 @@ async def get_quota_api(
     try:
         async with StorageScaleClient() as client:
             return await client.get(
-                f"/scalemgmt/v3/filesystems/{filesystem}/quotas/{quota_id}",
+                f"/scalemgmt/v3/filesystems/{filesystem}/afmcos", headers=headers
+            )
+    except StorageScaleAPIError as e:
+        raise StorageScaleAPIError(
+            f"Failed to list AFMCOS filesets for filesystem '{filesystem}': {str(e)}"
+        ) from e
+
+
+async def get_afmcos_fileset_api(
+    filesystem: str,
+    fileset: str,
+    domain: Optional[str] = None,
+) -> Any:
+    """Get AFMCOS configuration for a specific fileset.
+
+    Args:
+        filesystem: Filesystem name
+        fileset: Fileset name
+        domain: Domain to be authorized against (default 'StorageScaleDomain')
+
+    Returns:
+        Dictionary containing AFMCOS fileset configuration
+
+    Raises:
+        StorageScaleAPIError: If API call fails
+    """
+    headers: Dict[str, str] = {}
+    if domain:
+        headers["X-StorageScaleDomain"] = domain
+
+    try:
+        async with StorageScaleClient() as client:
+            return await client.get(
+                f"/scalemgmt/v3/filesystems/{filesystem}/afmcos/{fileset}",
                 headers=headers,
             )
     except StorageScaleAPIError as e:
         raise StorageScaleAPIError(
-            f"Failed to get quota '{quota_id}' for filesystem '{filesystem}': {str(e)}"
+            f"Failed to get AFMCOS configuration for fileset '{fileset}' in filesystem '{filesystem}': {str(e)}"
         ) from e
 
 
-async def set_quota_api(
+async def create_afmcos_fileset_api(
     filesystem: str,
-    quota_data: dict,
+    afmcos_data: dict,
     domain: Optional[str] = None,
 ) -> Any:
-    """Set or update a quota.
+    """Create an AFMCOS fileset.
 
     Args:
         filesystem: Filesystem name
-        quota_data: Quota configuration data
+        afmcos_data: AFMCOS fileset configuration data
         domain: Domain to be authorized against (default 'StorageScaleDomain')
 
     Returns:
-        Dictionary containing quota information
+        Dictionary containing creation status
 
     Raises:
-        StorageScaleAPIError: If the API request fails
+        StorageScaleAPIError: If API call fails
+    """
+    headers: Dict[str, str] = {}
+    if domain:
+        headers["X-StorageScaleDomain"] = domain
+
+    try:
+        async with StorageScaleClient() as client:
+            return await client.post(
+                f"/scalemgmt/v3/filesystems/{filesystem}/afmcos",
+                json=afmcos_data,
+                headers=headers,
+            )
+    except StorageScaleAPIError as e:
+        fileset_name = afmcos_data.get("filesetName", "unknown")
+        raise StorageScaleAPIError(
+            f"Failed to create AFMCOS fileset '{fileset_name}' in filesystem '{filesystem}': {str(e)}"
+        ) from e
+
+
+async def update_afmcos_fileset_api(
+    filesystem: str,
+    fileset: str,
+    afmcos_data: dict,
+    domain: Optional[str] = None,
+) -> Any:
+    """Update AFMCOS configuration for a fileset.
+
+    Args:
+        filesystem: Filesystem name
+        fileset: Fileset name
+        afmcos_data: Updated AFMCOS configuration data
+        domain: Domain to be authorized against (default 'StorageScaleDomain')
+
+    Returns:
+        Dictionary containing update status
+
+    Raises:
+        StorageScaleAPIError: If API call fails
     """
     headers: Dict[str, str] = {}
     if domain:
@@ -94,33 +135,33 @@ async def set_quota_api(
     try:
         async with StorageScaleClient() as client:
             return await client.put(
-                f"/scalemgmt/v3/filesystems/{filesystem}/quotas",
-                json=quota_data,
+                f"/scalemgmt/v3/filesystems/{filesystem}/afmcos/{fileset}",
+                json=afmcos_data,
                 headers=headers,
             )
     except StorageScaleAPIError as e:
         raise StorageScaleAPIError(
-            f"Failed to set quota for filesystem '{filesystem}': {str(e)}"
+            f"Failed to update AFMCOS configuration for fileset '{fileset}' in filesystem '{filesystem}': {str(e)}"
         ) from e
 
 
-async def delete_quota_api(
+async def delete_afmcos_fileset_api(
     filesystem: str,
-    quota_id: str,
+    fileset: str,
     domain: Optional[str] = None,
 ) -> Any:
-    """Delete a quota.
+    """Delete AFMCOS configuration from a fileset.
 
     Args:
         filesystem: Filesystem name
-        quota_id: Quota identifier (format: type:objectName or type:objectId)
+        fileset: Fileset name
         domain: Domain to be authorized against (default 'StorageScaleDomain')
 
     Returns:
         Dictionary containing deletion status
 
     Raises:
-        StorageScaleAPIError: If the API request fails
+        StorageScaleAPIError: If API call fails
     """
     headers: Dict[str, str] = {}
     if domain:
@@ -129,21 +170,99 @@ async def delete_quota_api(
     try:
         async with StorageScaleClient() as client:
             return await client.delete(
-                f"/scalemgmt/v3/filesystems/{filesystem}/quotas/{quota_id}",
+                f"/scalemgmt/v3/filesystems/{filesystem}/afmcos/{fileset}",
                 headers=headers,
             )
     except StorageScaleAPIError as e:
         raise StorageScaleAPIError(
-            f"Failed to delete quota '{quota_id}' for filesystem '{filesystem}': {str(e)}"
+            f"Failed to delete AFMCOS configuration for fileset '{fileset}' in filesystem '{filesystem}': {str(e)}"
         ) from e
 
 
-async def list_fileset_quotas_api(
+async def prefetch_afmcos_fileset_api(
+    filesystem: str,
+    fileset: str,
+    prefetch_data: Optional[dict] = None,
+    domain: Optional[str] = None,
+) -> Any:
+    """Prefetch data from cloud object storage for an AFMCOS fileset.
+
+    Args:
+        filesystem: Filesystem name
+        fileset: Fileset name
+        prefetch_data: Optional prefetch configuration
+        domain: Domain to be authorized against (default 'StorageScaleDomain')
+
+    Returns:
+        Dictionary containing prefetch operation status
+
+    Raises:
+        StorageScaleAPIError: If API call fails
+    """
+    headers: Dict[str, str] = {}
+    if domain:
+        headers["X-StorageScaleDomain"] = domain
+
+    body = prefetch_data if prefetch_data is not None else {}
+
+    try:
+        async with StorageScaleClient() as client:
+            return await client.post(
+                f"/scalemgmt/v3/filesystems/{filesystem}/afmcos/{fileset}:prefetch",
+                json=body,
+                headers=headers,
+            )
+    except StorageScaleAPIError as e:
+        raise StorageScaleAPIError(
+            f"Failed to prefetch data for AFMCOS fileset '{fileset}' in filesystem '{filesystem}': {str(e)}"
+        ) from e
+
+
+async def evict_afmcos_fileset_api(
+    filesystem: str,
+    fileset: str,
+    evict_data: Optional[dict] = None,
+    domain: Optional[str] = None,
+) -> Any:
+    """Evict cached data from an AFMCOS fileset.
+
+    Args:
+        filesystem: Filesystem name
+        fileset: Fileset name
+        evict_data: Optional eviction configuration
+        domain: Domain to be authorized against (default 'StorageScaleDomain')
+
+    Returns:
+        Dictionary containing eviction operation status
+
+    Raises:
+        StorageScaleAPIError: If API call fails
+    """
+    headers: Dict[str, str] = {}
+    if domain:
+        headers["X-StorageScaleDomain"] = domain
+
+    body = evict_data if evict_data is not None else {}
+
+    try:
+        async with StorageScaleClient() as client:
+            return await client.post(
+                f"/scalemgmt/v3/filesystems/{filesystem}/afmcos/{fileset}:evict",
+                json=body,
+                headers=headers,
+            )
+    except StorageScaleAPIError as e:
+        raise StorageScaleAPIError(
+            f"Failed to evict data for AFMCOS fileset '{fileset}' in filesystem '{filesystem}': {str(e)}"
+        ) from e
+
+
+async def get_afmcos_fileset_status_api(
     filesystem: str,
     fileset: str,
     domain: Optional[str] = None,
 ) -> Any:
-    """List all quotas for a specific fileset.
+    """Get status of an AFMCOS fileset.
 
     Args:
         filesystem: Filesystem name
@@ -151,10 +270,10 @@ async def list_fileset_quotas_api(
         domain: Domain to be authorized against (default 'StorageScaleDomain')
 
     Returns:
-        Dictionary containing fileset quotas information
+        Dictionary containing AFMCOS fileset status
 
     Raises:
-        StorageScaleAPIError: If the API request fails
+        StorageScaleAPIError: If API call fails
     """
     headers: Dict[str, str] = {}
     if domain:
@@ -163,119 +282,10 @@ async def list_fileset_quotas_api(
     try:
         async with StorageScaleClient() as client:
             return await client.get(
-                f"/scalemgmt/v3/filesystems/{filesystem}/filesets/{fileset}/quotas",
+                f"/scalemgmt/v3/filesystems/{filesystem}/afmcos/{fileset}/status",
                 headers=headers,
             )
     except StorageScaleAPIError as e:
         raise StorageScaleAPIError(
-            f"Failed to list quotas for fileset '{fileset}' in filesystem '{filesystem}': {str(e)}"
-        ) from e
-
-
-async def get_fileset_quota_api(
-    filesystem: str,
-    fileset: str,
-    quota_id: str,
-    domain: Optional[str] = None,
-) -> Any:
-    """Get information about a specific quota for a fileset.
-
-    Args:
-        filesystem: Filesystem name
-        fileset: Fileset name
-        quota_id: Quota identifier
-        domain: Domain to be authorized against (default 'StorageScaleDomain')
-
-    Returns:
-        Dictionary containing quota information
-
-    Raises:
-        StorageScaleAPIError: If the API request fails
-    """
-    headers: Dict[str, str] = {}
-    if domain:
-        headers["X-StorageScaleDomain"] = domain
-
-    try:
-        async with StorageScaleClient() as client:
-            return await client.get(
-                f"/scalemgmt/v3/filesystems/{filesystem}/filesets/{fileset}/quotas/{quota_id}",
-                headers=headers,
-            )
-    except StorageScaleAPIError as e:
-        raise StorageScaleAPIError(
-            f"Failed to get quota '{quota_id}' for fileset '{fileset}' in filesystem '{filesystem}': {str(e)}"
-        ) from e
-
-
-async def set_fileset_quota_api(
-    filesystem: str,
-    fileset: str,
-    quota_data: dict,
-    domain: Optional[str] = None,
-) -> Any:
-    """Set or update a quota for a fileset.
-
-    Args:
-        filesystem: Filesystem name
-        fileset: Fileset name
-        quota_data: Quota configuration data
-        domain: Domain to be authorized against (default 'StorageScaleDomain')
-
-    Returns:
-        Dictionary containing quota information
-
-    Raises:
-        StorageScaleAPIError: If the API request fails
-    """
-    headers: Dict[str, str] = {}
-    if domain:
-        headers["X-StorageScaleDomain"] = domain
-
-    try:
-        async with StorageScaleClient() as client:
-            return await client.put(
-                f"/scalemgmt/v3/filesystems/{filesystem}/filesets/{fileset}/quotas",
-                json=quota_data,
-                headers=headers,
-            )
-    except StorageScaleAPIError as e:
-        raise StorageScaleAPIError(
-            f"Failed to set quota for fileset '{fileset}' in filesystem '{filesystem}': {str(e)}"
-        ) from e
-
-
-async def delete_fileset_quota_api(
-    filesystem: str,
-    fileset: str,
-    quota_id: str,
-    domain: Optional[str] = None,
-) -> Any:
-    """Delete a quota for a fileset.
-
-    Args:
-        filesystem: Filesystem name
-        fileset: Fileset name
-        quota_id: Quota identifier
-        domain: Domain to be authorized against (default 'StorageScaleDomain')
-
-    Returns:
-        Dictionary containing deletion status
-
-    Raises:
-        StorageScaleAPIError: If the API request fails
-    """
-    headers: Dict[str, str] = {}
-    if domain:
-        headers["X-StorageScaleDomain"] = domain
-
-    try:
-        async with StorageScaleClient() as client:
-            return await client.delete(
-                f"/scalemgmt/v3/filesystems/{filesystem}/filesets/{fileset}/quotas/{quota_id}",
-                headers=headers,
-            )
-    except StorageScaleAPIError as e:
-        raise StorageScaleAPIError(
-            f"Failed to delete quota '{quota_id}' for fileset '{fileset}' in filesystem '{filesystem}': {str(e)}"
+            f"Failed to get status for AFMCOS fileset '{fileset}' in filesystem '{filesystem}': {str(e)}"
         ) from e

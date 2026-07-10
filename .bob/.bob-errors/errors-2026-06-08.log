@@ -1,0 +1,638 @@
+
+================================================================================
+ERROR LOGGED: 2026-06-08T20:42:52.260Z
+User ID: cdmaestas@us.ibm.com
+================================================================================
+Error Name: Error
+Error Message: not supported
+
+Stack Trace:
+Error: not supported
+    at fnt.generateContent (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:2151:526)
+    at file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:800:30370
+    at cR (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:800:17196)
+    at H6.generateContent (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:800:30115)
+    at file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:2796:2057
+    at Iz (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:1636:1443)
+    at nwe.generateContent (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:2796:1885)
+    at file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:4506:11268
+    at Timeout._onTimeout (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:4506:11894)
+    at listOnTimeout (node:internal/timers:605:17)
+================================================================================
+
+
+================================================================================
+ERROR LOGGED: 2026-06-08T20:42:53.367Z
+User ID: cdmaestas@us.ibm.com
+================================================================================
+Error Name: Error
+Error Message: not supported
+
+Stack Trace:
+Error: not supported
+    at fnt.generateContent (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:2151:526)
+    at file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:800:30370
+    at cR (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:800:17196)
+    at H6.generateContent (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:800:30115)
+    at file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:2796:2057
+    at Iz (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:1636:1443)
+    at nwe.generateContent (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:2796:1885)
+    at file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:4506:11268
+    at Timeout._onTimeout (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:4506:11894)
+    at listOnTimeout (node:internal/timers:605:17)
+================================================================================
+
+
+================================================================================
+ERROR LOGGED: 2026-06-08T20:42:54.140Z
+User ID: cdmaestas@us.ibm.com
+================================================================================
+Error Name: Error
+Error Message: not supported
+
+Stack Trace:
+Error: not supported
+    at fnt.generateContent (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:2151:526)
+    at file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:800:30370
+    at cR (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:800:17196)
+    at H6.generateContent (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:800:30115)
+    at file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:2796:2057
+    at Iz (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:1636:1443)
+    at nwe.generateContent (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:2796:1885)
+    at file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:4506:11268
+    at Timeout._onTimeout (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:4506:11894)
+    at listOnTimeout (node:internal/timers:605:17)
+================================================================================
+
+
+================================================================================
+ERROR LOGGED: 2026-06-08T20:42:55.625Z
+User ID: cdmaestas@us.ibm.com
+================================================================================
+Error Name: Error
+Error Message: not supported
+
+Stack Trace:
+Error: not supported
+    at fnt.generateContent (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:2151:526)
+    at file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:800:30370
+    at cR (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:800:17196)
+    at H6.generateContent (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:800:30115)
+    at file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:2796:2057
+    at Iz (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:1636:1443)
+    at nwe.generateContent (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:2796:1885)
+    at file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:4506:11268
+    at Timeout._onTimeout (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:4506:11894)
+    at listOnTimeout (node:internal/timers:605:17)
+================================================================================
+
+
+================================================================================
+ERROR LOGGED: 2026-06-08T20:43:28.783Z
+User ID: cdmaestas@us.ibm.com
+================================================================================
+Error Name: Error
+Error Message: not supported
+
+Stack Trace:
+Error: not supported
+    at fnt.generateContent (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:2151:526)
+    at file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:800:30370
+    at cR (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:800:17196)
+    at H6.generateContent (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:800:30115)
+    at file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:2796:2057
+    at Iz (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:1636:1443)
+    at nwe.generateContent (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:2796:1885)
+    at file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:4506:11268
+    at Timeout._onTimeout (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:4506:11894)
+    at listOnTimeout (node:internal/timers:605:17)
+================================================================================
+
+
+================================================================================
+ERROR LOGGED: 2026-06-08T20:43:31.348Z
+User ID: cdmaestas@us.ibm.com
+================================================================================
+Error Name: Error
+Error Message: not supported
+
+Stack Trace:
+Error: not supported
+    at fnt.generateContent (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:2151:526)
+    at file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:800:30370
+    at cR (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:800:17196)
+    at H6.generateContent (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:800:30115)
+    at file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:2796:2057
+    at Iz (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:1636:1443)
+    at nwe.generateContent (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:2796:1885)
+    at file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:4506:11268
+    at Timeout._onTimeout (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:4506:11894)
+    at listOnTimeout (node:internal/timers:605:17)
+================================================================================
+
+
+================================================================================
+ERROR LOGGED: 2026-06-08T20:43:39.148Z
+User ID: cdmaestas@us.ibm.com
+================================================================================
+Error Name: Error
+Error Message: not supported
+
+Stack Trace:
+Error: not supported
+    at fnt.generateContent (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:2151:526)
+    at file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:800:30370
+    at cR (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:800:17196)
+    at H6.generateContent (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:800:30115)
+    at file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:2796:2057
+    at Iz (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:1636:1443)
+    at nwe.generateContent (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:2796:1885)
+    at file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:4506:11268
+    at Timeout._onTimeout (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:4506:11894)
+    at listOnTimeout (node:internal/timers:605:17)
+================================================================================
+
+
+================================================================================
+ERROR LOGGED: 2026-06-08T20:43:40.333Z
+User ID: cdmaestas@us.ibm.com
+================================================================================
+Error Name: Error
+Error Message: not supported
+
+Stack Trace:
+Error: not supported
+    at fnt.generateContent (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:2151:526)
+    at file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:800:30370
+    at cR (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:800:17196)
+    at H6.generateContent (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:800:30115)
+    at file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:2796:2057
+    at Iz (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:1636:1443)
+    at nwe.generateContent (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:2796:1885)
+    at file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:4506:11268
+    at Timeout._onTimeout (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:4506:11894)
+    at listOnTimeout (node:internal/timers:605:17)
+================================================================================
+
+
+================================================================================
+ERROR LOGGED: 2026-06-08T20:43:41.324Z
+User ID: cdmaestas@us.ibm.com
+================================================================================
+Error Name: Error
+Error Message: not supported
+
+Stack Trace:
+Error: not supported
+    at fnt.generateContent (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:2151:526)
+    at file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:800:30370
+    at cR (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:800:17196)
+    at H6.generateContent (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:800:30115)
+    at file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:2796:2057
+    at Iz (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:1636:1443)
+    at nwe.generateContent (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:2796:1885)
+    at file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:4506:11268
+    at Timeout._onTimeout (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:4506:11894)
+    at listOnTimeout (node:internal/timers:605:17)
+================================================================================
+
+
+================================================================================
+ERROR LOGGED: 2026-06-08T20:43:42.477Z
+User ID: cdmaestas@us.ibm.com
+================================================================================
+Error Name: Error
+Error Message: not supported
+
+Stack Trace:
+Error: not supported
+    at fnt.generateContent (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:2151:526)
+    at file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:800:30370
+    at cR (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:800:17196)
+    at H6.generateContent (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:800:30115)
+    at file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:2796:2057
+    at Iz (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:1636:1443)
+    at nwe.generateContent (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:2796:1885)
+    at file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:4506:11268
+    at Timeout._onTimeout (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:4506:11894)
+    at listOnTimeout (node:internal/timers:605:17)
+================================================================================
+
+
+================================================================================
+ERROR LOGGED: 2026-06-08T20:43:45.008Z
+User ID: cdmaestas@us.ibm.com
+================================================================================
+Error Name: Error
+Error Message: not supported
+
+Stack Trace:
+Error: not supported
+    at fnt.generateContent (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:2151:526)
+    at file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:800:30370
+    at cR (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:800:17196)
+    at H6.generateContent (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:800:30115)
+    at file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:2796:2057
+    at Iz (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:1636:1443)
+    at nwe.generateContent (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:2796:1885)
+    at file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:4506:11268
+    at Timeout._onTimeout (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:4506:11894)
+    at listOnTimeout (node:internal/timers:605:17)
+================================================================================
+
+
+================================================================================
+ERROR LOGGED: 2026-06-08T20:43:46.534Z
+User ID: cdmaestas@us.ibm.com
+================================================================================
+Error Name: Error
+Error Message: not supported
+
+Stack Trace:
+Error: not supported
+    at fnt.generateContent (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:2151:526)
+    at file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:800:30370
+    at cR (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:800:17196)
+    at H6.generateContent (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:800:30115)
+    at file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:2796:2057
+    at Iz (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:1636:1443)
+    at nwe.generateContent (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:2796:1885)
+    at file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:4506:11268
+    at Timeout._onTimeout (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:4506:11894)
+    at listOnTimeout (node:internal/timers:605:17)
+================================================================================
+
+
+================================================================================
+ERROR LOGGED: 2026-06-08T20:43:49.377Z
+User ID: cdmaestas@us.ibm.com
+================================================================================
+Error Name: Error
+Error Message: not supported
+
+Stack Trace:
+Error: not supported
+    at fnt.generateContent (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:2151:526)
+    at file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:800:30370
+    at cR (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:800:17196)
+    at H6.generateContent (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:800:30115)
+    at file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:2796:2057
+    at Iz (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:1636:1443)
+    at nwe.generateContent (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:2796:1885)
+    at file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:4506:11268
+    at Timeout._onTimeout (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:4506:11894)
+    at listOnTimeout (node:internal/timers:605:17)
+================================================================================
+
+
+================================================================================
+ERROR LOGGED: 2026-06-08T20:46:57.566Z
+User ID: cdmaestas@us.ibm.com
+================================================================================
+Error Name: Error
+Error Message: not supported
+
+Stack Trace:
+Error: not supported
+    at fnt.generateContent (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:2151:526)
+    at file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:800:30370
+    at cR (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:800:17196)
+    at H6.generateContent (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:800:30115)
+    at file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:2796:2057
+    at Iz (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:1636:1443)
+    at nwe.generateContent (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:2796:1885)
+    at file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:4506:11268
+    at Timeout._onTimeout (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:4506:11894)
+    at listOnTimeout (node:internal/timers:605:17)
+================================================================================
+
+
+================================================================================
+ERROR LOGGED: 2026-06-08T20:54:22.012Z
+User ID: cdmaestas@us.ibm.com
+================================================================================
+Error Name: Error
+Error Message: not supported
+
+Stack Trace:
+Error: not supported
+    at fnt.generateContent (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:2151:526)
+    at file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:800:30370
+    at cR (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:800:17196)
+    at H6.generateContent (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:800:30115)
+    at file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:2796:2057
+    at Iz (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:1636:1443)
+    at nwe.generateContent (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:2796:1885)
+    at file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:4506:11268
+    at Timeout._onTimeout (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:4506:11894)
+    at listOnTimeout (node:internal/timers:605:17)
+================================================================================
+
+
+================================================================================
+ERROR LOGGED: 2026-06-08T20:54:27.141Z
+User ID: cdmaestas@us.ibm.com
+================================================================================
+Error Name: Error
+Error Message: not supported
+
+Stack Trace:
+Error: not supported
+    at fnt.generateContent (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:2151:526)
+    at file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:800:30370
+    at cR (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:800:17196)
+    at H6.generateContent (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:800:30115)
+    at file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:2796:2057
+    at Iz (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:1636:1443)
+    at nwe.generateContent (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:2796:1885)
+    at file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:4506:11268
+    at Timeout._onTimeout (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:4506:11894)
+    at listOnTimeout (node:internal/timers:605:17)
+================================================================================
+
+
+================================================================================
+ERROR LOGGED: 2026-06-08T20:54:35.923Z
+User ID: cdmaestas@us.ibm.com
+================================================================================
+Error Name: Error
+Error Message: not supported
+
+Stack Trace:
+Error: not supported
+    at fnt.generateContent (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:2151:526)
+    at file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:800:30370
+    at cR (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:800:17196)
+    at H6.generateContent (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:800:30115)
+    at file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:2796:2057
+    at Iz (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:1636:1443)
+    at nwe.generateContent (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:2796:1885)
+    at file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:4506:11268
+    at Timeout._onTimeout (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:4506:11894)
+    at listOnTimeout (node:internal/timers:605:17)
+================================================================================
+
+
+================================================================================
+ERROR LOGGED: 2026-06-08T20:54:40.017Z
+User ID: cdmaestas@us.ibm.com
+================================================================================
+Error Name: Error
+Error Message: not supported
+
+Stack Trace:
+Error: not supported
+    at fnt.generateContent (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:2151:526)
+    at file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:800:30370
+    at cR (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:800:17196)
+    at H6.generateContent (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:800:30115)
+    at file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:2796:2057
+    at Iz (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:1636:1443)
+    at nwe.generateContent (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:2796:1885)
+    at file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:4506:11268
+    at Timeout._onTimeout (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:4506:11894)
+    at listOnTimeout (node:internal/timers:605:17)
+================================================================================
+
+
+================================================================================
+ERROR LOGGED: 2026-06-08T20:54:41.848Z
+User ID: cdmaestas@us.ibm.com
+================================================================================
+Error Name: Error
+Error Message: not supported
+
+Stack Trace:
+Error: not supported
+    at fnt.generateContent (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:2151:526)
+    at file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:800:30370
+    at cR (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:800:17196)
+    at H6.generateContent (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:800:30115)
+    at file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:2796:2057
+    at Iz (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:1636:1443)
+    at nwe.generateContent (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:2796:1885)
+    at file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:4506:11268
+    at Timeout._onTimeout (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:4506:11894)
+    at listOnTimeout (node:internal/timers:605:17)
+================================================================================
+
+
+================================================================================
+ERROR LOGGED: 2026-06-08T20:54:42.672Z
+User ID: cdmaestas@us.ibm.com
+================================================================================
+Error Name: Error
+Error Message: not supported
+
+Stack Trace:
+Error: not supported
+    at fnt.generateContent (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:2151:526)
+    at file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:800:30370
+    at cR (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:800:17196)
+    at H6.generateContent (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:800:30115)
+    at file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:2796:2057
+    at Iz (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:1636:1443)
+    at nwe.generateContent (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:2796:1885)
+    at file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:4506:11268
+    at Timeout._onTimeout (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:4506:11894)
+    at listOnTimeout (node:internal/timers:605:17)
+================================================================================
+
+
+================================================================================
+ERROR LOGGED: 2026-06-08T20:54:43.028Z
+User ID: cdmaestas@us.ibm.com
+================================================================================
+Error Name: Error
+Error Message: not supported
+
+Stack Trace:
+Error: not supported
+    at fnt.generateContent (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:2151:526)
+    at file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:800:30370
+    at cR (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:800:17196)
+    at H6.generateContent (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:800:30115)
+    at file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:2796:2057
+    at Iz (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:1636:1443)
+    at nwe.generateContent (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:2796:1885)
+    at file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:4506:11268
+    at Timeout._onTimeout (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:4506:11894)
+    at listOnTimeout (node:internal/timers:605:17)
+================================================================================
+
+
+================================================================================
+ERROR LOGGED: 2026-06-08T20:54:46.023Z
+User ID: cdmaestas@us.ibm.com
+================================================================================
+Error Name: Error
+Error Message: not supported
+
+Stack Trace:
+Error: not supported
+    at fnt.generateContent (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:2151:526)
+    at file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:800:30370
+    at cR (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:800:17196)
+    at H6.generateContent (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:800:30115)
+    at file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:2796:2057
+    at Iz (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:1636:1443)
+    at nwe.generateContent (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:2796:1885)
+    at file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:4506:11268
+    at Timeout._onTimeout (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:4506:11894)
+    at listOnTimeout (node:internal/timers:605:17)
+================================================================================
+
+
+================================================================================
+ERROR LOGGED: 2026-06-08T20:54:56.455Z
+User ID: cdmaestas@us.ibm.com
+================================================================================
+Error Name: Error
+Error Message: not supported
+
+Stack Trace:
+Error: not supported
+    at fnt.generateContent (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:2151:526)
+    at file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:800:30370
+    at cR (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:800:17196)
+    at H6.generateContent (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:800:30115)
+    at file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:2796:2057
+    at Iz (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:1636:1443)
+    at nwe.generateContent (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:2796:1885)
+    at file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:4506:11268
+    at Timeout._onTimeout (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:4506:11894)
+    at listOnTimeout (node:internal/timers:605:17)
+================================================================================
+
+
+================================================================================
+ERROR LOGGED: 2026-06-08T20:54:57.024Z
+User ID: cdmaestas@us.ibm.com
+================================================================================
+Error Name: Error
+Error Message: not supported
+
+Stack Trace:
+Error: not supported
+    at fnt.generateContent (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:2151:526)
+    at file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:800:30370
+    at cR (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:800:17196)
+    at H6.generateContent (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:800:30115)
+    at file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:2796:2057
+    at Iz (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:1636:1443)
+    at nwe.generateContent (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:2796:1885)
+    at file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:4506:11268
+    at Timeout._onTimeout (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:4506:11894)
+    at listOnTimeout (node:internal/timers:605:17)
+================================================================================
+
+
+================================================================================
+ERROR LOGGED: 2026-06-08T20:55:04.037Z
+User ID: cdmaestas@us.ibm.com
+================================================================================
+Error Name: Error
+Error Message: not supported
+
+Stack Trace:
+Error: not supported
+    at fnt.generateContent (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:2151:526)
+    at file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:800:30370
+    at cR (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:800:17196)
+    at H6.generateContent (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:800:30115)
+    at file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:2796:2057
+    at Iz (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:1636:1443)
+    at nwe.generateContent (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:2796:1885)
+    at file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:4506:11268
+    at Timeout._onTimeout (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:4506:11894)
+    at listOnTimeout (node:internal/timers:605:17)
+================================================================================
+
+
+================================================================================
+ERROR LOGGED: 2026-06-08T21:08:52.909Z
+User ID: cdmaestas@us.ibm.com
+================================================================================
+Error Name: Error
+Error Message: not supported
+
+Stack Trace:
+Error: not supported
+    at fnt.generateContent (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:2151:526)
+    at file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:800:30370
+    at cR (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:800:17196)
+    at H6.generateContent (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:800:30115)
+    at file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:2796:2057
+    at Iz (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:1636:1443)
+    at nwe.generateContent (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:2796:1885)
+    at file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:4506:11268
+    at Timeout._onTimeout (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:4506:11894)
+    at listOnTimeout (node:internal/timers:605:17)
+================================================================================
+
+
+================================================================================
+ERROR LOGGED: 2026-06-08T21:08:54.199Z
+User ID: cdmaestas@us.ibm.com
+================================================================================
+Error Name: Error
+Error Message: not supported
+
+Stack Trace:
+Error: not supported
+    at fnt.generateContent (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:2151:526)
+    at file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:800:30370
+    at cR (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:800:17196)
+    at H6.generateContent (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:800:30115)
+    at file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:2796:2057
+    at Iz (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:1636:1443)
+    at nwe.generateContent (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:2796:1885)
+    at file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:4506:11268
+    at Timeout._onTimeout (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:4506:11894)
+    at listOnTimeout (node:internal/timers:605:17)
+================================================================================
+
+
+================================================================================
+ERROR LOGGED: 2026-06-08T21:08:55.213Z
+User ID: cdmaestas@us.ibm.com
+================================================================================
+Error Name: Error
+Error Message: not supported
+
+Stack Trace:
+Error: not supported
+    at fnt.generateContent (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:2151:526)
+    at file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:800:30370
+    at cR (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:800:17196)
+    at H6.generateContent (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:800:30115)
+    at file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:2796:2057
+    at Iz (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:1636:1443)
+    at nwe.generateContent (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:2796:1885)
+    at file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:4506:11268
+    at Timeout._onTimeout (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:4506:11894)
+    at listOnTimeout (node:internal/timers:605:17)
+================================================================================
+
+
+================================================================================
+ERROR LOGGED: 2026-06-08T21:08:58.456Z
+User ID: cdmaestas@us.ibm.com
+================================================================================
+Error Name: Error
+Error Message: not supported
+
+Stack Trace:
+Error: not supported
+    at fnt.generateContent (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:2151:526)
+    at file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:800:30370
+    at cR (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:800:17196)
+    at H6.generateContent (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:800:30115)
+    at file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:2796:2057
+    at Iz (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:1636:1443)
+    at nwe.generateContent (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:2796:1885)
+    at file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:4506:11268
+    at Timeout._onTimeout (file:///opt/homebrew/lib/node_modules/bobshell/bundle/bob.js:4506:11894)
+    at listOnTimeout (node:internal/timers:605:17)
+================================================================================
+

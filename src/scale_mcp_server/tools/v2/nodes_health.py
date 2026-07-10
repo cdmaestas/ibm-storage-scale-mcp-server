@@ -1,5 +1,16 @@
-"""IBM Storage Scale Node Health Management MCP Server (v2 API)."""
+"""IBM Storage Scale Node Health Management MCP Server (v2 API).
 
+DEPRECATION NOTICE:
+This module uses the v2 API which is deprecated. Please migrate to the v3 API
+health monitoring tools in scale_mcp_server.tools.v3.health module.
+
+The v3 API provides health information through:
+- get_node_health() - Replaces get_node_health_states() and get_node_health_events()
+- get_node_diagnostics() - Provides detailed node diagnostics
+- get_cluster_health_summary() - Provides comprehensive cluster health overview
+"""
+
+import warnings
 from typing import Optional, Any
 from fastmcp import FastMCP, Context
 from scale_mcp_server.api.v2.nodes import (
@@ -22,6 +33,9 @@ async def get_node_health_states(
 ) -> Any:
     """Get System Health states for a node or nodeclass.
 
+    DEPRECATED: This tool uses the v2 API. Please use get_node_health() from
+    the health_v3 module instead, which provides equivalent functionality using v3 API.
+
     Returns a list of currently active System Health states for the given node or nodeclass.
 
     Args:
@@ -32,6 +46,11 @@ async def get_node_health_states(
     Returns:
         Dictionary containing system health states information
     """
+    warnings.warn(
+        "get_node_health_states is deprecated. Use get_node_health from health_v3 module.",
+        DeprecationWarning,
+        stacklevel=2,
+    )
     await ctx.info(f"Tool called: get_node_health_states for node: {name}")
     await ctx.debug(f"Retrieving health states for node: {name}")
 
@@ -55,6 +74,9 @@ async def get_node_health_events(
 ) -> Any:
     """Get System Health events for a node or nodeclass.
 
+    DEPRECATED: This tool uses the v2 API. Please use get_node_health() from
+    the health_v3 module instead, which provides equivalent functionality using v3 API.
+
     Returns a list of currently active System Health events for the given node or nodeclass.
 
     Args:
@@ -65,6 +87,11 @@ async def get_node_health_events(
     Returns:
         Dictionary containing system health events information
     """
+    warnings.warn(
+        "get_node_health_events is deprecated. Use get_node_health from health_v3 module.",
+        DeprecationWarning,
+        stacklevel=2,
+    )
     await ctx.info(f"Tool called: get_node_health_events for node: {name}")
     await ctx.debug(f"Retrieving health events for node: {name}")
 
