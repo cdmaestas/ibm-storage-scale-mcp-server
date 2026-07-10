@@ -60,6 +60,73 @@ async def get_filesystem_api(
         ) from e
 
 
+async def create_filesystem_api(
+    filesystem_data: dict,
+    domain: Optional[str] = None,
+) -> Any:
+    """Create a new filesystem.
+
+    Args:
+        filesystem_data: Filesystem configuration data
+        domain: Domain to be authorized against (default 'StorageScaleDomain')
+
+    Returns:
+        Dictionary containing created filesystem information
+
+    Raises:
+        StorageScaleAPIError: If API call fails
+    """
+    headers: Dict[str, str] = {}
+    if domain:
+        headers["X-StorageScaleDomain"] = domain
+
+    try:
+        async with StorageScaleClient() as client:
+            return await client.post(
+                "/scalemgmt/v3/filesystems", json=filesystem_data, headers=headers
+            )
+    except StorageScaleAPIError as e:
+        fs_name = filesystem_data.get("filesystemName", "unknown")
+        raise StorageScaleAPIError(
+            f"Failed to create filesystem '{fs_name}': {str(e)}"
+        ) from e
+
+
+async def update_filesystem_api(
+    filesystem: str,
+    filesystem_data: dict,
+    domain: Optional[str] = None,
+) -> Any:
+    """Update filesystem configuration.
+
+    Args:
+        filesystem: Filesystem name
+        filesystem_data: Updated filesystem configuration data
+        domain: Domain to be authorized against (default 'StorageScaleDomain')
+
+    Returns:
+        Dictionary containing updated filesystem information
+
+    Raises:
+        StorageScaleAPIError: If API call fails
+    """
+    headers: Dict[str, str] = {}
+    if domain:
+        headers["X-StorageScaleDomain"] = domain
+
+    try:
+        async with StorageScaleClient() as client:
+            return await client.put(
+                f"/scalemgmt/v3/filesystems/{filesystem}",
+                json=filesystem_data,
+                headers=headers,
+            )
+    except StorageScaleAPIError as e:
+        raise StorageScaleAPIError(
+            f"Failed to update filesystem '{filesystem}': {str(e)}"
+        ) from e
+
+
 async def delete_filesystem_api(
     name: str,
     domain: Optional[str] = None,
@@ -224,69 +291,4 @@ async def unmount_all_filesystems_api(
     except StorageScaleAPIError as e:
         raise StorageScaleAPIError(
             f"Failed to unmount all filesystems: {str(e)}"
-        ) from e
-
-
-async def list_storage_pools_api(
-    filesystem: str,
-    domain: Optional[str] = None,
-) -> Any:
-    """List storage pools for a filesystem.
-
-    Args:
-        filesystem: Filesystem name
-        domain: Domain to be authorized against (default 'StorageScaleDomain')
-
-    Returns:
-        Dictionary containing storage pools information
-
-    Raises:
-        StorageScaleAPIError: If API call fails
-    """
-    headers: Dict[str, str] = {}
-    if domain:
-        headers["X-StorageScaleDomain"] = domain
-
-    try:
-        async with StorageScaleClient() as client:
-            return await client.get(
-                f"/scalemgmt/v3/filesystems/{filesystem}/storagepools", headers=headers
-            )
-    except StorageScaleAPIError as e:
-        raise StorageScaleAPIError(
-            f"Failed to list storage pools for filesystem '{filesystem}': {str(e)}"
-        ) from e
-
-
-async def get_storage_pool_api(
-    filesystem: str,
-    pool_name: str,
-    domain: Optional[str] = None,
-) -> Any:
-    """Get information about a specific storage pool.
-
-    Args:
-        filesystem: Filesystem name
-        pool_name: Storage pool name
-        domain: Domain to be authorized against (default 'StorageScaleDomain')
-
-    Returns:
-        Dictionary containing storage pool information
-
-    Raises:
-        StorageScaleAPIError: If API call fails
-    """
-    headers: Dict[str, str] = {}
-    if domain:
-        headers["X-StorageScaleDomain"] = domain
-
-    try:
-        async with StorageScaleClient() as client:
-            return await client.get(
-                f"/scalemgmt/v3/filesystems/{filesystem}/storagepools/{pool_name}",
-                headers=headers,
-            )
-    except StorageScaleAPIError as e:
-        raise StorageScaleAPIError(
-            f"Failed to get storage pool '{pool_name}' for filesystem '{filesystem}': {str(e)}"
         ) from e

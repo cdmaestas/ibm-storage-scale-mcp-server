@@ -1,57 +1,29 @@
-"""IBM Storage Scale Storage Pool operations."""
+"""IBM Storage Scale Filesystem Disk operations.
+
+Filesystem disk endpoints for managing disks within filesystems.
+"""
 
 from typing import Optional, Any, Dict
 from scale_mcp_server.utils.client import StorageScaleClient, StorageScaleAPIError
 
 
-async def list_storage_pools_api(
+async def list_filesystem_disks_api(
     filesystem: str,
     domain: Optional[str] = None,
 ) -> Any:
-    """List storage pools for a filesystem.
+    """List all disks in a filesystem.
+
+    Retrieves a list of all disks associated with the specified filesystem.
 
     Args:
         filesystem: Filesystem name
         domain: Domain to be authorized against (default 'StorageScaleDomain')
 
     Returns:
-        Dictionary containing storage pools information
+        Dictionary containing list of filesystem disks
 
     Raises:
-        StorageScaleAPIError: If the API request fails
-    """
-    headers = {}
-    if domain:
-        headers["X-StorageScaleDomain"] = domain
-
-    try:
-        async with StorageScaleClient() as client:
-            return await client.get(
-                f"/scalemgmt/v3/filesystems/{filesystem}/storagepools", headers=headers
-            )
-    except StorageScaleAPIError as e:
-        raise StorageScaleAPIError(
-            f"Failed to list storage pools for filesystem '{filesystem}': {str(e)}"
-        ) from e
-
-
-async def get_storage_pool_api(
-    filesystem: str,
-    pool_name: str,
-    domain: Optional[str] = None,
-) -> Any:
-    """Get information about a specific storage pool.
-
-    Args:
-        filesystem: Filesystem name
-        pool_name: Storage pool name
-        domain: Domain to be authorized against (default 'StorageScaleDomain')
-
-    Returns:
-        Dictionary containing storage pool information
-
-    Raises:
-        StorageScaleAPIError: If the API request fails
+        StorageScaleAPIError: If API call fails
     """
     headers: Dict[str, str] = {}
     if domain:
@@ -60,32 +32,69 @@ async def get_storage_pool_api(
     try:
         async with StorageScaleClient() as client:
             return await client.get(
-                f"/scalemgmt/v3/filesystems/{filesystem}/storagepools/{pool_name}",
+                f"/scalemgmt/v3/filesystems/{filesystem}/disks", headers=headers
+            )
+    except StorageScaleAPIError as e:
+        raise StorageScaleAPIError(
+            f"Failed to list disks for filesystem '{filesystem}': {str(e)}"
+        ) from e
+
+
+async def get_filesystem_disk_api(
+    filesystem: str,
+    disk: str,
+    domain: Optional[str] = None,
+) -> Any:
+    """Get details of a specific disk in a filesystem.
+
+    Retrieves detailed information about a specific disk in the filesystem.
+
+    Args:
+        filesystem: Filesystem name
+        disk: Disk name or NSD name
+        domain: Domain to be authorized against (default 'StorageScaleDomain')
+
+    Returns:
+        Dictionary containing disk details
+
+    Raises:
+        StorageScaleAPIError: If API call fails
+    """
+    headers: Dict[str, str] = {}
+    if domain:
+        headers["X-StorageScaleDomain"] = domain
+
+    try:
+        async with StorageScaleClient() as client:
+            return await client.get(
+                f"/scalemgmt/v3/filesystems/{filesystem}/disks/{disk}",
                 headers=headers,
             )
     except StorageScaleAPIError as e:
         raise StorageScaleAPIError(
-            f"Failed to get storage pool '{pool_name}' for filesystem '{filesystem}': {str(e)}"
+            f"Failed to get disk '{disk}' for filesystem '{filesystem}': {str(e)}"
         ) from e
 
 
-async def create_storage_pool_api(
+async def add_disks_to_filesystem_api(
     filesystem: str,
-    pool_data: dict,
+    disks_data: dict,
     domain: Optional[str] = None,
 ) -> Any:
-    """Create a new storage pool in a filesystem.
+    """Add disks to a filesystem.
+
+    Adds one or more disks to the specified filesystem.
 
     Args:
         filesystem: Filesystem name
-        pool_data: Storage pool configuration data
+        disks_data: Data specifying disks to add
         domain: Domain to be authorized against (default 'StorageScaleDomain')
 
     Returns:
-        Dictionary containing created storage pool information
+        Dictionary containing operation status
 
     Raises:
-        StorageScaleAPIError: If the API request fails
+        StorageScaleAPIError: If API call fails
     """
     headers: Dict[str, str] = {}
     if domain:
@@ -94,71 +103,35 @@ async def create_storage_pool_api(
     try:
         async with StorageScaleClient() as client:
             return await client.post(
-                f"/scalemgmt/v3/filesystems/{filesystem}/storagepools",
-                json=pool_data,
-                headers=headers,
-            )
-    except StorageScaleAPIError as e:
-        pool_name = pool_data.get("poolName", "unknown")
-        raise StorageScaleAPIError(
-            f"Failed to create storage pool '{pool_name}' for filesystem '{filesystem}': {str(e)}"
-        ) from e
-
-
-async def update_storage_pool_api(
-    filesystem: str,
-    pool_name: str,
-    pool_data: dict,
-    domain: Optional[str] = None,
-) -> Any:
-    """Update storage pool configuration.
-
-    Args:
-        filesystem: Filesystem name
-        pool_name: Storage pool name
-        pool_data: Updated storage pool configuration data
-        domain: Domain to be authorized against (default 'StorageScaleDomain')
-
-    Returns:
-        Dictionary containing updated storage pool information
-
-    Raises:
-        StorageScaleAPIError: If the API request fails
-    """
-    headers: Dict[str, str] = {}
-    if domain:
-        headers["X-StorageScaleDomain"] = domain
-
-    try:
-        async with StorageScaleClient() as client:
-            return await client.put(
-                f"/scalemgmt/v3/filesystems/{filesystem}/storagepools/{pool_name}",
-                json=pool_data,
+                f"/scalemgmt/v3/filesystems/{filesystem}/disks",
+                json=disks_data,
                 headers=headers,
             )
     except StorageScaleAPIError as e:
         raise StorageScaleAPIError(
-            f"Failed to update storage pool '{pool_name}' for filesystem '{filesystem}': {str(e)}"
+            f"Failed to add disks to filesystem '{filesystem}': {str(e)}"
         ) from e
 
 
-async def delete_storage_pool_api(
+async def remove_disk_from_filesystem_api(
     filesystem: str,
-    pool_name: str,
+    disk: str,
     domain: Optional[str] = None,
 ) -> Any:
-    """Delete a storage pool from a filesystem.
+    """Remove a disk from a filesystem.
+
+    Removes the specified disk from the filesystem.
 
     Args:
         filesystem: Filesystem name
-        pool_name: Storage pool name
+        disk: Disk name or NSD name to remove
         domain: Domain to be authorized against (default 'StorageScaleDomain')
 
     Returns:
-        Dictionary containing deletion status
+        Dictionary containing operation status
 
     Raises:
-        StorageScaleAPIError: If the API request fails
+        StorageScaleAPIError: If API call fails
     """
     headers: Dict[str, str] = {}
     if domain:
@@ -167,10 +140,49 @@ async def delete_storage_pool_api(
     try:
         async with StorageScaleClient() as client:
             return await client.delete(
-                f"/scalemgmt/v3/filesystems/{filesystem}/storagepools/{pool_name}",
+                f"/scalemgmt/v3/filesystems/{filesystem}/disks/{disk}",
                 headers=headers,
             )
     except StorageScaleAPIError as e:
         raise StorageScaleAPIError(
-            f"Failed to delete storage pool '{pool_name}' for filesystem '{filesystem}': {str(e)}"
+            f"Failed to remove disk '{disk}' from filesystem '{filesystem}': {str(e)}"
+        ) from e
+
+
+async def update_filesystem_disk_api(
+    filesystem: str,
+    disk: str,
+    disk_data: dict,
+    domain: Optional[str] = None,
+) -> Any:
+    """Update disk configuration in a filesystem.
+
+    Updates the configuration of a specific disk in the filesystem.
+
+    Args:
+        filesystem: Filesystem name
+        disk: Disk name or NSD name
+        disk_data: Updated disk configuration data
+        domain: Domain to be authorized against (default 'StorageScaleDomain')
+
+    Returns:
+        Dictionary containing update status
+
+    Raises:
+        StorageScaleAPIError: If API call fails
+    """
+    headers: Dict[str, str] = {}
+    if domain:
+        headers["X-StorageScaleDomain"] = domain
+
+    try:
+        async with StorageScaleClient() as client:
+            return await client.put(
+                f"/scalemgmt/v3/filesystems/{filesystem}/disks/{disk}",
+                json=disk_data,
+                headers=headers,
+            )
+    except StorageScaleAPIError as e:
+        raise StorageScaleAPIError(
+            f"Failed to update disk '{disk}' in filesystem '{filesystem}': {str(e)}"
         ) from e

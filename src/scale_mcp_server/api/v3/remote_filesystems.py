@@ -1,57 +1,27 @@
-"""IBM Storage Scale Storage Pool operations."""
+"""IBM Storage Scale Remote Filesystem operations.
+
+Remote filesystem endpoints for managing filesystems on remote clusters.
+"""
 
 from typing import Optional, Any, Dict
 from scale_mcp_server.utils.client import StorageScaleClient, StorageScaleAPIError
 
 
-async def list_storage_pools_api(
-    filesystem: str,
+async def list_remote_filesystems_api(
+    cluster: str,
     domain: Optional[str] = None,
 ) -> Any:
-    """List storage pools for a filesystem.
+    """List filesystems on a remote cluster.
 
     Args:
-        filesystem: Filesystem name
+        cluster: Remote cluster name
         domain: Domain to be authorized against (default 'StorageScaleDomain')
 
     Returns:
-        Dictionary containing storage pools information
+        Dictionary containing list of remote filesystems
 
     Raises:
-        StorageScaleAPIError: If the API request fails
-    """
-    headers = {}
-    if domain:
-        headers["X-StorageScaleDomain"] = domain
-
-    try:
-        async with StorageScaleClient() as client:
-            return await client.get(
-                f"/scalemgmt/v3/filesystems/{filesystem}/storagepools", headers=headers
-            )
-    except StorageScaleAPIError as e:
-        raise StorageScaleAPIError(
-            f"Failed to list storage pools for filesystem '{filesystem}': {str(e)}"
-        ) from e
-
-
-async def get_storage_pool_api(
-    filesystem: str,
-    pool_name: str,
-    domain: Optional[str] = None,
-) -> Any:
-    """Get information about a specific storage pool.
-
-    Args:
-        filesystem: Filesystem name
-        pool_name: Storage pool name
-        domain: Domain to be authorized against (default 'StorageScaleDomain')
-
-    Returns:
-        Dictionary containing storage pool information
-
-    Raises:
-        StorageScaleAPIError: If the API request fails
+        StorageScaleAPIError: If API call fails
     """
     headers: Dict[str, str] = {}
     if domain:
@@ -60,70 +30,143 @@ async def get_storage_pool_api(
     try:
         async with StorageScaleClient() as client:
             return await client.get(
-                f"/scalemgmt/v3/filesystems/{filesystem}/storagepools/{pool_name}",
+                f"/scalemgmt/v3/remoteclusters/{cluster}/filesystems", headers=headers
+            )
+    except StorageScaleAPIError as e:
+        raise StorageScaleAPIError(
+            f"Failed to list filesystems for remote cluster '{cluster}': {str(e)}"
+        ) from e
+
+
+async def get_remote_filesystem_api(
+    cluster: str,
+    filesystem: str,
+    domain: Optional[str] = None,
+) -> Any:
+    """Get details of a filesystem on a remote cluster.
+
+    Args:
+        cluster: Remote cluster name
+        filesystem: Filesystem name
+        domain: Domain to be authorized against (default 'StorageScaleDomain')
+
+    Returns:
+        Dictionary containing remote filesystem details
+
+    Raises:
+        StorageScaleAPIError: If API call fails
+    """
+    headers: Dict[str, str] = {}
+    if domain:
+        headers["X-StorageScaleDomain"] = domain
+
+    try:
+        async with StorageScaleClient() as client:
+            return await client.get(
+                f"/scalemgmt/v3/remoteclusters/{cluster}/filesystems/{filesystem}",
                 headers=headers,
             )
     except StorageScaleAPIError as e:
         raise StorageScaleAPIError(
-            f"Failed to get storage pool '{pool_name}' for filesystem '{filesystem}': {str(e)}"
+            f"Failed to get filesystem '{filesystem}' on remote cluster '{cluster}': {str(e)}"
         ) from e
 
 
-async def create_storage_pool_api(
+async def mount_remote_filesystem_api(
+    cluster: str,
     filesystem: str,
-    pool_data: dict,
+    mount_data: Optional[dict] = None,
     domain: Optional[str] = None,
 ) -> Any:
-    """Create a new storage pool in a filesystem.
+    """Mount a remote filesystem locally.
 
     Args:
+        cluster: Remote cluster name
         filesystem: Filesystem name
-        pool_data: Storage pool configuration data
+        mount_data: Optional mount configuration
         domain: Domain to be authorized against (default 'StorageScaleDomain')
 
     Returns:
-        Dictionary containing created storage pool information
+        Dictionary containing mount operation status
 
     Raises:
-        StorageScaleAPIError: If the API request fails
+        StorageScaleAPIError: If API call fails
     """
     headers: Dict[str, str] = {}
     if domain:
         headers["X-StorageScaleDomain"] = domain
+
+    body = mount_data if mount_data is not None else {}
 
     try:
         async with StorageScaleClient() as client:
             return await client.post(
-                f"/scalemgmt/v3/filesystems/{filesystem}/storagepools",
-                json=pool_data,
+                f"/scalemgmt/v3/remoteclusters/{cluster}/filesystems/{filesystem}:mount",
+                json=body,
                 headers=headers,
             )
     except StorageScaleAPIError as e:
-        pool_name = pool_data.get("poolName", "unknown")
         raise StorageScaleAPIError(
-            f"Failed to create storage pool '{pool_name}' for filesystem '{filesystem}': {str(e)}"
+            f"Failed to mount filesystem '{filesystem}' from remote cluster '{cluster}': {str(e)}"
         ) from e
 
 
-async def update_storage_pool_api(
+async def unmount_remote_filesystem_api(
+    cluster: str,
     filesystem: str,
-    pool_name: str,
-    pool_data: dict,
+    unmount_data: Optional[dict] = None,
     domain: Optional[str] = None,
 ) -> Any:
-    """Update storage pool configuration.
+    """Unmount a remote filesystem.
 
     Args:
+        cluster: Remote cluster name
         filesystem: Filesystem name
-        pool_name: Storage pool name
-        pool_data: Updated storage pool configuration data
+        unmount_data: Optional unmount configuration
         domain: Domain to be authorized against (default 'StorageScaleDomain')
 
     Returns:
-        Dictionary containing updated storage pool information
+        Dictionary containing unmount operation status
 
     Raises:
-        StorageScaleAPIError: If the API request fails
+        StorageScaleAPIError: If API call fails
+    """
+    headers: Dict[str, str] = {}
+    if domain:
+        headers["X-StorageScaleDomain"] = domain
+
+    body = unmount_data if unmount_data is not None else {}
+
+    try:
+        async with StorageScaleClient() as client:
+            return await client.post(
+                f"/scalemgmt/v3/remoteclusters/{cluster}/filesystems/{filesystem}:unmount",
+                json=body,
+                headers=headers,
+            )
+    except StorageScaleAPIError as e:
+        raise StorageScaleAPIError(
+            f"Failed to unmount filesystem '{filesystem}' from remote cluster '{cluster}': {str(e)}"
+        ) from e
+
+
+async def get_remote_filesystem_status_api(
+    cluster: str,
+    filesystem: str,
+    domain: Optional[str] = None,
+) -> Any:
+    """Get status of a remote filesystem.
+
+    Args:
+        cluster: Remote cluster name
+        filesystem: Filesystem name
+        domain: Domain to be authorized against (default 'StorageScaleDomain')
+
+    Returns:
+        Dictionary containing remote filesystem status
+
+    Raises:
+        StorageScaleAPIError: If API call fails
     """
     headers: Dict[str, str] = {}
     if domain:
@@ -131,46 +174,11 @@ async def update_storage_pool_api(
 
     try:
         async with StorageScaleClient() as client:
-            return await client.put(
-                f"/scalemgmt/v3/filesystems/{filesystem}/storagepools/{pool_name}",
-                json=pool_data,
+            return await client.get(
+                f"/scalemgmt/v3/remoteclusters/{cluster}/filesystems/{filesystem}/status",
                 headers=headers,
             )
     except StorageScaleAPIError as e:
         raise StorageScaleAPIError(
-            f"Failed to update storage pool '{pool_name}' for filesystem '{filesystem}': {str(e)}"
-        ) from e
-
-
-async def delete_storage_pool_api(
-    filesystem: str,
-    pool_name: str,
-    domain: Optional[str] = None,
-) -> Any:
-    """Delete a storage pool from a filesystem.
-
-    Args:
-        filesystem: Filesystem name
-        pool_name: Storage pool name
-        domain: Domain to be authorized against (default 'StorageScaleDomain')
-
-    Returns:
-        Dictionary containing deletion status
-
-    Raises:
-        StorageScaleAPIError: If the API request fails
-    """
-    headers: Dict[str, str] = {}
-    if domain:
-        headers["X-StorageScaleDomain"] = domain
-
-    try:
-        async with StorageScaleClient() as client:
-            return await client.delete(
-                f"/scalemgmt/v3/filesystems/{filesystem}/storagepools/{pool_name}",
-                headers=headers,
-            )
-    except StorageScaleAPIError as e:
-        raise StorageScaleAPIError(
-            f"Failed to delete storage pool '{pool_name}' for filesystem '{filesystem}': {str(e)}"
+            f"Failed to get status for filesystem '{filesystem}' on remote cluster '{cluster}': {str(e)}"
         ) from e
