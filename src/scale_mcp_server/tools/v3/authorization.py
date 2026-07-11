@@ -1,125 +1,220 @@
-"""MCP tools for IBM Storage Scale Authorization operations."""
+"""IBM Storage Scale Authorization MCP Server.
 
-from typing import Any
-from mcp.server import Server
-from mcp.types import Tool, TextContent
+Role-based access control (RBAC) tools: domains, permission checks, and the
+policy evaluation module.
+"""
 
+from typing import Optional, Any
+from fastmcp import FastMCP, Context
 from scale_mcp_server.api.v3.authorization import (
-    login_api,
-    logout_api,
-    refresh_token_api,
-    get_session_info_api,
+    can_i_api,
+    can_i_impersonate_api,
+    list_rbac_domains_api,
+    create_rbac_domain_api,
+    get_rbac_domain_api,
+    update_rbac_domain_api,
+    delete_rbac_domain_api,
+    get_rbac_module_api,
+    update_rbac_module_api,
 )
 
+# Create the authorization MCP server
+mcp = FastMCP("authorization", instructions="RBAC authorization operations")
 
-def register_authorization_tools(server: Server) -> None:
-    """Register authorization tools with the MCP server.
+
+@mcp.tool()
+async def can_i(
+    ctx: Context,
+    action: str,
+    resource: str,
+    domain: Optional[str] = None,
+) -> Any:
+    """Check whether the current user may perform an action on a resource.
 
     Args:
-        server: MCP server instance
+        action: Action to test (update, link, unmount, cani, stop, create,
+            delete, get, unlink, mount, impersonate, start, restripe)
+        resource: Resource endpoint to test access against
+        domain: Domain to be authorized against (default 'StorageScaleDomain')
     """
+    await ctx.info(f"Tool called: can_i with action={action}, resource={resource}")
+    try:
+        return await can_i_api(action=action, resource=resource, domain=domain)
+    except Exception as e:
+        await ctx.error(f"Failed authorization check for {action} on {resource}: {str(e)}")
+        raise
 
-    @server.list_tools()
-    async def list_tools() -> list[Tool]:
-        """List available authorization tools."""
-        return [
-            Tool(
-                name="login",
-                description="Authenticate and create a session with IBM Storage Scale",
-                inputSchema={
-                    "type": "object",
-                    "properties": {
-                        "username": {
-                            "type": "string",
-                            "description": "Username for authentication",
-                        },
-                        "password": {
-                            "type": "string",
-                            "description": "Password for authentication",
-                        },
-                        "domain": {
-                            "type": "string",
-                            "description": "Domain to be authorized against (default 'StorageScaleDomain')",
-                        },
-                    },
-                    "required": ["username", "password"],
-                },
-            ),
-            Tool(
-                name="logout",
-                description="Logout and invalidate the current session",
-                inputSchema={
-                    "type": "object",
-                    "properties": {
-                        "domain": {
-                            "type": "string",
-                            "description": "Domain to be authorized against (default 'StorageScaleDomain')",
-                        },
-                    },
-                },
-            ),
-            Tool(
-                name="refresh_token",
-                description="Refresh authentication token using a valid refresh token",
-                inputSchema={
-                    "type": "object",
-                    "properties": {
-                        "refresh_token": {
-                            "type": "string",
-                            "description": "Valid refresh token",
-                        },
-                        "domain": {
-                            "type": "string",
-                            "description": "Domain to be authorized against (default 'StorageScaleDomain')",
-                        },
-                    },
-                    "required": ["refresh_token"],
-                },
-            ),
-            Tool(
-                name="get_session_info",
-                description="Get information about the current authenticated session",
-                inputSchema={
-                    "type": "object",
-                    "properties": {
-                        "domain": {
-                            "type": "string",
-                            "description": "Domain to be authorized against (default 'StorageScaleDomain')",
-                        },
-                    },
-                },
-            ),
-        ]
 
-    @server.call_tool()
-    async def call_tool(name: str, arguments: Any) -> list[TextContent]:
-        """Handle tool calls for authorization operations."""
-        try:
-            if name == "login":
-                result = await login_api(
-                    username=arguments["username"],
-                    password=arguments["password"],
-                    domain=arguments.get("domain"),
-                )
-                return [TextContent(type="text", text=str(result))]
+@mcp.tool()
+async def can_i_impersonate(
+    ctx: Context,
+    action: str,
+    resource: str,
+    user: str,
+    domain: Optional[str] = None,
+) -> Any:
+    """Check whether a specified user may perform an action on a resource.
 
-            elif name == "logout":
-                result = await logout_api(domain=arguments.get("domain"))
-                return [TextContent(type="text", text=str(result))]
+    Args:
+        action: Action to test (update, link, unmount, cani, stop, create,
+            delete, get, unlink, mount, impersonate, start, restripe)
+        resource: Resource endpoint to test access against
+        user: User to test access for
+        domain: Domain to be authorized against (default 'StorageScaleDomain')
+    """
+    await ctx.info(
+        f"Tool called: can_i_impersonate with user={user}, action={action}, resource={resource}"
+    )
+    try:
+        return await can_i_impersonate_api(
+            action=action, resource=resource, user=user, domain=domain
+        )
+    except Exception as e:
+        await ctx.error(f"Failed impersonation check for {user}: {str(e)}")
+        raise
 
-            elif name == "refresh_token":
-                result = await refresh_token_api(
-                    refresh_token=arguments["refresh_token"],
-                    domain=arguments.get("domain"),
-                )
-                return [TextContent(type="text", text=str(result))]
 
-            elif name == "get_session_info":
-                result = await get_session_info_api(domain=arguments.get("domain"))
-                return [TextContent(type="text", text=str(result))]
+@mcp.tool()
+async def list_rbac_domains(
+    ctx: Context,
+    page_size: Optional[int] = None,
+    page_token: Optional[str] = None,
+    domain: Optional[str] = None,
+) -> Any:
+    """List information about all RBAC domains.
 
-            else:
-                raise ValueError(f"Unknown tool: {name}")
+    Args:
+        page_size: Number of items to return per request
+        page_token: Token to navigate to the next page
+        domain: Domain to be authorized against (default 'StorageScaleDomain')
+    """
+    await ctx.info("Tool called: list_rbac_domains")
+    try:
+        return await list_rbac_domains_api(
+            page_size=page_size, page_token=page_token, domain=domain
+        )
+    except Exception as e:
+        await ctx.error(f"Failed to list RBAC domains: {str(e)}")
+        raise
 
-        except Exception as e:
-            return [TextContent(type="text", text=f"Error: {str(e)}")]
+
+@mcp.tool()
+async def create_rbac_domain(
+    ctx: Context,
+    domain_data: dict,
+    domain: Optional[str] = None,
+) -> Any:
+    """Create an RBAC domain.
+
+    Args:
+        domain_data: Domain definition (resources, users/roles, actions)
+        domain: Domain to be authorized against (default 'StorageScaleDomain')
+    """
+    await ctx.info("Tool called: create_rbac_domain")
+    try:
+        return await create_rbac_domain_api(domain_data=domain_data, domain=domain)
+    except Exception as e:
+        await ctx.error(f"Failed to create RBAC domain: {str(e)}")
+        raise
+
+
+@mcp.tool()
+async def get_rbac_domain(
+    ctx: Context,
+    name: str,
+    domain: Optional[str] = None,
+) -> Any:
+    """Get information about a specific RBAC domain.
+
+    Args:
+        name: RBAC domain name
+        domain: Domain to be authorized against (default 'StorageScaleDomain')
+    """
+    await ctx.info(f"Tool called: get_rbac_domain with name={name}")
+    try:
+        return await get_rbac_domain_api(name=name, domain=domain)
+    except Exception as e:
+        await ctx.error(f"Failed to get RBAC domain {name}: {str(e)}")
+        raise
+
+
+@mcp.tool()
+async def update_rbac_domain(
+    ctx: Context,
+    name: str,
+    domain_data: dict,
+    domain: Optional[str] = None,
+) -> Any:
+    """Update an RBAC domain (permissions, memberships, resource groups).
+
+    Args:
+        name: RBAC domain name
+        domain_data: Updated domain definition
+        domain: Domain to be authorized against (default 'StorageScaleDomain')
+    """
+    await ctx.info(f"Tool called: update_rbac_domain with name={name}")
+    try:
+        return await update_rbac_domain_api(
+            name=name, domain_data=domain_data, domain=domain
+        )
+    except Exception as e:
+        await ctx.error(f"Failed to update RBAC domain {name}: {str(e)}")
+        raise
+
+
+@mcp.tool()
+async def delete_rbac_domain(
+    ctx: Context,
+    name: str,
+    domain: Optional[str] = None,
+) -> Any:
+    """Delete an RBAC domain.
+
+    Args:
+        name: RBAC domain name
+        domain: Domain to be authorized against (default 'StorageScaleDomain')
+    """
+    await ctx.info(f"Tool called: delete_rbac_domain with name={name}")
+    try:
+        return await delete_rbac_domain_api(name=name, domain=domain)
+    except Exception as e:
+        await ctx.error(f"Failed to delete RBAC domain {name}: {str(e)}")
+        raise
+
+
+@mcp.tool()
+async def get_rbac_module(
+    ctx: Context,
+    domain: Optional[str] = None,
+) -> Any:
+    """Get the current RBAC policy evaluation rule set.
+
+    Args:
+        domain: Domain to be authorized against (default 'StorageScaleDomain')
+    """
+    await ctx.info("Tool called: get_rbac_module")
+    try:
+        return await get_rbac_module_api(domain=domain)
+    except Exception as e:
+        await ctx.error(f"Failed to get RBAC module: {str(e)}")
+        raise
+
+
+@mcp.tool()
+async def update_rbac_module(
+    ctx: Context,
+    module_data: dict,
+    domain: Optional[str] = None,
+) -> Any:
+    """Update the customer-defined RBAC policy rule set.
+
+    Args:
+        module_data: Policy rule set definition
+        domain: Domain to be authorized against (default 'StorageScaleDomain')
+    """
+    await ctx.info("Tool called: update_rbac_module")
+    try:
+        return await update_rbac_module_api(module_data=module_data, domain=domain)
+    except Exception as e:
+        await ctx.error(f"Failed to update RBAC module: {str(e)}")
+        raise

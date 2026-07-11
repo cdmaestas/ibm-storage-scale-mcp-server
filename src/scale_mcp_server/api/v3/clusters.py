@@ -1,17 +1,29 @@
-"""IBM Storage Scale Cluster operations."""
+"""IBM Storage Scale Cluster operations.
 
-from typing import Optional, Literal, Any, Dict
+Cluster endpoints for creating and managing the local cluster, following the
+6.0.1 native REST API. Remote cluster endpoints live in remote_clusters.py.
+"""
+
+from typing import Optional, Any, Dict
 from scale_mcp_server.utils.client import StorageScaleClient, StorageScaleAPIError
 
 
+def _domain_headers(domain: Optional[str]) -> Dict[str, str]:
+    """Build request headers for the optional X-StorageScaleDomain."""
+    headers: Dict[str, str] = {}
+    if domain:
+        headers["X-StorageScaleDomain"] = domain
+    return headers
+
+
 async def list_clusters_api(
-    view: Optional[Literal["BASIC", "CES", "CNFS", "NODE_COMMENTS"]] = None,
+    view: Optional[str] = None,
     domain: Optional[str] = None,
 ) -> Any:
-    """List all Storage Scale clusters.
+    """List information about the local cluster.
 
     Args:
-        view: Level of detail to return (BASIC, CES, CNFS, NODE_COMMENTS)
+        view: Level of detail to return (basic, ces, cnfs, node-comments)
         domain: Domain to be authorized against (default 'StorageScaleDomain')
 
     Returns:
@@ -20,133 +32,108 @@ async def list_clusters_api(
     Raises:
         StorageScaleAPIError: If API call fails
     """
-    query_params: Dict[str, Any] = {}
+    params: Dict[str, Any] = {}
     if view:
-        query_params["view"] = view
-
-    headers: Dict[str, str] = {}
-    if domain:
-        headers["X-StorageScaleDomain"] = domain
+        params["view"] = view
 
     try:
         async with StorageScaleClient() as client:
             return await client.get(
-                "/scalemgmt/v3/clusters", params=query_params, headers=headers
+                "/scalemgmt/v3/clusters",
+                params=params,
+                headers=_domain_headers(domain),
             )
     except StorageScaleAPIError as e:
         raise StorageScaleAPIError(f"Failed to list clusters: {str(e)}") from e
 
 
-async def list_remote_clusters_api(
-    page_size: Optional[int] = None,
-    page_token: Optional[str] = None,
-    view: Optional[Literal["REMOTE_BASIC", "FULL"]] = None,
+async def create_cluster_api(
+    cluster_data: dict,
     domain: Optional[str] = None,
 ) -> Any:
-    """List remote clusters information.
+    """Create an IBM Storage Scale cluster.
+
+    When a cluster is created, the first node is automatically designated as
+    both a quorum and manager node.
 
     Args:
-        page_size: Number of results per page
-        page_token: Token for pagination
-        view: Level of detail (REMOTE_BASIC, FULL)
+        cluster_data: Cluster definition (see scalectl cluster command)
         domain: Domain to be authorized against (default 'StorageScaleDomain')
 
     Returns:
-        Dictionary containing remote clusters information
+        Dictionary containing the creation status
 
     Raises:
         StorageScaleAPIError: If API call fails
     """
-    query_params = {}
-    if page_size:
-        query_params["page_size"] = page_size
-    if page_token:
-        query_params["page_token"] = page_token
-    if view:
-        query_params["view"] = view
-
-    headers = {}
-    if domain:
-        headers["X-StorageScaleDomain"] = domain
-
     try:
         async with StorageScaleClient() as client:
-            return await client.get(
-                "/scalemgmt/v3/clusters/remote", params=query_params, headers=headers
+            return await client.post(
+                "/scalemgmt/v3/clusters",
+                json=cluster_data,
+                headers=_domain_headers(domain),
             )
     except StorageScaleAPIError as e:
-        raise StorageScaleAPIError(f"Failed to list remote clusters: {str(e)}") from e
+        raise StorageScaleAPIError(f"Failed to create cluster: {str(e)}") from e
 
 
-async def get_remote_cluster_api(
-    name: str,
-    view: Optional[Literal["REMOTE_BASIC", "FULL"]] = None,
+async def migrate_cluster_api(
+    precheck: Optional[bool] = None,
     domain: Optional[str] = None,
 ) -> Any:
-    """Get information of a remote cluster.
+    """Migrate a legacy cluster to the native REST API.
 
     Args:
-        name: Name of the remote cluster
-        view: Level of detail (REMOTE_BASIC, FULL)
+        precheck: Run a cluster migration precheck only
         domain: Domain to be authorized against (default 'StorageScaleDomain')
 
     Returns:
-        Dictionary containing remote cluster information
+        Dictionary containing the migration status
 
     Raises:
         StorageScaleAPIError: If API call fails
     """
-    query_params = {}
-    if view:
-        query_params["view"] = view
-
-    headers = {}
-    if domain:
-        headers["X-StorageScaleDomain"] = domain
+    body: Dict[str, Any] = {}
+    if precheck is not None:
+        body["precheck"] = precheck
 
     try:
         async with StorageScaleClient() as client:
-            return await client.get(
-                f"/scalemgmt/v3/clusters/remote/{name}",
-                params=query_params,
-                headers=headers,
+            return await client.post(
+                "/scalemgmt/v3/clusters:migrate",
+                json=body,
+                headers=_domain_headers(domain),
             )
     except StorageScaleAPIError as e:
-        raise StorageScaleAPIError(
-            f"Failed to get remote cluster '{name}': {str(e)}"
-        ) from e
+        raise StorageScaleAPIError(f"Failed to migrate cluster: {str(e)}") from e
 
 
 async def list_cluster_trust_api(
     end_point: Optional[str] = None,
     domain: Optional[str] = None,
 ) -> Any:
-    """List cluster trust information.
+    """List all CA chains that are currently trusted by the local cluster.
 
     Args:
-        end_point: Endpoint to filter by
+        end_point: Filter the results by the specified endpoint subject name
         domain: Domain to be authorized against (default 'StorageScaleDomain')
 
     Returns:
-        Dictionary containing cluster trust information
+        Dictionary containing trusted CA chain information
 
     Raises:
         StorageScaleAPIError: If API call fails
     """
-    query_params = {}
-    if end_point:
-        query_params["end_point"] = end_point
-
-    headers = {}
-    if domain:
-        headers["X-StorageScaleDomain"] = domain
+    params: Dict[str, Any] = {}
+    if end_point is not None:
+        params["end_point"] = end_point
 
     try:
         async with StorageScaleClient() as client:
             return await client.get(
-                "/scalemgmt/v3/clusters/trust", params=query_params, headers=headers
+                "/scalemgmt/v3/clusters/trust",
+                params=params,
+                headers=_domain_headers(domain),
             )
     except StorageScaleAPIError as e:
-        raise StorageScaleAPIError(
-            f"Failed to list cluster trust information: {str(e)}"
-        ) from e
+        raise StorageScaleAPIError(f"Failed to list cluster trust: {str(e)}") from e

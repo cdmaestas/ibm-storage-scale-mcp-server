@@ -1,127 +1,168 @@
-"""IBM Storage Scale Node operations."""
+"""IBM Storage Scale Node operations.
+
+Node endpoints for adding nodes to the cluster, starting/stopping the mmfsd
+service, and displaying node status/configuration, following the 6.0.1
+native REST API.
+"""
 
 from typing import Optional, Any, Dict
 from scale_mcp_server.utils.client import StorageScaleClient, StorageScaleAPIError
 
 
-async def list_nodes_api(
-    domain: Optional[str] = None,
-) -> Any:
-    """List all nodes in the cluster.
-
-    Args:
-        domain: Domain to be authorized against (default 'StorageScaleDomain')
-
-    Returns:
-        Dictionary containing list of nodes
-
-    Raises:
-        StorageScaleAPIError: If the API request fails
-    """
+def _domain_headers(domain: Optional[str]) -> Dict[str, str]:
+    """Build request headers for the optional X-StorageScaleDomain."""
     headers: Dict[str, str] = {}
     if domain:
         headers["X-StorageScaleDomain"] = domain
-
-    try:
-        async with StorageScaleClient() as client:
-            return await client.get("/scalemgmt/v3/nodes", headers=headers)
-    except StorageScaleAPIError as e:
-        raise StorageScaleAPIError(f"Failed to list nodes: {str(e)}") from e
+    return headers
 
 
-async def get_node_api(
-    node: str,
-    domain: Optional[str] = None,
-) -> Any:
-    """Get detailed information about a specific node.
-
-    Args:
-        node: Node name
-        domain: Domain to be authorized against (default 'StorageScaleDomain')
-
-    Returns:
-        Dictionary containing node details
-
-    Raises:
-        StorageScaleAPIError: If the API request fails
-    """
-    headers: Dict[str, str] = {}
-    if domain:
-        headers["X-StorageScaleDomain"] = domain
-
-    try:
-        async with StorageScaleClient() as client:
-            return await client.get(f"/scalemgmt/v3/nodes/{node}", headers=headers)
-    except StorageScaleAPIError as e:
-        raise StorageScaleAPIError(f"Failed to get node '{node}': {str(e)}") from e
-
-
-async def update_node_api(
-    node: str,
+async def add_node_api(
     node_data: dict,
     domain: Optional[str] = None,
 ) -> Any:
-    """Update node configuration.
+    """Add a node to the IBM Storage Scale cluster.
 
     Args:
-        node: Node name
-        node_data: Updated node configuration data
+        node_data: Node definition (see scalectl node command)
         domain: Domain to be authorized against (default 'StorageScaleDomain')
 
     Returns:
-        Dictionary containing update status
+        Dictionary containing the creation status
 
     Raises:
         StorageScaleAPIError: If the API request fails
     """
-    headers: Dict[str, str] = {}
-    if domain:
-        headers["X-StorageScaleDomain"] = domain
-
     try:
         async with StorageScaleClient() as client:
-            return await client.put(
-                f"/scalemgmt/v3/nodes/{node}", json=node_data, headers=headers
+            return await client.post(
+                "/scalemgmt/v3/nodes",
+                json=node_data,
+                headers=_domain_headers(domain),
             )
     except StorageScaleAPIError as e:
-        raise StorageScaleAPIError(f"Failed to update node '{node}': {str(e)}") from e
+        name = node_data.get("node_name", "unknown")
+        raise StorageScaleAPIError(f"Failed to add node '{name}': {str(e)}") from e
 
 
-async def delete_node_api(
-    node: str,
+async def batch_add_nodes_api(
+    nodes_data: dict,
     domain: Optional[str] = None,
 ) -> Any:
-    """Remove a node from the cluster.
+    """Add one or more nodes to the IBM Storage Scale cluster.
 
     Args:
-        node: Node name
+        nodes_data: Batch definition, e.g. {"accept_all": true, "nodes": [...]}
         domain: Domain to be authorized against (default 'StorageScaleDomain')
 
     Returns:
-        Dictionary containing deletion status
+        Dictionary containing the batch add status
 
     Raises:
         StorageScaleAPIError: If the API request fails
     """
-    headers: Dict[str, str] = {}
-    if domain:
-        headers["X-StorageScaleDomain"] = domain
+    try:
+        async with StorageScaleClient() as client:
+            return await client.post(
+                "/scalemgmt/v3/nodes:batchAdd",
+                json=nodes_data,
+                headers=_domain_headers(domain),
+            )
+    except StorageScaleAPIError as e:
+        raise StorageScaleAPIError(f"Failed to batch add nodes: {str(e)}") from e
+
+
+async def start_nodes_api(
+    start_data: Optional[dict] = None,
+    domain: Optional[str] = None,
+) -> Any:
+    """Start the mmfsd service on one or more nodes.
+
+    Args:
+        start_data: Start parameters (see scalectl node command); LRO
+        domain: Domain to be authorized against (default 'StorageScaleDomain')
+
+    Returns:
+        Dictionary containing the start operation status
+
+    Raises:
+        StorageScaleAPIError: If the API request fails
+    """
+    try:
+        async with StorageScaleClient() as client:
+            return await client.post(
+                "/scalemgmt/v3/nodes:start",
+                json=start_data if start_data is not None else {},
+                headers=_domain_headers(domain),
+            )
+    except StorageScaleAPIError as e:
+        raise StorageScaleAPIError(f"Failed to start nodes: {str(e)}") from e
+
+
+async def stop_nodes_api(
+    stop_data: Optional[dict] = None,
+    domain: Optional[str] = None,
+) -> Any:
+    """Stop the mmfsd service on one or more nodes.
+
+    Args:
+        stop_data: Stop parameters (see scalectl node command); LRO
+        domain: Domain to be authorized against (default 'StorageScaleDomain')
+
+    Returns:
+        Dictionary containing the stop operation status
+
+    Raises:
+        StorageScaleAPIError: If the API request fails
+    """
+    try:
+        async with StorageScaleClient() as client:
+            return await client.post(
+                "/scalemgmt/v3/nodes:stop",
+                json=stop_data if stop_data is not None else {},
+                headers=_domain_headers(domain),
+            )
+    except StorageScaleAPIError as e:
+        raise StorageScaleAPIError(f"Failed to stop nodes: {str(e)}") from e
+
+
+async def get_nodes_status_api(
+    target_nodes: Optional[str] = None,
+    domain: Optional[str] = None,
+) -> Any:
+    """Check the mmfsd status of cluster nodes.
+
+    Args:
+        target_nodes: Target nodes (node numbers, ranges, names, IPs, classes)
+        domain: Domain to be authorized against (default 'StorageScaleDomain')
+
+    Returns:
+        Dictionary containing node status information
+
+    Raises:
+        StorageScaleAPIError: If the API request fails
+    """
+    params: Dict[str, Any] = {}
+    if target_nodes is not None:
+        params["target_nodes"] = target_nodes
 
     try:
         async with StorageScaleClient() as client:
-            return await client.delete(f"/scalemgmt/v3/nodes/{node}", headers=headers)
+            return await client.get(
+                "/scalemgmt/v3/nodes/status",
+                params=params,
+                headers=_domain_headers(domain),
+            )
     except StorageScaleAPIError as e:
-        raise StorageScaleAPIError(f"Failed to delete node '{node}': {str(e)}") from e
+        raise StorageScaleAPIError(f"Failed to get nodes status: {str(e)}") from e
 
 
-async def get_node_config_api(
-    node: str,
+async def get_nodes_config_api(
     domain: Optional[str] = None,
 ) -> Any:
-    """Get configuration of a specific node.
+    """List the configuration details about the node.
 
     Args:
-        node: Node name
         domain: Domain to be authorized against (default 'StorageScaleDomain')
 
     Returns:
@@ -130,247 +171,10 @@ async def get_node_config_api(
     Raises:
         StorageScaleAPIError: If the API request fails
     """
-    headers: Dict[str, str] = {}
-    if domain:
-        headers["X-StorageScaleDomain"] = domain
-
     try:
         async with StorageScaleClient() as client:
             return await client.get(
-                f"/scalemgmt/v3/nodes/{node}/config", headers=headers
+                "/scalemgmt/v3/nodes/config", headers=_domain_headers(domain)
             )
     except StorageScaleAPIError as e:
-        raise StorageScaleAPIError(
-            f"Failed to get configuration for node '{node}': {str(e)}"
-        ) from e
-
-
-async def get_node_status_api(
-    node: str,
-    domain: Optional[str] = None,
-) -> Any:
-    """Get status of a specific node.
-
-    Args:
-        node: Node name
-        domain: Domain to be authorized against (default 'StorageScaleDomain')
-
-    Returns:
-        Dictionary containing node status
-
-    Raises:
-        StorageScaleAPIError: If the API request fails
-    """
-    headers: Dict[str, str] = {}
-    if domain:
-        headers["X-StorageScaleDomain"] = domain
-
-    try:
-        async with StorageScaleClient() as client:
-            return await client.get(
-                f"/scalemgmt/v3/nodes/{node}/status", headers=headers
-            )
-    except StorageScaleAPIError as e:
-        raise StorageScaleAPIError(
-            f"Failed to get status for node '{node}': {str(e)}"
-        ) from e
-
-
-async def add_node_api(
-    node_data: dict,
-    domain: Optional[str] = None,
-) -> Any:
-    """Add a new node to the cluster.
-
-    Args:
-        node_data: Node configuration data
-        domain: Domain to be authorized against (default 'StorageScaleDomain')
-
-    Returns:
-        Dictionary containing node information
-
-    Raises:
-        StorageScaleAPIError: If the API request fails
-    """
-    headers = {}
-    if domain:
-        headers["X-StorageScaleDomain"] = domain
-
-    try:
-        async with StorageScaleClient() as client:
-            return await client.post(
-                "/scalemgmt/v3/nodes", json=node_data, headers=headers
-            )
-    except StorageScaleAPIError as e:
-        node_name = node_data.get("name", "unknown")
-        raise StorageScaleAPIError(f"Failed to add node '{node_name}': {str(e)}") from e
-
-
-async def batch_add_nodes_api(
-    nodes_data: dict,
-    domain: Optional[str] = None,
-) -> Any:
-    """Add multiple nodes to the cluster.
-
-    Args:
-        nodes_data: Batch node configuration data
-        domain: Domain to be authorized against (default 'StorageScaleDomain')
-
-    Returns:
-        Dictionary containing operation status
-
-    Raises:
-        StorageScaleAPIError: If the API request fails
-    """
-    headers = {}
-    if domain:
-        headers["X-StorageScaleDomain"] = domain
-
-    try:
-        async with StorageScaleClient() as client:
-            return await client.post(
-                "/scalemgmt/v3/nodes:batchAdd", json=nodes_data, headers=headers
-            )
-    except StorageScaleAPIError as e:
-        raise StorageScaleAPIError(f"Failed to batch add nodes: {str(e)}") from e
-
-
-async def get_nodes_config_api(
-    domain: Optional[str] = None,
-) -> Any:
-    """Get configuration of all nodes.
-
-    Args:
-        domain: Domain to be authorized against (default 'StorageScaleDomain')
-
-    Returns:
-        Dictionary containing nodes configuration
-
-    Raises:
-        StorageScaleAPIError: If the API request fails
-    """
-    headers = {}
-    if domain:
-        headers["X-StorageScaleDomain"] = domain
-
-    try:
-        async with StorageScaleClient() as client:
-            return await client.get("/scalemgmt/v3/nodes/config", headers=headers)
-    except StorageScaleAPIError as e:
-        raise StorageScaleAPIError(
-            f"Failed to get nodes configuration: {str(e)}"
-        ) from e
-
-
-async def get_nodes_status_api(
-    domain: Optional[str] = None,
-) -> Any:
-    """Get status of all nodes.
-
-    Args:
-        domain: Domain to be authorized against (default 'StorageScaleDomain')
-
-    Returns:
-        Dictionary containing nodes status
-
-    Raises:
-        StorageScaleAPIError: If the API request fails
-    """
-    headers = {}
-    if domain:
-        headers["X-StorageScaleDomain"] = domain
-
-    try:
-        async with StorageScaleClient() as client:
-            return await client.get("/scalemgmt/v3/nodes/status", headers=headers)
-    except StorageScaleAPIError as e:
-        raise StorageScaleAPIError(f"Failed to get nodes status: {str(e)}") from e
-
-
-async def start_nodes_api(
-    nodes_data: dict,
-    domain: Optional[str] = None,
-) -> Any:
-    """Start specified nodes.
-
-    Args:
-        nodes_data: Data specifying which nodes to start
-        domain: Domain to be authorized against (default 'StorageScaleDomain')
-
-    Returns:
-        Dictionary containing operation status
-
-    Raises:
-        StorageScaleAPIError: If the API request fails
-    """
-    headers = {}
-    if domain:
-        headers["X-StorageScaleDomain"] = domain
-
-    try:
-        async with StorageScaleClient() as client:
-            return await client.post(
-                "/scalemgmt/v3/nodes:start", json=nodes_data, headers=headers
-            )
-    except StorageScaleAPIError as e:
-        raise StorageScaleAPIError(f"Failed to start nodes: {str(e)}") from e
-
-
-async def stop_nodes_api(
-    nodes_data: dict,
-    domain: Optional[str] = None,
-) -> Any:
-    """Stop specified nodes.
-
-    Args:
-        nodes_data: Data specifying which nodes to stop
-        domain: Domain to be authorized against (default 'StorageScaleDomain')
-
-    Returns:
-        Dictionary containing operation status
-
-    Raises:
-        StorageScaleAPIError: If the API request fails
-    """
-    headers = {}
-    if domain:
-        headers["X-StorageScaleDomain"] = domain
-
-    try:
-        async with StorageScaleClient() as client:
-            return await client.post(
-                "/scalemgmt/v3/nodes:stop", json=nodes_data, headers=headers
-            )
-    except StorageScaleAPIError as e:
-        raise StorageScaleAPIError(f"Failed to stop nodes: {str(e)}") from e
-
-
-async def get_node_version_api(
-    node: str,
-    domain: Optional[str] = None,
-) -> Any:
-    """Get version information for a specific node.
-
-    Args:
-        node: Node name
-        domain: Domain to be authorized against (default 'StorageScaleDomain')
-
-    Returns:
-        Dictionary containing node version information
-
-    Raises:
-        StorageScaleAPIError: If the API request fails
-    """
-    headers = {}
-    if domain:
-        headers["X-StorageScaleDomain"] = domain
-
-    try:
-        async with StorageScaleClient() as client:
-            return await client.get(
-                f"/scalemgmt/v3/nodes/{node}/diagnostics/version", headers=headers
-            )
-    except StorageScaleAPIError as e:
-        raise StorageScaleAPIError(
-            f"Failed to get version for node '{node}': {str(e)}"
-        ) from e
+        raise StorageScaleAPIError(f"Failed to get nodes config: {str(e)}") from e

@@ -1,218 +1,211 @@
-"""IBM Storage Scale XCP (eXtreme Copy) operations.
+"""IBM Storage Scale XCP (parallel copy) operations.
 
-XCP endpoints for performing parallel file copies and synchronization operations.
+XCP endpoints for performing parallel file copies and synchronization within
+a single IBM Storage Scale cluster, following the 6.0.1 native REST API.
+Note: copy/sync/verify/enable are PATCH requests in the native API.
 """
 
 from typing import Optional, Any, Dict
 from scale_mcp_server.utils.client import StorageScaleClient, StorageScaleAPIError
 
 
+def _domain_headers(domain: Optional[str]) -> Dict[str, str]:
+    """Build request headers for the optional X-StorageScaleDomain."""
+    headers: Dict[str, str] = {}
+    if domain:
+        headers["X-StorageScaleDomain"] = domain
+    return headers
+
+
 async def list_xcp_operations_api(
     domain: Optional[str] = None,
 ) -> Any:
-    """List all XCP operations.
+    """List configuration information of all currently running XCP operations.
 
     Args:
         domain: Domain to be authorized against (default 'StorageScaleDomain')
 
     Returns:
-        Dictionary containing list of XCP operations
+        Dictionary containing XCP operations
 
     Raises:
         StorageScaleAPIError: If API call fails
     """
-    headers: Dict[str, str] = {}
-    if domain:
-        headers["X-StorageScaleDomain"] = domain
-
     try:
         async with StorageScaleClient() as client:
-            return await client.get("/scalemgmt/v3/xcp", headers=headers)
+            return await client.get(
+                "/scalemgmt/v3/xcp", headers=_domain_headers(domain)
+            )
     except StorageScaleAPIError as e:
         raise StorageScaleAPIError(f"Failed to list XCP operations: {str(e)}") from e
 
 
 async def get_xcp_operation_api(
-    operation_id: str,
+    id: str,
     domain: Optional[str] = None,
 ) -> Any:
-    """Get details of a specific XCP operation.
+    """Retrieve configuration information of a specific XCP operation by ID.
 
     Args:
-        operation_id: XCP operation identifier
+        id: XCP operation ID
         domain: Domain to be authorized against (default 'StorageScaleDomain')
 
     Returns:
-        Dictionary containing XCP operation details
+        Dictionary containing the XCP operation details
 
     Raises:
         StorageScaleAPIError: If API call fails
     """
-    headers: Dict[str, str] = {}
-    if domain:
-        headers["X-StorageScaleDomain"] = domain
-
     try:
         async with StorageScaleClient() as client:
             return await client.get(
-                f"/scalemgmt/v3/xcp/{operation_id}", headers=headers
+                f"/scalemgmt/v3/xcp/{id}", headers=_domain_headers(domain)
             )
     except StorageScaleAPIError as e:
         raise StorageScaleAPIError(
-            f"Failed to get XCP operation '{operation_id}': {str(e)}"
+            f"Failed to get XCP operation '{id}': {str(e)}"
         ) from e
 
 
-async def create_xcp_copy_api(
+async def get_xcp_config_api(
+    domain: Optional[str] = None,
+) -> Any:
+    """Retrieve the current XCP configuration limits for the cluster.
+
+    Args:
+        domain: Domain to be authorized against (default 'StorageScaleDomain')
+
+    Returns:
+        Dictionary containing the XCP configuration
+
+    Raises:
+        StorageScaleAPIError: If API call fails
+    """
+    try:
+        async with StorageScaleClient() as client:
+            return await client.get(
+                "/scalemgmt/v3/xcp/config", headers=_domain_headers(domain)
+            )
+    except StorageScaleAPIError as e:
+        raise StorageScaleAPIError(f"Failed to get XCP config: {str(e)}") from e
+
+
+async def update_xcp_config_api(
+    config_data: dict,
+    domain: Optional[str] = None,
+) -> Any:
+    """Update the XCP configuration limits for the cluster.
+
+    Args:
+        config_data: Configuration updates, e.g.
+            {"updates": {"max_files": ..., "max_parallel": ..., "max_threads": ...}}
+        domain: Domain to be authorized against (default 'StorageScaleDomain')
+
+    Returns:
+        Dictionary containing the update status
+
+    Raises:
+        StorageScaleAPIError: If API call fails
+    """
+    try:
+        async with StorageScaleClient() as client:
+            return await client.patch(
+                "/scalemgmt/v3/xcp/config",
+                json=config_data,
+                headers=_domain_headers(domain),
+            )
+    except StorageScaleAPIError as e:
+        raise StorageScaleAPIError(f"Failed to update XCP config: {str(e)}") from e
+
+
+async def enable_xcp_copy_api(
     copy_data: dict,
     domain: Optional[str] = None,
 ) -> Any:
-    """Create a new XCP copy operation.
+    """Start a parallel copy of files from a source to a target in the cluster.
 
-    Initiates a parallel file copy operation from source to target.
+    Supports copying within a file system, between file systems in the same
+    cluster, from live file systems, and from snapshots. Cross-cluster copy is
+    not supported.
 
     Args:
-        copy_data: XCP copy configuration data including source and target paths
+        copy_data: Copy parameters (source, target, nodes, thread_level,
+            snapshot options, etc.)
         domain: Domain to be authorized against (default 'StorageScaleDomain')
 
     Returns:
-        Dictionary containing operation ID and status
+        Dictionary containing the operation ID and parameters
 
     Raises:
         StorageScaleAPIError: If API call fails
     """
-    headers: Dict[str, str] = {}
-    if domain:
-        headers["X-StorageScaleDomain"] = domain
-
     try:
         async with StorageScaleClient() as client:
-            return await client.post(
-                "/scalemgmt/v3/xcp:copy", json=copy_data, headers=headers
+            return await client.patch(
+                "/scalemgmt/v3/xcp:enable",
+                json=copy_data,
+                headers=_domain_headers(domain),
             )
     except StorageScaleAPIError as e:
-        raise StorageScaleAPIError(f"Failed to create XCP copy operation: {str(e)}") from e
+        raise StorageScaleAPIError(f"Failed to start XCP copy: {str(e)}") from e
 
 
-async def create_xcp_sync_api(
+async def sync_xcp_api(
     sync_data: dict,
     domain: Optional[str] = None,
 ) -> Any:
-    """Create a new XCP sync operation.
+    """Synchronize files from a source directory to a target directory.
 
-    Initiates a parallel file synchronization operation from source to target.
+    Copies only files that are missing or appear different, based on file size
+    and last modification time.
 
     Args:
-        sync_data: XCP sync configuration data including source and target paths
+        sync_data: Sync parameters (source, target, snapshot options)
         domain: Domain to be authorized against (default 'StorageScaleDomain')
 
     Returns:
-        Dictionary containing operation ID and status
+        Dictionary containing the operation ID and parameters
 
     Raises:
         StorageScaleAPIError: If API call fails
     """
-    headers: Dict[str, str] = {}
-    if domain:
-        headers["X-StorageScaleDomain"] = domain
-
     try:
         async with StorageScaleClient() as client:
-            return await client.post(
-                "/scalemgmt/v3/xcp:sync", json=sync_data, headers=headers
+            return await client.patch(
+                "/scalemgmt/v3/xcp:sync",
+                json=sync_data,
+                headers=_domain_headers(domain),
             )
     except StorageScaleAPIError as e:
-        raise StorageScaleAPIError(f"Failed to create XCP sync operation: {str(e)}") from e
+        raise StorageScaleAPIError(f"Failed to start XCP sync: {str(e)}") from e
 
 
-async def cancel_xcp_operation_api(
-    operation_id: str,
+async def verify_xcp_api(
+    verify_data: dict,
     domain: Optional[str] = None,
 ) -> Any:
-    """Cancel a running XCP operation.
+    """Compare metadata between a source and target of a previous XCP copy.
+
+    Checks attributes for each object including file type, user/owner, group,
+    and access rights.
 
     Args:
-        operation_id: XCP operation identifier
+        verify_data: Verify parameters (source, target, check_attributes,
+            snapshot options)
         domain: Domain to be authorized against (default 'StorageScaleDomain')
 
     Returns:
-        Dictionary containing cancellation status
+        Dictionary containing the operation ID and parameters
 
     Raises:
         StorageScaleAPIError: If API call fails
     """
-    headers: Dict[str, str] = {}
-    if domain:
-        headers["X-StorageScaleDomain"] = domain
-
     try:
         async with StorageScaleClient() as client:
-            return await client.delete(
-                f"/scalemgmt/v3/xcp/{operation_id}", headers=headers
+            return await client.patch(
+                "/scalemgmt/v3/xcp:verify",
+                json=verify_data,
+                headers=_domain_headers(domain),
             )
     except StorageScaleAPIError as e:
-        raise StorageScaleAPIError(
-            f"Failed to cancel XCP operation '{operation_id}': {str(e)}"
-        ) from e
-
-
-async def get_xcp_operation_status_api(
-    operation_id: str,
-    domain: Optional[str] = None,
-) -> Any:
-    """Get status of an XCP operation.
-
-    Args:
-        operation_id: XCP operation identifier
-        domain: Domain to be authorized against (default 'StorageScaleDomain')
-
-    Returns:
-        Dictionary containing operation status and progress
-
-    Raises:
-        StorageScaleAPIError: If API call fails
-    """
-    headers: Dict[str, str] = {}
-    if domain:
-        headers["X-StorageScaleDomain"] = domain
-
-    try:
-        async with StorageScaleClient() as client:
-            return await client.get(
-                f"/scalemgmt/v3/xcp/{operation_id}/status", headers=headers
-            )
-    except StorageScaleAPIError as e:
-        raise StorageScaleAPIError(
-            f"Failed to get status for XCP operation '{operation_id}': {str(e)}"
-        ) from e
-
-
-async def get_xcp_operation_logs_api(
-    operation_id: str,
-    domain: Optional[str] = None,
-) -> Any:
-    """Get logs for an XCP operation.
-
-    Args:
-        operation_id: XCP operation identifier
-        domain: Domain to be authorized against (default 'StorageScaleDomain')
-
-    Returns:
-        Dictionary containing operation logs
-
-    Raises:
-        StorageScaleAPIError: If API call fails
-    """
-    headers: Dict[str, str] = {}
-    if domain:
-        headers["X-StorageScaleDomain"] = domain
-
-    try:
-        async with StorageScaleClient() as client:
-            return await client.get(
-                f"/scalemgmt/v3/xcp/{operation_id}/logs", headers=headers
-            )
-    except StorageScaleAPIError as e:
-        raise StorageScaleAPIError(
-            f"Failed to get logs for XCP operation '{operation_id}': {str(e)}"
-        ) from e
+        raise StorageScaleAPIError(f"Failed to start XCP verify: {str(e)}") from e

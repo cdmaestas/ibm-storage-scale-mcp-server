@@ -1,72 +1,58 @@
 """IBM Storage Scale API Health MCP Server.
 
-API health monitoring tools for checking REST API service status.
+API health tools for the administration daemon (scaleadmd) on cluster nodes.
 """
 
 from typing import Optional, Any
 from fastmcp import FastMCP, Context
 from scale_mcp_server.api.v3.api_health import (
     get_api_health_api,
-    get_api_status_api,
+    get_node_api_health_api,
 )
 
-# Create the API health MCP server
-mcp = FastMCP(
-    "api_health",
-    instructions="API health monitoring and status operations",
-)
+# Create the api_health MCP server
+mcp = FastMCP("api_health", instructions="Native REST API health operations")
 
 
 @mcp.tool()
 async def get_api_health(
     ctx: Context,
+    page_size: Optional[int] = None,
+    page_token: Optional[str] = None,
     domain: Optional[str] = None,
 ) -> Any:
-    """Get API health status.
-
-    Checks the health and availability of the Scale REST API service.
+    """List the health status of the native REST API services on nodes.
 
     Args:
+        page_size: Number of items to return per request
+        page_token: Token to navigate to the next page
         domain: Domain to be authorized against (default 'StorageScaleDomain')
-
-    Returns:
-        Dictionary containing API health status information
     """
     await ctx.info("Tool called: get_api_health")
-    await ctx.debug("Checking API health status")
-
     try:
-        result = await get_api_health_api(domain=domain)
-        await ctx.info("Successfully retrieved API health status")
-        return result
+        return await get_api_health_api(
+            page_size=page_size, page_token=page_token, domain=domain
+        )
     except Exception as e:
         await ctx.error(f"Failed to get API health: {str(e)}")
         raise
 
 
 @mcp.tool()
-async def get_api_status(
+async def get_node_api_health(
     ctx: Context,
+    node_name: str,
     domain: Optional[str] = None,
 ) -> Any:
-    """Get detailed API status information.
-
-    Retrieves detailed status information about the Scale REST API service
-    including version, uptime, and service state.
+    """Get the health status of the native REST API service on a node.
 
     Args:
+        node_name: Node name
         domain: Domain to be authorized against (default 'StorageScaleDomain')
-
-    Returns:
-        Dictionary containing detailed API status information
     """
-    await ctx.info("Tool called: get_api_status")
-    await ctx.debug("Retrieving detailed API status")
-
+    await ctx.info(f"Tool called: get_node_api_health with node_name={node_name}")
     try:
-        result = await get_api_status_api(domain=domain)
-        await ctx.info("Successfully retrieved API status")
-        return result
+        return await get_node_api_health_api(node_name=node_name, domain=domain)
     except Exception as e:
-        await ctx.error(f"Failed to get API status: {str(e)}")
+        await ctx.error(f"Failed to get API health for node {node_name}: {str(e)}")
         raise

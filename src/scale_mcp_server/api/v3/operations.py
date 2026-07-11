@@ -1,42 +1,51 @@
 """IBM Storage Scale Operations endpoints.
 
-Operations endpoints for tracking and managing long-running asynchronous operations.
+Operations endpoints for tracking and managing long-running operations (LRO),
+following the 6.0.1 native REST API.
 """
 
 from typing import Optional, Any, Dict
 from scale_mcp_server.utils.client import StorageScaleClient, StorageScaleAPIError
 
 
+def _domain_headers(domain: Optional[str]) -> Dict[str, str]:
+    """Build request headers for the optional X-StorageScaleDomain."""
+    headers: Dict[str, str] = {}
+    if domain:
+        headers["X-StorageScaleDomain"] = domain
+    return headers
+
+
 async def list_operations_api(
-    filter: Optional[str] = None,
+    page_size: Optional[int] = None,
+    page_token: Optional[str] = None,
     domain: Optional[str] = None,
 ) -> Any:
-    """List all operations.
-
-    Retrieves a list of operations, optionally filtered by status or other criteria.
+    """List information about all long-running operations (LROs).
 
     Args:
-        filter: Filter expression (e.g., 'status=running', 'status=completed')
+        page_size: Number of items to return per request
+        page_token: Token to navigate to the next page
         domain: Domain to be authorized against (default 'StorageScaleDomain')
 
     Returns:
-        Dictionary containing list of operations
+        Dictionary containing the list of operations
 
     Raises:
         StorageScaleAPIError: If API call fails
     """
-    query_params: Dict[str, Any] = {}
-    if filter:
-        query_params["filter"] = filter
-
-    headers: Dict[str, str] = {}
-    if domain:
-        headers["X-StorageScaleDomain"] = domain
+    params: Dict[str, Any] = {}
+    if page_size is not None:
+        params["page_size"] = page_size
+    if page_token is not None:
+        params["page_token"] = page_token
 
     try:
         async with StorageScaleClient() as client:
             return await client.get(
-                "/scalemgmt/v3/operations", params=query_params, headers=headers
+                "/scalemgmt/v3/operations",
+                params=params,
+                headers=_domain_headers(domain),
             )
     except StorageScaleAPIError as e:
         raise StorageScaleAPIError(f"Failed to list operations: {str(e)}") from e
@@ -46,13 +55,10 @@ async def get_operation_api(
     operation_id: str,
     domain: Optional[str] = None,
 ) -> Any:
-    """Get details of a specific operation.
-
-    Retrieves detailed information about a specific operation including its
-    status, progress, and results.
+    """List details of an existing LRO.
 
     Args:
-        operation_id: Operation ID
+        operation_id: Operation ID of the LRO
         domain: Domain to be authorized against (default 'StorageScaleDomain')
 
     Returns:
@@ -61,14 +67,11 @@ async def get_operation_api(
     Raises:
         StorageScaleAPIError: If API call fails
     """
-    headers: Dict[str, str] = {}
-    if domain:
-        headers["X-StorageScaleDomain"] = domain
-
     try:
         async with StorageScaleClient() as client:
             return await client.get(
-                f"/scalemgmt/v3/operations/{operation_id}", headers=headers
+                f"/scalemgmt/v3/operations/{operation_id}",
+                headers=_domain_headers(domain),
             )
     except StorageScaleAPIError as e:
         raise StorageScaleAPIError(
@@ -76,16 +79,52 @@ async def get_operation_api(
         ) from e
 
 
+async def get_operation_output_api(
+    operation_id: str,
+    byte_offset: Optional[int] = None,
+    domain: Optional[str] = None,
+) -> Any:
+    """Display message output from an LRO.
+
+    Args:
+        operation_id: Operation ID of the LRO
+        byte_offset: Offset in bytes to start reading the console output
+        domain: Domain to be authorized against (default 'StorageScaleDomain')
+
+    Returns:
+        Dictionary containing the operation output
+
+    Raises:
+        StorageScaleAPIError: If API call fails
+    """
+    params: Dict[str, Any] = {}
+    if byte_offset is not None:
+        params["byte_offset"] = byte_offset
+
+    try:
+        async with StorageScaleClient() as client:
+            return await client.get(
+                f"/scalemgmt/v3/operations/{operation_id}/output",
+                params=params,
+                headers=_domain_headers(domain),
+            )
+    except StorageScaleAPIError as e:
+        raise StorageScaleAPIError(
+            f"Failed to get output for operation '{operation_id}': {str(e)}"
+        ) from e
+
+
 async def cancel_operation_api(
     operation_id: str,
     domain: Optional[str] = None,
 ) -> Any:
-    """Cancel a running operation.
+    """Cancel an LRO.
 
-    Attempts to cancel a running operation. Not all operations can be cancelled.
+    All operations attempt to stop; if an operation is too far along,
+    termination might not be possible.
 
     Args:
-        operation_id: Operation ID to cancel
+        operation_id: Operation ID of the LRO to cancel
         domain: Domain to be authorized against (default 'StorageScaleDomain')
 
     Returns:
@@ -94,14 +133,11 @@ async def cancel_operation_api(
     Raises:
         StorageScaleAPIError: If API call fails
     """
-    headers: Dict[str, str] = {}
-    if domain:
-        headers["X-StorageScaleDomain"] = domain
-
     try:
         async with StorageScaleClient() as client:
-            return await client.delete(
-                f"/scalemgmt/v3/operations/{operation_id}", headers=headers
+            return await client.post(
+                f"/scalemgmt/v3/operations/{operation_id}:cancel",
+                headers=_domain_headers(domain),
             )
     except StorageScaleAPIError as e:
         raise StorageScaleAPIError(
@@ -109,42 +145,29 @@ async def cancel_operation_api(
         ) from e
 
 
-async def wait_for_operation_api(
+async def delete_operation_api(
     operation_id: str,
-    timeout: Optional[int] = None,
     domain: Optional[str] = None,
 ) -> Any:
-    """Wait for an operation to complete.
-
-    Polls an operation until it completes or times out.
+    """Delete an existing LRO record.
 
     Args:
-        operation_id: Operation ID to wait for
-        timeout: Maximum time to wait in seconds (optional)
+        operation_id: Operation ID of the LRO to delete
         domain: Domain to be authorized against (default 'StorageScaleDomain')
 
     Returns:
-        Dictionary containing final operation status
+        Dictionary containing deletion status
 
     Raises:
-        StorageScaleAPIError: If API call fails or operation times out
+        StorageScaleAPIError: If API call fails
     """
-    query_params: Dict[str, Any] = {}
-    if timeout is not None:
-        query_params["timeout"] = timeout
-
-    headers: Dict[str, str] = {}
-    if domain:
-        headers["X-StorageScaleDomain"] = domain
-
     try:
         async with StorageScaleClient() as client:
-            return await client.get(
-                f"/scalemgmt/v3/operations/{operation_id}:wait",
-                params=query_params,
-                headers=headers,
+            return await client.delete(
+                f"/scalemgmt/v3/operations/{operation_id}",
+                headers=_domain_headers(domain),
             )
     except StorageScaleAPIError as e:
         raise StorageScaleAPIError(
-            f"Failed to wait for operation '{operation_id}': {str(e)}"
+            f"Failed to delete operation '{operation_id}': {str(e)}"
         ) from e

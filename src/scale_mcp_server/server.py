@@ -6,7 +6,10 @@ from scale_mcp_server.adapters.fileops import initialize_fileops_client
 from scale_mcp_server.tools.third_party import fileops
 from scale_mcp_server.tools.cli import policies as cli_policies
 from scale_mcp_server.tools.v3 import (
+    afm,
+    afmcos,
     api_health,
+    authorization,
     clusters,
     config,
     diagnostics,
@@ -22,10 +25,12 @@ from scale_mcp_server.tools.v3 import (
     policies,
     quotas,
     remote_clusters,
+    remote_filesystems,
     snapshots,
     storage_pools,
     troubleshooting,
     version,
+    xcp,
 )
 from scale_mcp_server.tools.v2 import (
     nodes_health,
@@ -108,7 +113,10 @@ Examples:
     mcp = FastMCP(name="scale-mcp-server", version="1.0.0")
 
     # Mounting sub-servers
+    mcp.mount(afm.mcp)
+    mcp.mount(afmcos.mcp)
     mcp.mount(api_health.mcp)
+    mcp.mount(authorization.mcp)
     mcp.mount(clusters.mcp)
     mcp.mount(config.mcp)
     mcp.mount(diagnostics.mcp)
@@ -124,10 +132,12 @@ Examples:
     mcp.mount(policies.mcp)
     mcp.mount(quotas.mcp)
     mcp.mount(remote_clusters.mcp)
+    mcp.mount(remote_filesystems.mcp)
     mcp.mount(snapshots.mcp)
     mcp.mount(storage_pools.mcp)
     mcp.mount(troubleshooting.mcp)
     mcp.mount(version.mcp)
+    mcp.mount(xcp.mcp)
     # V2
     mcp.mount(nodes_health.mcp)
     mcp.mount(filesystems_health.mcp)

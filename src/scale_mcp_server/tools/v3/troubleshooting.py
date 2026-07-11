@@ -1,141 +1,92 @@
 """IBM Storage Scale Troubleshooting MCP Server.
 
-Troubleshooting tools for advanced diagnostics and problem resolution.
+Troubleshooting tools for clearing NSD volume IDs and persistent reserve keys.
 """
 
 from typing import Optional, Any
 from fastmcp import FastMCP, Context
 from scale_mcp_server.api.v3.troubleshooting import (
-    get_troubleshooting_info_api,
-    collect_diagnostics_api,
-    get_logs_api,
-    run_diagnostic_test_api,
+    clear_nsd_id_api,
+    get_persistent_reserve_keys_api,
+    clear_persistent_reserve_keys_api,
 )
 
 # Create the troubleshooting MCP server
-mcp = FastMCP(
-    "troubleshooting",
-    instructions="Advanced diagnostics and troubleshooting operations",
-)
+mcp = FastMCP("troubleshooting", instructions="Troubleshooting and recovery operations")
 
 
 @mcp.tool()
-async def get_troubleshooting_info(
+async def clear_nsd_id(
     ctx: Context,
+    id: str,
+    node_name: Optional[str] = None,
     domain: Optional[str] = None,
 ) -> Any:
-    """Get general troubleshooting information.
-
-    Retrieves general troubleshooting information and diagnostic data.
+    """Delete the NSD volume ID from a device.
 
     Args:
+        id: NSD volume ID to clear
+        node_name: Node directly attached to the disk holding the NSD volume ID
         domain: Domain to be authorized against (default 'StorageScaleDomain')
-
-    Returns:
-        Dictionary containing troubleshooting information
     """
-    await ctx.info("Tool called: get_troubleshooting_info")
-    await ctx.debug("Retrieving troubleshooting information")
-
+    await ctx.info(f"Tool called: clear_nsd_id with id={id}")
     try:
-        result = await get_troubleshooting_info_api(domain=domain)
-        await ctx.info("Successfully retrieved troubleshooting information")
-        return result
+        return await clear_nsd_id_api(id=id, node_name=node_name, domain=domain)
     except Exception as e:
-        await ctx.error(f"Failed to get troubleshooting information: {str(e)}")
+        await ctx.error(f"Failed to clear NSD volume ID {id}: {str(e)}")
         raise
 
 
 @mcp.tool()
-async def collect_diagnostics(
+async def get_persistent_reserve_keys(
     ctx: Context,
-    collection_data: dict,
+    device: str,
+    node_name: Optional[str] = None,
     domain: Optional[str] = None,
 ) -> Any:
-    """Collect diagnostic data.
-
-    Initiates collection of diagnostic data for troubleshooting purposes.
+    """Get persistent reserve registration key values from a device.
 
     Args:
-        collection_data: Data specifying what diagnostics to collect
+        device: Device name
+        node_name: Node directly attached to the device to read
         domain: Domain to be authorized against (default 'StorageScaleDomain')
-
-    Returns:
-        Dictionary containing collection status and operation ID
     """
-    await ctx.info("Tool called: collect_diagnostics")
-    await ctx.debug("Initiating diagnostic data collection")
-
+    await ctx.info(f"Tool called: get_persistent_reserve_keys with device={device}")
     try:
-        result = await collect_diagnostics_api(
-            collection_data=collection_data, domain=domain
+        return await get_persistent_reserve_keys_api(
+            device=device, node_name=node_name, domain=domain
         )
-        await ctx.info("Successfully initiated diagnostic collection")
-        return result
     except Exception as e:
-        await ctx.error(f"Failed to collect diagnostics: {str(e)}")
+        await ctx.error(f"Failed to get persistent reserve keys for {device}: {str(e)}")
         raise
 
 
 @mcp.tool()
-async def get_logs(
+async def clear_persistent_reserve_keys(
     ctx: Context,
-    component: Optional[str] = None,
-    level: Optional[str] = None,
-    lines: Optional[int] = None,
+    device: str,
+    key: Optional[str] = None,
+    node_name: Optional[str] = None,
+    force: Optional[bool] = None,
     domain: Optional[str] = None,
 ) -> Any:
-    """Get system logs.
-
-    Retrieves system logs for troubleshooting purposes.
+    """Delete the persistent reserve registration key from a device.
 
     Args:
-        component: Specific component to get logs for (optional)
-        level: Log level filter (e.g., 'ERROR', 'WARNING', 'INFO')
-        lines: Number of log lines to retrieve
+        device: Device name
+        key: Persistent reserve key used to clear the keys; defaults to the
+            IBM persistent reserve key
+        node_name: Node where the device is attached
+        force: Override clearing keys not created by IBM Storage Scale
         domain: Domain to be authorized against (default 'StorageScaleDomain')
-
-    Returns:
-        Dictionary containing log data
     """
-    await ctx.info("Tool called: get_logs")
-    await ctx.debug(f"Retrieving logs (component: {component}, level: {level})")
-
+    await ctx.info(f"Tool called: clear_persistent_reserve_keys with device={device}")
     try:
-        result = await get_logs_api(
-            component=component, level=level, lines=lines, domain=domain
+        return await clear_persistent_reserve_keys_api(
+            device=device, key=key, node_name=node_name, force=force, domain=domain
         )
-        await ctx.info("Successfully retrieved logs")
-        return result
     except Exception as e:
-        await ctx.error(f"Failed to get logs: {str(e)}")
-        raise
-
-
-@mcp.tool()
-async def run_diagnostic_test(
-    ctx: Context,
-    test_data: dict,
-    domain: Optional[str] = None,
-) -> Any:
-    """Run a diagnostic test.
-
-    Executes a specific diagnostic test for troubleshooting.
-
-    Args:
-        test_data: Data specifying which test to run and parameters
-        domain: Domain to be authorized against (default 'StorageScaleDomain')
-
-    Returns:
-        Dictionary containing test results or operation ID
-    """
-    await ctx.info("Tool called: run_diagnostic_test")
-    await ctx.debug("Running diagnostic test")
-
-    try:
-        result = await run_diagnostic_test_api(test_data=test_data, domain=domain)
-        await ctx.info("Successfully ran diagnostic test")
-        return result
-    except Exception as e:
-        await ctx.error(f"Failed to run diagnostic test: {str(e)}")
+        await ctx.error(
+            f"Failed to clear persistent reserve keys for {device}: {str(e)}"
+        )
         raise

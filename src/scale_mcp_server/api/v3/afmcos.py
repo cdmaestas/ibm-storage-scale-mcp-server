@@ -1,291 +1,335 @@
-"""IBM Storage Scale Active File Management to Cloud Object Storage (AFMCOS) operations.
+"""IBM Storage Scale AFM to Cloud Object Storage (AFMCOS) operations.
 
-AFMCOS endpoints for managing Active File Management to Cloud Object Storage operations.
+AFMCOS endpoints for managing AFM-to-COS relationships and object transfers,
+following the 6.0.1 native REST API.
 """
 
 from typing import Optional, Any, Dict
 from scale_mcp_server.utils.client import StorageScaleClient, StorageScaleAPIError
 
 
-async def list_afmcos_filesets_api(
-    filesystem: str,
+def _domain_headers(domain: Optional[str]) -> Dict[str, str]:
+    """Build request headers for the optional X-StorageScaleDomain."""
+    headers: Dict[str, str] = {}
+    if domain:
+        headers["X-StorageScaleDomain"] = domain
+    return headers
+
+
+async def get_cos_keys_api(
+    bucket_name: str,
+    bucket_region: Optional[str] = None,
+    bucket_exportmap: Optional[str] = None,
+    bucket_report: Optional[str] = None,
     domain: Optional[str] = None,
 ) -> Any:
-    """List all AFMCOS filesets in a filesystem.
+    """Retrieve keys for the given bucket for an AFM fileset.
 
     Args:
-        filesystem: Filesystem name
+        bucket_name: Bucket name
+        bucket_region: Server name with the bucket ([Region@]Server)
+        bucket_exportmap: Exportmap name with the bucket
+        bucket_report: Set with bucket name 'all' to list all bucket keys
         domain: Domain to be authorized against (default 'StorageScaleDomain')
 
     Returns:
-        Dictionary containing AFMCOS filesets information
+        Dictionary containing the bucket keys
 
     Raises:
         StorageScaleAPIError: If API call fails
     """
-    headers: Dict[str, str] = {}
-    if domain:
-        headers["X-StorageScaleDomain"] = domain
+    params: Dict[str, Any] = {}
+    if bucket_region is not None:
+        params["bucket_region"] = bucket_region
+    if bucket_exportmap is not None:
+        params["bucket_exportmap"] = bucket_exportmap
+    if bucket_report is not None:
+        params["bucket_report"] = bucket_report
 
     try:
         async with StorageScaleClient() as client:
             return await client.get(
-                f"/scalemgmt/v3/filesystems/{filesystem}/afmcos", headers=headers
+                f"/scalemgmt/v3/buckets/{bucket_name}/afmcos/getcoskeys",
+                params=params,
+                headers=_domain_headers(domain),
             )
     except StorageScaleAPIError as e:
         raise StorageScaleAPIError(
-            f"Failed to list AFMCOS filesets for filesystem '{filesystem}': {str(e)}"
+            f"Failed to get COS keys for bucket '{bucket_name}': {str(e)}"
         ) from e
 
 
-async def get_afmcos_fileset_api(
-    filesystem: str,
-    fileset: str,
+async def set_cos_keys_api(
+    bucket_name: str,
+    bucket_coskeys: dict,
     domain: Optional[str] = None,
 ) -> Any:
-    """Get AFMCOS configuration for a specific fileset.
+    """Set keys for the given bucket for an AFM fileset.
 
     Args:
-        filesystem: Filesystem name
-        fileset: Fileset name
+        bucket_name: Bucket name
+        bucket_coskeys: Bucket key configuration, e.g. {"bucket_accesskey": ...,
+            "bucket_secretkey": ..., "bucket_region": ..., "bucket_keyfile": ...,
+            "bucket_exportmap": ...}
         domain: Domain to be authorized against (default 'StorageScaleDomain')
 
     Returns:
-        Dictionary containing AFMCOS fileset configuration
+        Dictionary containing the operation status
 
     Raises:
         StorageScaleAPIError: If API call fails
     """
-    headers: Dict[str, str] = {}
-    if domain:
-        headers["X-StorageScaleDomain"] = domain
-
-    try:
-        async with StorageScaleClient() as client:
-            return await client.get(
-                f"/scalemgmt/v3/filesystems/{filesystem}/afmcos/{fileset}",
-                headers=headers,
-            )
-    except StorageScaleAPIError as e:
-        raise StorageScaleAPIError(
-            f"Failed to get AFMCOS configuration for fileset '{fileset}' in filesystem '{filesystem}': {str(e)}"
-        ) from e
-
-
-async def create_afmcos_fileset_api(
-    filesystem: str,
-    afmcos_data: dict,
-    domain: Optional[str] = None,
-) -> Any:
-    """Create an AFMCOS fileset.
-
-    Args:
-        filesystem: Filesystem name
-        afmcos_data: AFMCOS fileset configuration data
-        domain: Domain to be authorized against (default 'StorageScaleDomain')
-
-    Returns:
-        Dictionary containing creation status
-
-    Raises:
-        StorageScaleAPIError: If API call fails
-    """
-    headers: Dict[str, str] = {}
-    if domain:
-        headers["X-StorageScaleDomain"] = domain
-
-    try:
-        async with StorageScaleClient() as client:
-            return await client.post(
-                f"/scalemgmt/v3/filesystems/{filesystem}/afmcos",
-                json=afmcos_data,
-                headers=headers,
-            )
-    except StorageScaleAPIError as e:
-        fileset_name = afmcos_data.get("filesetName", "unknown")
-        raise StorageScaleAPIError(
-            f"Failed to create AFMCOS fileset '{fileset_name}' in filesystem '{filesystem}': {str(e)}"
-        ) from e
-
-
-async def update_afmcos_fileset_api(
-    filesystem: str,
-    fileset: str,
-    afmcos_data: dict,
-    domain: Optional[str] = None,
-) -> Any:
-    """Update AFMCOS configuration for a fileset.
-
-    Args:
-        filesystem: Filesystem name
-        fileset: Fileset name
-        afmcos_data: Updated AFMCOS configuration data
-        domain: Domain to be authorized against (default 'StorageScaleDomain')
-
-    Returns:
-        Dictionary containing update status
-
-    Raises:
-        StorageScaleAPIError: If API call fails
-    """
-    headers: Dict[str, str] = {}
-    if domain:
-        headers["X-StorageScaleDomain"] = domain
-
     try:
         async with StorageScaleClient() as client:
             return await client.put(
-                f"/scalemgmt/v3/filesystems/{filesystem}/afmcos/{fileset}",
-                json=afmcos_data,
-                headers=headers,
+                f"/scalemgmt/v3/buckets/{bucket_name}/afmcos/setcoskeys",
+                json=bucket_coskeys,
+                headers=_domain_headers(domain),
             )
     except StorageScaleAPIError as e:
         raise StorageScaleAPIError(
-            f"Failed to update AFMCOS configuration for fileset '{fileset}' in filesystem '{filesystem}': {str(e)}"
+            f"Failed to set COS keys for bucket '{bucket_name}': {str(e)}"
         ) from e
 
 
-async def delete_afmcos_fileset_api(
-    filesystem: str,
-    fileset: str,
+async def delete_cos_keys_api(
+    bucket_name: str,
+    bucket_region: Optional[str] = None,
+    bucket_exportmap: Optional[str] = None,
     domain: Optional[str] = None,
 ) -> Any:
-    """Delete AFMCOS configuration from a fileset.
+    """Delete keys for the given bucket for an AFM fileset.
 
     Args:
-        filesystem: Filesystem name
-        fileset: Fileset name
+        bucket_name: Bucket name
+        bucket_region: Server name with the bucket ([Region@]Server)
+        bucket_exportmap: Exportmap name with the bucket
         domain: Domain to be authorized against (default 'StorageScaleDomain')
 
     Returns:
-        Dictionary containing deletion status
+        Dictionary containing the operation status
 
     Raises:
         StorageScaleAPIError: If API call fails
     """
-    headers: Dict[str, str] = {}
-    if domain:
-        headers["X-StorageScaleDomain"] = domain
+    params: Dict[str, Any] = {}
+    if bucket_region is not None:
+        params["bucket_region"] = bucket_region
+    if bucket_exportmap is not None:
+        params["bucket_exportmap"] = bucket_exportmap
 
     try:
         async with StorageScaleClient() as client:
             return await client.delete(
-                f"/scalemgmt/v3/filesystems/{filesystem}/afmcos/{fileset}",
-                headers=headers,
+                f"/scalemgmt/v3/buckets/{bucket_name}/afmcos/delcoskeys",
+                params=params,
+                headers=_domain_headers(domain),
             )
     except StorageScaleAPIError as e:
         raise StorageScaleAPIError(
-            f"Failed to delete AFMCOS configuration for fileset '{fileset}' in filesystem '{filesystem}': {str(e)}"
+            f"Failed to delete COS keys for bucket '{bucket_name}': {str(e)}"
         ) from e
 
 
-async def prefetch_afmcos_fileset_api(
+async def configure_afmcos_api(
     filesystem: str,
     fileset: str,
-    prefetch_data: Optional[dict] = None,
+    fileset_config: dict,
     domain: Optional[str] = None,
 ) -> Any:
-    """Prefetch data from cloud object storage for an AFMCOS fileset.
+    """Configure an AFM to cloud object storage relationship for a fileset.
 
     Args:
         filesystem: Filesystem name
-        fileset: Fileset name
-        prefetch_data: Optional prefetch configuration
+        fileset: AFM fileset name
+        fileset_config: AFM to COS configuration parameters (bucket, endpoint,
+            mode, prefix, quotas, etc.)
         domain: Domain to be authorized against (default 'StorageScaleDomain')
 
     Returns:
-        Dictionary containing prefetch operation status
+        Dictionary containing the operation status
 
     Raises:
         StorageScaleAPIError: If API call fails
     """
-    headers: Dict[str, str] = {}
-    if domain:
-        headers["X-StorageScaleDomain"] = domain
+    try:
+        async with StorageScaleClient() as client:
+            return await client.put(
+                f"/scalemgmt/v3/filesystems/{filesystem}/filesets/{fileset}/afmcos/configure",
+                json=fileset_config,
+                headers=_domain_headers(domain),
+            )
+    except StorageScaleAPIError as e:
+        raise StorageScaleAPIError(
+            f"Failed to configure AFMCOS for fileset '{fileset}' in filesystem '{filesystem}': {str(e)}"
+        ) from e
 
-    body = prefetch_data if prefetch_data is not None else {}
 
+async def delete_afmcos_objects_api(
+    filesystem: str,
+    fileset: str,
+    delete_objects: dict,
+    domain: Optional[str] = None,
+) -> Any:
+    """Delete objects from cloud object storage for an AFM fileset.
+
+    Args:
+        filesystem: Filesystem name
+        fileset: AFM fileset name
+        delete_objects: Delete parameters (path_for_delete, fromcache_delete,
+            fromtarget_delete, policy options, etc.)
+        domain: Domain to be authorized against (default 'StorageScaleDomain')
+
+    Returns:
+        Dictionary containing the operation status
+
+    Raises:
+        StorageScaleAPIError: If API call fails
+    """
     try:
         async with StorageScaleClient() as client:
             return await client.post(
-                f"/scalemgmt/v3/filesystems/{filesystem}/afmcos/{fileset}:prefetch",
-                json=body,
-                headers=headers,
+                f"/scalemgmt/v3/filesystems/{filesystem}/filesets/{fileset}/afmcos/delete",
+                json=delete_objects,
+                headers=_domain_headers(domain),
             )
     except StorageScaleAPIError as e:
         raise StorageScaleAPIError(
-            f"Failed to prefetch data for AFMCOS fileset '{fileset}' in filesystem '{filesystem}': {str(e)}"
+            f"Failed to delete AFMCOS objects for fileset '{fileset}' in filesystem '{filesystem}': {str(e)}"
         ) from e
 
 
-async def evict_afmcos_fileset_api(
+async def download_afmcos_objects_api(
     filesystem: str,
     fileset: str,
-    evict_data: Optional[dict] = None,
+    download_objects: dict,
     domain: Optional[str] = None,
 ) -> Any:
-    """Evict cached data from an AFMCOS fileset.
+    """Download objects from cloud object storage to the local AFM fileset cache.
 
     Args:
         filesystem: Filesystem name
-        fileset: Fileset name
-        evict_data: Optional eviction configuration
+        fileset: AFM fileset name
+        download_objects: Download parameters (path_for_download, data, metadata,
+            uid, gid, perm, etc.)
         domain: Domain to be authorized against (default 'StorageScaleDomain')
 
     Returns:
-        Dictionary containing eviction operation status
+        Dictionary containing the operation status
 
     Raises:
         StorageScaleAPIError: If API call fails
     """
-    headers: Dict[str, str] = {}
-    if domain:
-        headers["X-StorageScaleDomain"] = domain
-
-    body = evict_data if evict_data is not None else {}
-
     try:
         async with StorageScaleClient() as client:
             return await client.post(
-                f"/scalemgmt/v3/filesystems/{filesystem}/afmcos/{fileset}:evict",
-                json=body,
-                headers=headers,
+                f"/scalemgmt/v3/filesystems/{filesystem}/filesets/{fileset}/afmcos/download",
+                json=download_objects,
+                headers=_domain_headers(domain),
             )
     except StorageScaleAPIError as e:
         raise StorageScaleAPIError(
-            f"Failed to evict data for AFMCOS fileset '{fileset}' in filesystem '{filesystem}': {str(e)}"
+            f"Failed to download AFMCOS objects for fileset '{fileset}' in filesystem '{filesystem}': {str(e)}"
         ) from e
 
 
-async def get_afmcos_fileset_status_api(
+async def evict_afmcos_objects_api(
     filesystem: str,
     fileset: str,
+    evict_objects: dict,
     domain: Optional[str] = None,
 ) -> Any:
-    """Get status of an AFMCOS fileset.
+    """Evict objects from the local cache of an AFM fileset.
 
     Args:
         filesystem: Filesystem name
-        fileset: Fileset name
+        fileset: AFM fileset name
+        evict_objects: Evict parameters (path_for_evict, evict_metadata,
+            evict_validate, scale_node_object_list_path)
         domain: Domain to be authorized against (default 'StorageScaleDomain')
 
     Returns:
-        Dictionary containing AFMCOS fileset status
+        Dictionary containing the operation status
 
     Raises:
         StorageScaleAPIError: If API call fails
     """
-    headers: Dict[str, str] = {}
-    if domain:
-        headers["X-StorageScaleDomain"] = domain
-
     try:
         async with StorageScaleClient() as client:
-            return await client.get(
-                f"/scalemgmt/v3/filesystems/{filesystem}/afmcos/{fileset}/status",
-                headers=headers,
+            return await client.post(
+                f"/scalemgmt/v3/filesystems/{filesystem}/filesets/{fileset}/afmcos/evict",
+                json=evict_objects,
+                headers=_domain_headers(domain),
             )
     except StorageScaleAPIError as e:
         raise StorageScaleAPIError(
-            f"Failed to get status for AFMCOS fileset '{fileset}' in filesystem '{filesystem}': {str(e)}"
+            f"Failed to evict AFMCOS objects for fileset '{fileset}' in filesystem '{filesystem}': {str(e)}"
+        ) from e
+
+
+async def reconcile_afmcos_api(
+    filesystem: str,
+    fileset: str,
+    reconcile_objects: dict,
+    domain: Optional[str] = None,
+) -> Any:
+    """Reconcile objects between the local cache and cloud object storage.
+
+    Args:
+        filesystem: Filesystem name
+        fileset: AFM fileset name
+        reconcile_objects: Reconcile parameters (path_for_reconcile,
+            evict_reconcile, policy options, etc.)
+        domain: Domain to be authorized against (default 'StorageScaleDomain')
+
+    Returns:
+        Dictionary containing the operation status
+
+    Raises:
+        StorageScaleAPIError: If API call fails
+    """
+    try:
+        async with StorageScaleClient() as client:
+            return await client.post(
+                f"/scalemgmt/v3/filesystems/{filesystem}/filesets/{fileset}/afmcos/reconcile",
+                json=reconcile_objects,
+                headers=_domain_headers(domain),
+            )
+    except StorageScaleAPIError as e:
+        raise StorageScaleAPIError(
+            f"Failed to reconcile AFMCOS objects for fileset '{fileset}' in filesystem '{filesystem}': {str(e)}"
+        ) from e
+
+
+async def upload_afmcos_objects_api(
+    filesystem: str,
+    fileset: str,
+    upload_objects: dict,
+    domain: Optional[str] = None,
+) -> Any:
+    """Upload objects from the local AFM fileset to cloud object storage.
+
+    Args:
+        filesystem: Filesystem name
+        fileset: AFM fileset name
+        upload_objects: Upload parameters (path_for_upload, evict_upload,
+            scale_node_object_list_path)
+        domain: Domain to be authorized against (default 'StorageScaleDomain')
+
+    Returns:
+        Dictionary containing the operation status
+
+    Raises:
+        StorageScaleAPIError: If API call fails
+    """
+    try:
+        async with StorageScaleClient() as client:
+            return await client.put(
+                f"/scalemgmt/v3/filesystems/{filesystem}/filesets/{fileset}/afmcos/upload",
+                json=upload_objects,
+                headers=_domain_headers(domain),
+            )
+    except StorageScaleAPIError as e:
+        raise StorageScaleAPIError(
+            f"Failed to upload AFMCOS objects for fileset '{fileset}' in filesystem '{filesystem}': {str(e)}"
         ) from e
