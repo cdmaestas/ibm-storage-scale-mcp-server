@@ -1,6 +1,6 @@
 """IBM Storage Scale Remote Clusters MCP Server.
 
-Remote cluster management tools for multi-cluster configurations and operations.
+Remote cluster tools for managing owning/accessing cluster relationships.
 """
 
 from typing import Optional, Any
@@ -11,39 +11,36 @@ from scale_mcp_server.api.v3.remote_clusters import (
     add_remote_cluster_api,
     update_remote_cluster_api,
     delete_remote_cluster_api,
-    list_remote_filesystems_api,
-    get_remote_filesystem_api,
+    authorize_remote_cluster_api,
+    deauthorize_remote_cluster_api,
+    refresh_remote_cluster_api,
 )
 
-# Create the remote clusters MCP server
-mcp = FastMCP(
-    "remote_clusters",
-    instructions="Remote cluster and filesystem management operations",
-)
+# Create the remote_clusters MCP server
+mcp = FastMCP("remote_clusters", instructions="Remote cluster management operations")
 
 
 @mcp.tool()
 async def list_remote_clusters(
     ctx: Context,
+    page_size: Optional[int] = None,
+    page_token: Optional[str] = None,
+    view: Optional[str] = None,
     domain: Optional[str] = None,
 ) -> Any:
-    """List all remote clusters.
-
-    Retrieves a list of all remote clusters configured in the system.
+    """List remote clusters known to the accessing cluster.
 
     Args:
+        page_size: Number of items to return per request
+        page_token: Token to navigate to the next page
+        view: View for remote cluster contents ('basic' or 'full')
         domain: Domain to be authorized against (default 'StorageScaleDomain')
-
-    Returns:
-        Dictionary containing list of remote clusters
     """
     await ctx.info("Tool called: list_remote_clusters")
-    await ctx.debug("Retrieving list of remote clusters")
-
     try:
-        result = await list_remote_clusters_api(domain=domain)
-        await ctx.info("Successfully retrieved remote clusters list")
-        return result
+        return await list_remote_clusters_api(
+            page_size=page_size, page_token=page_token, view=view, domain=domain
+        )
     except Exception as e:
         await ctx.error(f"Failed to list remote clusters: {str(e)}")
         raise
@@ -52,191 +49,158 @@ async def list_remote_clusters(
 @mcp.tool()
 async def get_remote_cluster(
     ctx: Context,
-    cluster: str,
+    name: str,
+    view: Optional[str] = None,
     domain: Optional[str] = None,
 ) -> Any:
-    """Get details of a specific remote cluster.
-
-    Retrieves detailed information about a specific remote cluster.
+    """Retrieve details about a remote cluster.
 
     Args:
-        cluster: Remote cluster name
+        name: Remote cluster name
+        view: View for remote cluster contents ('basic' or 'full')
         domain: Domain to be authorized against (default 'StorageScaleDomain')
-
-    Returns:
-        Dictionary containing remote cluster details
     """
-    await ctx.info(f"Tool called: get_remote_cluster for: {cluster}")
-    await ctx.debug(f"Retrieving details for remote cluster: {cluster}")
-
+    await ctx.info(f"Tool called: get_remote_cluster with name={name}")
     try:
-        result = await get_remote_cluster_api(cluster=cluster, domain=domain)
-        await ctx.info(f"Successfully retrieved remote cluster: {cluster}")
-        return result
+        return await get_remote_cluster_api(name=name, view=view, domain=domain)
     except Exception as e:
-        await ctx.error(f"Failed to get remote cluster {cluster}: {str(e)}")
+        await ctx.error(f"Failed to get remote cluster {name}: {str(e)}")
         raise
 
 
 @mcp.tool()
 async def add_remote_cluster(
     ctx: Context,
-    cluster_data: dict,
+    remote_cluster: dict,
     domain: Optional[str] = None,
 ) -> Any:
-    """Add a new remote cluster.
-
-    Adds a new remote cluster configuration.
+    """Add an owning cluster to the set of remote clusters known to this cluster.
 
     Args:
-        cluster_data: Remote cluster configuration data
+        remote_cluster: Remote cluster definition; required parameters are
+            'name' and 'contact-nodes'
         domain: Domain to be authorized against (default 'StorageScaleDomain')
-
-    Returns:
-        Dictionary containing operation status
     """
-    cluster_name = cluster_data.get("name", "unknown")
-    await ctx.info(f"Tool called: add_remote_cluster for: {cluster_name}")
-    await ctx.debug(f"Adding remote cluster: {cluster_name}")
-
+    await ctx.info("Tool called: add_remote_cluster")
     try:
-        result = await add_remote_cluster_api(cluster_data=cluster_data, domain=domain)
-        await ctx.info(f"Successfully added remote cluster: {cluster_name}")
-        return result
+        return await add_remote_cluster_api(
+            remote_cluster=remote_cluster, domain=domain
+        )
     except Exception as e:
-        await ctx.error(f"Failed to add remote cluster {cluster_name}: {str(e)}")
+        await ctx.error(f"Failed to add remote cluster: {str(e)}")
         raise
 
 
 @mcp.tool()
 async def update_remote_cluster(
     ctx: Context,
-    cluster: str,
-    cluster_data: dict,
+    name: str,
+    remote_cluster: dict,
+    resource_update: Optional[bool] = None,
     domain: Optional[str] = None,
 ) -> Any:
-    """Update remote cluster configuration.
-
-    Updates the configuration of a specific remote cluster.
+    """Update information associated with a remote cluster.
 
     Args:
-        cluster: Remote cluster name
-        cluster_data: Updated cluster configuration data
+        name: Remote cluster name
+        remote_cluster: Updated remote cluster definition
+        resource_update: Update the resource authorization information
         domain: Domain to be authorized against (default 'StorageScaleDomain')
-
-    Returns:
-        Dictionary containing update status
     """
-    await ctx.info(f"Tool called: update_remote_cluster for: {cluster}")
-    await ctx.debug(f"Updating remote cluster: {cluster}")
-
+    await ctx.info(f"Tool called: update_remote_cluster with name={name}")
     try:
-        result = await update_remote_cluster_api(
-            cluster=cluster, cluster_data=cluster_data, domain=domain
+        return await update_remote_cluster_api(
+            name=name,
+            remote_cluster=remote_cluster,
+            resource_update=resource_update,
+            domain=domain,
         )
-        await ctx.info(f"Successfully updated remote cluster: {cluster}")
-        return result
     except Exception as e:
-        await ctx.error(f"Failed to update remote cluster {cluster}: {str(e)}")
+        await ctx.error(f"Failed to update remote cluster {name}: {str(e)}")
         raise
 
 
 @mcp.tool()
 async def delete_remote_cluster(
     ctx: Context,
-    cluster: str,
+    name: str,
+    force: Optional[bool] = None,
     domain: Optional[str] = None,
 ) -> Any:
-    """Delete a remote cluster.
-
-    Removes the specified remote cluster configuration.
+    """Delete an owning cluster definition from the accessing cluster.
 
     Args:
-        cluster: Remote cluster name
+        name: Remote cluster name
+        force: Force deletion of the owning cluster definition
         domain: Domain to be authorized against (default 'StorageScaleDomain')
-
-    Returns:
-        Dictionary containing deletion status
     """
-    await ctx.info(f"Tool called: delete_remote_cluster for: {cluster}")
-    await ctx.debug(f"Deleting remote cluster: {cluster}")
-
+    await ctx.info(f"Tool called: delete_remote_cluster with name={name}")
     try:
-        result = await delete_remote_cluster_api(cluster=cluster, domain=domain)
-        await ctx.info(f"Successfully deleted remote cluster: {cluster}")
-        return result
+        return await delete_remote_cluster_api(name=name, force=force, domain=domain)
     except Exception as e:
-        await ctx.error(f"Failed to delete remote cluster {cluster}: {str(e)}")
+        await ctx.error(f"Failed to delete remote cluster {name}: {str(e)}")
         raise
 
 
 @mcp.tool()
-async def list_remote_filesystems(
+async def authorize_remote_cluster(
     ctx: Context,
-    cluster: str,
+    authorization: dict,
     domain: Optional[str] = None,
 ) -> Any:
-    """List filesystems on a remote cluster.
-
-    Retrieves a list of filesystems available on the specified remote cluster.
+    """Authorize an accessing cluster to access resources on the owning cluster.
 
     Args:
-        cluster: Remote cluster name
+        authorization: Authorization definition; required parameter is 'name'.
+            If filesystem_resources or fileset_resources are provided,
+            disposition 'GRANT' is required.
         domain: Domain to be authorized against (default 'StorageScaleDomain')
-
-    Returns:
-        Dictionary containing list of remote filesystems
     """
-    await ctx.info(f"Tool called: list_remote_filesystems for cluster: {cluster}")
-    await ctx.debug(f"Listing filesystems on remote cluster: {cluster}")
-
+    await ctx.info("Tool called: authorize_remote_cluster")
     try:
-        result = await list_remote_filesystems_api(cluster=cluster, domain=domain)
-        await ctx.info(
-            f"Successfully listed filesystems on remote cluster: {cluster}"
+        return await authorize_remote_cluster_api(
+            authorization=authorization, domain=domain
         )
-        return result
     except Exception as e:
-        await ctx.error(
-            f"Failed to list filesystems on remote cluster {cluster}: {str(e)}"
-        )
+        await ctx.error(f"Failed to authorize remote cluster: {str(e)}")
         raise
 
 
 @mcp.tool()
-async def get_remote_filesystem(
+async def deauthorize_remote_cluster(
     ctx: Context,
-    cluster: str,
-    filesystem: str,
+    name: str,
     domain: Optional[str] = None,
 ) -> Any:
-    """Get details of a filesystem on a remote cluster.
-
-    Retrieves detailed information about a specific filesystem on a remote cluster.
+    """Delete the authorization of an accessing cluster on the owning cluster.
 
     Args:
-        cluster: Remote cluster name
-        filesystem: Filesystem name
+        name: Remote cluster name
         domain: Domain to be authorized against (default 'StorageScaleDomain')
-
-    Returns:
-        Dictionary containing remote filesystem details
     """
-    await ctx.info(
-        f"Tool called: get_remote_filesystem for: {cluster}/{filesystem}"
-    )
-    await ctx.debug(f"Retrieving filesystem {filesystem} on remote cluster {cluster}")
-
+    await ctx.info(f"Tool called: deauthorize_remote_cluster with name={name}")
     try:
-        result = await get_remote_filesystem_api(
-            cluster=cluster, filesystem=filesystem, domain=domain
-        )
-        await ctx.info(
-            f"Successfully retrieved filesystem {filesystem} on remote cluster {cluster}"
-        )
-        return result
+        return await deauthorize_remote_cluster_api(name=name, domain=domain)
     except Exception as e:
-        await ctx.error(
-            f"Failed to get filesystem {filesystem} on remote cluster {cluster}: {str(e)}"
-        )
+        await ctx.error(f"Failed to deauthorize remote cluster {name}: {str(e)}")
+        raise
+
+
+@mcp.tool()
+async def refresh_remote_cluster(
+    ctx: Context,
+    name: str,
+    domain: Optional[str] = None,
+) -> Any:
+    """Refresh the information of an owning cluster on the accessing cluster.
+
+    Args:
+        name: Remote cluster name
+        domain: Domain to be authorized against (default 'StorageScaleDomain')
+    """
+    await ctx.info(f"Tool called: refresh_remote_cluster with name={name}")
+    try:
+        return await refresh_remote_cluster_api(name=name, domain=domain)
+    except Exception as e:
+        await ctx.error(f"Failed to refresh remote cluster {name}: {str(e)}")
         raise

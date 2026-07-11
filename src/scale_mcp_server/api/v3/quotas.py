@@ -1,33 +1,65 @@
-"""IBM Storage Scale Quota operations."""
+"""IBM Storage Scale Quota operations.
+
+Quota endpoints for managing quota information for file systems and filesets,
+following the 6.0.1 native REST API.
+"""
 
 from typing import Optional, Any, Dict
 from scale_mcp_server.utils.client import StorageScaleClient, StorageScaleAPIError
 
 
+def _domain_headers(domain: Optional[str]) -> Dict[str, str]:
+    """Build request headers for the optional X-StorageScaleDomain."""
+    headers: Dict[str, str] = {}
+    if domain:
+        headers["X-StorageScaleDomain"] = domain
+    return headers
+
+
 async def list_quotas_api(
     filesystem: str,
+    page_size: Optional[int] = None,
+    page_token: Optional[str] = None,
+    show_perfileset_quotas: Optional[bool] = None,
+    default: Optional[bool] = None,
+    filter: Optional[str] = None,
     domain: Optional[str] = None,
 ) -> Any:
-    """List all quotas for a filesystem.
+    """Retrieve quota information for a file system.
 
     Args:
         filesystem: Filesystem name
+        page_size: Number of items per page
+        page_token: Token for pagination
+        show_perfileset_quotas: Show per-fileset quotas
+        default: Show default quota limits
+        filter: Filter expression for quotas
         domain: Domain to be authorized against (default 'StorageScaleDomain')
 
     Returns:
-        Dictionary containing quotas information
+        Dictionary containing quota information
 
     Raises:
         StorageScaleAPIError: If the API request fails
     """
-    headers = {}
-    if domain:
-        headers["X-StorageScaleDomain"] = domain
+    params: Dict[str, Any] = {}
+    if page_size is not None:
+        params["page_size"] = page_size
+    if page_token is not None:
+        params["page_token"] = page_token
+    if show_perfileset_quotas is not None:
+        params["show_perfileset_quotas"] = show_perfileset_quotas
+    if default is not None:
+        params["default"] = default
+    if filter is not None:
+        params["filter"] = filter
 
     try:
         async with StorageScaleClient() as client:
             return await client.get(
-                f"/scalemgmt/v3/filesystems/{filesystem}/quotas", headers=headers
+                f"/scalemgmt/v3/filesystems/{filesystem}/quotas",
+                params=params,
+                headers=_domain_headers(domain),
             )
     except StorageScaleAPIError as e:
         raise StorageScaleAPIError(
@@ -35,68 +67,38 @@ async def list_quotas_api(
         ) from e
 
 
-async def get_quota_api(
-    filesystem: str,
-    quota_id: str,
-    domain: Optional[str] = None,
-) -> Any:
-    """Get information about a specific quota.
-
-    Args:
-        filesystem: Filesystem name
-        quota_id: Quota identifier (format: type:objectName or type:objectId)
-        domain: Domain to be authorized against (default 'StorageScaleDomain')
-
-    Returns:
-        Dictionary containing quota information
-
-    Raises:
-        StorageScaleAPIError: If the API request fails
-    """
-    headers: Dict[str, str] = {}
-    if domain:
-        headers["X-StorageScaleDomain"] = domain
-
-    try:
-        async with StorageScaleClient() as client:
-            return await client.get(
-                f"/scalemgmt/v3/filesystems/{filesystem}/quotas/{quota_id}",
-                headers=headers,
-            )
-    except StorageScaleAPIError as e:
-        raise StorageScaleAPIError(
-            f"Failed to get quota '{quota_id}' for filesystem '{filesystem}': {str(e)}"
-        ) from e
-
-
 async def set_quota_api(
     filesystem: str,
     quota_data: dict,
+    default: Optional[bool] = None,
     domain: Optional[str] = None,
 ) -> Any:
-    """Set or update a quota.
+    """Set quota limits for a file system.
 
     Args:
         filesystem: Filesystem name
-        quota_data: Quota configuration data
+        quota_data: Quota definition, e.g. {"quota": {"name": ..., "type":
+            "QUOTA_TYPE_USER", "block_soft_limit_bytes": ..., ...}}
+        default: Set default quota limits for user, group, and fileset types
         domain: Domain to be authorized against (default 'StorageScaleDomain')
 
     Returns:
-        Dictionary containing quota information
+        Dictionary containing the operation status
 
     Raises:
         StorageScaleAPIError: If the API request fails
     """
-    headers: Dict[str, str] = {}
-    if domain:
-        headers["X-StorageScaleDomain"] = domain
+    params: Dict[str, Any] = {}
+    if default is not None:
+        params["default"] = default
 
     try:
         async with StorageScaleClient() as client:
             return await client.put(
                 f"/scalemgmt/v3/filesystems/{filesystem}/quotas",
                 json=quota_data,
-                headers=headers,
+                params=params,
+                headers=_domain_headers(domain),
             )
     except StorageScaleAPIError as e:
         raise StorageScaleAPIError(
@@ -104,67 +106,110 @@ async def set_quota_api(
         ) from e
 
 
-async def delete_quota_api(
+async def check_quotas_api(
     filesystem: str,
-    quota_id: str,
+    check_data: Optional[dict] = None,
     domain: Optional[str] = None,
 ) -> Any:
-    """Delete a quota.
+    """Check quotas for a file system (mmcheckquota equivalent).
 
     Args:
         filesystem: Filesystem name
-        quota_id: Quota identifier (format: type:objectName or type:objectId)
+        check_data: Check parameters, e.g. {"verbose": true, "threads": 16,
+            "report_diff": true, "target_nodes": [...], "qos_class": ...}
         domain: Domain to be authorized against (default 'StorageScaleDomain')
 
     Returns:
-        Dictionary containing deletion status
+        Dictionary containing the check operation status
 
     Raises:
         StorageScaleAPIError: If the API request fails
     """
-    headers: Dict[str, str] = {}
-    if domain:
-        headers["X-StorageScaleDomain"] = domain
-
     try:
         async with StorageScaleClient() as client:
-            return await client.delete(
-                f"/scalemgmt/v3/filesystems/{filesystem}/quotas/{quota_id}",
-                headers=headers,
+            return await client.post(
+                f"/scalemgmt/v3/filesystems/{filesystem}/quotas",
+                json=check_data if check_data is not None else {},
+                headers=_domain_headers(domain),
             )
     except StorageScaleAPIError as e:
         raise StorageScaleAPIError(
-            f"Failed to delete quota '{quota_id}' for filesystem '{filesystem}': {str(e)}"
+            f"Failed to check quotas for filesystem '{filesystem}': {str(e)}"
+        ) from e
+
+
+async def update_quota_config_api(
+    filesystem: str,
+    config_data: dict,
+    domain: Optional[str] = None,
+) -> Any:
+    """Update quota configuration settings for a file system.
+
+    Configures default quotas and enforcement for users, groups, or filesets.
+
+    Args:
+        filesystem: Filesystem name
+        config_data: Quota configuration, e.g. {"default_quotas": "YES",
+            "enforcement": "YES", "quota_type": ["QUOTA_TYPE_USER"]}
+        domain: Domain to be authorized against (default 'StorageScaleDomain')
+
+    Returns:
+        Dictionary containing the operation status
+
+    Raises:
+        StorageScaleAPIError: If the API request fails
+    """
+    try:
+        async with StorageScaleClient() as client:
+            return await client.post(
+                f"/scalemgmt/v3/filesystems/{filesystem}/quotas/config",
+                json=config_data,
+                headers=_domain_headers(domain),
+            )
+    except StorageScaleAPIError as e:
+        raise StorageScaleAPIError(
+            f"Failed to update quota config for filesystem '{filesystem}': {str(e)}"
         ) from e
 
 
 async def list_fileset_quotas_api(
     filesystem: str,
     fileset: str,
+    page_size: Optional[int] = None,
+    page_token: Optional[str] = None,
+    default: Optional[bool] = None,
     domain: Optional[str] = None,
 ) -> Any:
-    """List all quotas for a specific fileset.
+    """Retrieve quota information for a specific fileset.
 
     Args:
         filesystem: Filesystem name
         fileset: Fileset name
+        page_size: Number of items per page
+        page_token: Token for pagination
+        default: Show default quota limits
         domain: Domain to be authorized against (default 'StorageScaleDomain')
 
     Returns:
-        Dictionary containing fileset quotas information
+        Dictionary containing fileset quota information
 
     Raises:
         StorageScaleAPIError: If the API request fails
     """
-    headers: Dict[str, str] = {}
-    if domain:
-        headers["X-StorageScaleDomain"] = domain
+    params: Dict[str, Any] = {}
+    if page_size is not None:
+        params["page_size"] = page_size
+    if page_token is not None:
+        params["page_token"] = page_token
+    if default is not None:
+        params["default"] = default
 
     try:
         async with StorageScaleClient() as client:
             return await client.get(
                 f"/scalemgmt/v3/filesystems/{filesystem}/filesets/{fileset}/quotas",
-                headers=headers,
+                params=params,
+                headers=_domain_headers(domain),
             )
     except StorageScaleAPIError as e:
         raise StorageScaleAPIError(
@@ -172,72 +217,40 @@ async def list_fileset_quotas_api(
         ) from e
 
 
-async def get_fileset_quota_api(
-    filesystem: str,
-    fileset: str,
-    quota_id: str,
-    domain: Optional[str] = None,
-) -> Any:
-    """Get information about a specific quota for a fileset.
-
-    Args:
-        filesystem: Filesystem name
-        fileset: Fileset name
-        quota_id: Quota identifier
-        domain: Domain to be authorized against (default 'StorageScaleDomain')
-
-    Returns:
-        Dictionary containing quota information
-
-    Raises:
-        StorageScaleAPIError: If the API request fails
-    """
-    headers: Dict[str, str] = {}
-    if domain:
-        headers["X-StorageScaleDomain"] = domain
-
-    try:
-        async with StorageScaleClient() as client:
-            return await client.get(
-                f"/scalemgmt/v3/filesystems/{filesystem}/filesets/{fileset}/quotas/{quota_id}",
-                headers=headers,
-            )
-    except StorageScaleAPIError as e:
-        raise StorageScaleAPIError(
-            f"Failed to get quota '{quota_id}' for fileset '{fileset}' in filesystem '{filesystem}': {str(e)}"
-        ) from e
-
-
 async def set_fileset_quota_api(
     filesystem: str,
     fileset: str,
     quota_data: dict,
+    default: Optional[bool] = None,
     domain: Optional[str] = None,
 ) -> Any:
-    """Set or update a quota for a fileset.
+    """Set quota limits for a specific fileset.
 
     Args:
         filesystem: Filesystem name
         fileset: Fileset name
-        quota_data: Quota configuration data
+        quota_data: Quota definition, e.g. {"quota": {"name": ..., "type":
+            "QUOTA_TYPE_USER", "block_soft_limit_bytes": ..., ...}}
+        default: Set default quota limits for user and group quota types
         domain: Domain to be authorized against (default 'StorageScaleDomain')
 
     Returns:
-        Dictionary containing quota information
+        Dictionary containing the operation status
 
     Raises:
         StorageScaleAPIError: If the API request fails
     """
-    headers: Dict[str, str] = {}
-    if domain:
-        headers["X-StorageScaleDomain"] = domain
+    params: Dict[str, Any] = {}
+    if default is not None:
+        params["default"] = default
 
     try:
         async with StorageScaleClient() as client:
             return await client.put(
                 f"/scalemgmt/v3/filesystems/{filesystem}/filesets/{fileset}/quotas",
                 json=quota_data,
-                headers=headers,
+                params=params,
+                headers=_domain_headers(domain),
             )
     except StorageScaleAPIError as e:
         raise StorageScaleAPIError(
@@ -245,37 +258,35 @@ async def set_fileset_quota_api(
         ) from e
 
 
-async def delete_fileset_quota_api(
+async def check_fileset_quotas_api(
     filesystem: str,
     fileset: str,
-    quota_id: str,
+    check_data: Optional[dict] = None,
     domain: Optional[str] = None,
 ) -> Any:
-    """Delete a quota for a fileset.
+    """Check user and group quotas for a specific fileset.
 
     Args:
         filesystem: Filesystem name
         fileset: Fileset name
-        quota_id: Quota identifier
+        check_data: Check parameters, e.g. {"verbose": true, "threads": 16,
+            "report_diff": true, "target_nodes": [...], "qos_class": ...}
         domain: Domain to be authorized against (default 'StorageScaleDomain')
 
     Returns:
-        Dictionary containing deletion status
+        Dictionary containing the check operation status
 
     Raises:
         StorageScaleAPIError: If the API request fails
     """
-    headers: Dict[str, str] = {}
-    if domain:
-        headers["X-StorageScaleDomain"] = domain
-
     try:
         async with StorageScaleClient() as client:
-            return await client.delete(
-                f"/scalemgmt/v3/filesystems/{filesystem}/filesets/{fileset}/quotas/{quota_id}",
-                headers=headers,
+            return await client.post(
+                f"/scalemgmt/v3/filesystems/{filesystem}/filesets/{fileset}/quotas",
+                json=check_data if check_data is not None else {},
+                headers=_domain_headers(domain),
             )
     except StorageScaleAPIError as e:
         raise StorageScaleAPIError(
-            f"Failed to delete quota '{quota_id}' for fileset '{fileset}' in filesystem '{filesystem}': {str(e)}"
+            f"Failed to check quotas for fileset '{fileset}' in filesystem '{filesystem}': {str(e)}"
         ) from e

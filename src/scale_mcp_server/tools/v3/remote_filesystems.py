@@ -1,192 +1,88 @@
-"""MCP tools for IBM Storage Scale Remote Filesystem operations."""
+"""IBM Storage Scale Remote Filesystems MCP Server.
 
-from typing import Any
-from mcp.server import Server
-from mcp.types import Tool, TextContent
+Remote file system tools for file systems owned by another cluster.
+"""
 
+from typing import Optional, Any
+from fastmcp import FastMCP, Context
 from scale_mcp_server.api.v3.remote_filesystems import (
-    list_remote_filesystems_api,
-    get_remote_filesystem_api,
-    mount_remote_filesystem_api,
-    unmount_remote_filesystem_api,
-    get_remote_filesystem_status_api,
+    add_remote_filesystem_api,
+    update_remote_filesystem_api,
+    delete_remote_filesystem_api,
+)
+
+# Create the remote_filesystems MCP server
+mcp = FastMCP(
+    "remote_filesystems", instructions="Remote file system management operations"
 )
 
 
-def register_remote_filesystem_tools(server: Server) -> None:
-    """Register remote filesystem tools with the MCP server.
+@mcp.tool()
+async def add_remote_filesystem(
+    ctx: Context,
+    filesystem: dict,
+    domain: Optional[str] = None,
+) -> Any:
+    """Add a remote file system owned by another IBM Storage Scale cluster.
 
     Args:
-        server: MCP server instance
+        filesystem: Remote file system definition
+        domain: Domain to be authorized against (default 'StorageScaleDomain')
     """
+    await ctx.info("Tool called: add_remote_filesystem")
+    try:
+        return await add_remote_filesystem_api(filesystem=filesystem, domain=domain)
+    except Exception as e:
+        await ctx.error(f"Failed to add remote filesystem: {str(e)}")
+        raise
 
-    @server.list_tools()
-    async def list_tools() -> list[Tool]:
-        """List available remote filesystem tools."""
-        return [
-            Tool(
-                name="list_remote_filesystems",
-                description="List filesystems on a remote cluster",
-                inputSchema={
-                    "type": "object",
-                    "properties": {
-                        "cluster": {
-                            "type": "string",
-                            "description": "Remote cluster name",
-                        },
-                        "domain": {
-                            "type": "string",
-                            "description": "Domain to be authorized against",
-                        },
-                    },
-                    "required": ["cluster"],
-                },
-            ),
-            Tool(
-                name="get_remote_filesystem",
-                description="Get details of a filesystem on a remote cluster",
-                inputSchema={
-                    "type": "object",
-                    "properties": {
-                        "cluster": {
-                            "type": "string",
-                            "description": "Remote cluster name",
-                        },
-                        "filesystem": {
-                            "type": "string",
-                            "description": "Filesystem name",
-                        },
-                        "domain": {
-                            "type": "string",
-                            "description": "Domain to be authorized against",
-                        },
-                    },
-                    "required": ["cluster", "filesystem"],
-                },
-            ),
-            Tool(
-                name="mount_remote_filesystem",
-                description="Mount a remote filesystem locally",
-                inputSchema={
-                    "type": "object",
-                    "properties": {
-                        "cluster": {
-                            "type": "string",
-                            "description": "Remote cluster name",
-                        },
-                        "filesystem": {
-                            "type": "string",
-                            "description": "Filesystem name",
-                        },
-                        "mount_data": {
-                            "type": "object",
-                            "description": "Optional mount configuration",
-                        },
-                        "domain": {
-                            "type": "string",
-                            "description": "Domain to be authorized against",
-                        },
-                    },
-                    "required": ["cluster", "filesystem"],
-                },
-            ),
-            Tool(
-                name="unmount_remote_filesystem",
-                description="Unmount a remote filesystem",
-                inputSchema={
-                    "type": "object",
-                    "properties": {
-                        "cluster": {
-                            "type": "string",
-                            "description": "Remote cluster name",
-                        },
-                        "filesystem": {
-                            "type": "string",
-                            "description": "Filesystem name",
-                        },
-                        "unmount_data": {
-                            "type": "object",
-                            "description": "Optional unmount configuration",
-                        },
-                        "domain": {
-                            "type": "string",
-                            "description": "Domain to be authorized against",
-                        },
-                    },
-                    "required": ["cluster", "filesystem"],
-                },
-            ),
-            Tool(
-                name="get_remote_filesystem_status",
-                description="Get status of a remote filesystem",
-                inputSchema={
-                    "type": "object",
-                    "properties": {
-                        "cluster": {
-                            "type": "string",
-                            "description": "Remote cluster name",
-                        },
-                        "filesystem": {
-                            "type": "string",
-                            "description": "Filesystem name",
-                        },
-                        "domain": {
-                            "type": "string",
-                            "description": "Domain to be authorized against",
-                        },
-                    },
-                    "required": ["cluster", "filesystem"],
-                },
-            ),
-        ]
 
-    @server.call_tool()
-    async def call_tool(name: str, arguments: Any) -> list[TextContent]:
-        """Handle tool calls for remote filesystem operations."""
-        try:
-            if name == "list_remote_filesystems":
-                result = await list_remote_filesystems_api(
-                    cluster=arguments["cluster"],
-                    domain=arguments.get("domain"),
-                )
-                return [TextContent(type="text", text=str(result))]
+@mcp.tool()
+async def update_remote_filesystem(
+    ctx: Context,
+    filesystem: str,
+    filesystem_data: dict,
+    domain: Optional[str] = None,
+) -> Any:
+    """Update the information associated with a remote file system.
 
-            elif name == "get_remote_filesystem":
-                result = await get_remote_filesystem_api(
-                    cluster=arguments["cluster"],
-                    filesystem=arguments["filesystem"],
-                    domain=arguments.get("domain"),
-                )
-                return [TextContent(type="text", text=str(result))]
+    Args:
+        filesystem: Remote file system name
+        filesystem_data: Updated remote file system definition
+        domain: Domain to be authorized against (default 'StorageScaleDomain')
+    """
+    await ctx.info(f"Tool called: update_remote_filesystem with filesystem={filesystem}")
+    try:
+        return await update_remote_filesystem_api(
+            filesystem=filesystem, filesystem_data=filesystem_data, domain=domain
+        )
+    except Exception as e:
+        await ctx.error(f"Failed to update remote filesystem {filesystem}: {str(e)}")
+        raise
 
-            elif name == "mount_remote_filesystem":
-                result = await mount_remote_filesystem_api(
-                    cluster=arguments["cluster"],
-                    filesystem=arguments["filesystem"],
-                    mount_data=arguments.get("mount_data"),
-                    domain=arguments.get("domain"),
-                )
-                return [TextContent(type="text", text=str(result))]
 
-            elif name == "unmount_remote_filesystem":
-                result = await unmount_remote_filesystem_api(
-                    cluster=arguments["cluster"],
-                    filesystem=arguments["filesystem"],
-                    unmount_data=arguments.get("unmount_data"),
-                    domain=arguments.get("domain"),
-                )
-                return [TextContent(type="text", text=str(result))]
+@mcp.tool()
+async def delete_remote_filesystem(
+    ctx: Context,
+    filesystem: str,
+    permanently_damaged: Optional[bool] = None,
+    domain: Optional[str] = None,
+) -> Any:
+    """Delete a remote file system.
 
-            elif name == "get_remote_filesystem_status":
-                result = await get_remote_filesystem_status_api(
-                    cluster=arguments["cluster"],
-                    filesystem=arguments["filesystem"],
-                    domain=arguments.get("domain"),
-                )
-                return [TextContent(type="text", text=str(result))]
-
-            else:
-                raise ValueError(f"Unknown tool: {name}")
-
-        except Exception as e:
-            return [TextContent(type="text", text=f"Error: {str(e)}")]
+    Args:
+        filesystem: Remote file system name
+        permanently_damaged: Proceed with deletion even if the remote file
+            system is permanently damaged
+        domain: Domain to be authorized against (default 'StorageScaleDomain')
+    """
+    await ctx.info(f"Tool called: delete_remote_filesystem with filesystem={filesystem}")
+    try:
+        return await delete_remote_filesystem_api(
+            filesystem=filesystem,
+            permanently_damaged=permanently_damaged,
+            domain=domain,
+        )
+    except Exception as e:
+        await ctx.error(f"Failed to delete remote filesystem {filesystem}: {str(e)}")
+        raise

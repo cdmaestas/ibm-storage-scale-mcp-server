@@ -17,3 +17,6 @@ logs/
 
 # Linter cache
 .ruff_cache
+
+# Bob agent artifacts
+.bob/

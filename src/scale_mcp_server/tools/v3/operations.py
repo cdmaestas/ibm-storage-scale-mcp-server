@@ -1,6 +1,6 @@
 """IBM Storage Scale Operations MCP Server.
 
-Operations management tools for tracking and managing long-running asynchronous operations.
+Tools for tracking and managing long-running operations (LRO).
 """
 
 from typing import Optional, Any
@@ -8,41 +8,34 @@ from fastmcp import FastMCP, Context
 from scale_mcp_server.api.v3.operations import (
     list_operations_api,
     get_operation_api,
+    get_operation_output_api,
     cancel_operation_api,
-    wait_for_operation_api,
+    delete_operation_api,
 )
 
 # Create the operations MCP server
-mcp = FastMCP(
-    "operations",
-    instructions="Operations tracking and management for long-running tasks",
-)
+mcp = FastMCP("operations", instructions="Long-running operation (LRO) management")
 
 
 @mcp.tool()
 async def list_operations(
     ctx: Context,
-    filter: Optional[str] = None,
+    page_size: Optional[int] = None,
+    page_token: Optional[str] = None,
     domain: Optional[str] = None,
 ) -> Any:
-    """List all operations.
-
-    Retrieves a list of operations, optionally filtered by status or other criteria.
+    """List information about all long-running operations (LROs).
 
     Args:
-        filter: Filter expression (e.g., 'status=running', 'status=completed')
+        page_size: Number of items to return per request
+        page_token: Token to navigate to the next page
         domain: Domain to be authorized against (default 'StorageScaleDomain')
-
-    Returns:
-        Dictionary containing list of operations
     """
     await ctx.info("Tool called: list_operations")
-    await ctx.debug(f"Listing operations with filter: {filter}")
-
     try:
-        result = await list_operations_api(filter=filter, domain=domain)
-        await ctx.info("Successfully retrieved operations list")
-        return result
+        return await list_operations_api(
+            page_size=page_size, page_token=page_token, domain=domain
+        )
     except Exception as e:
         await ctx.error(f"Failed to list operations: {str(e)}")
         raise
@@ -54,27 +47,41 @@ async def get_operation(
     operation_id: str,
     domain: Optional[str] = None,
 ) -> Any:
-    """Get details of a specific operation.
-
-    Retrieves detailed information about a specific operation including its
-    status, progress, and results.
+    """List details of an existing LRO.
 
     Args:
-        operation_id: Operation ID
+        operation_id: Operation ID of the LRO
         domain: Domain to be authorized against (default 'StorageScaleDomain')
-
-    Returns:
-        Dictionary containing operation details
     """
-    await ctx.info(f"Tool called: get_operation for ID: {operation_id}")
-    await ctx.debug(f"Retrieving operation details for: {operation_id}")
-
+    await ctx.info(f"Tool called: get_operation with operation_id={operation_id}")
     try:
-        result = await get_operation_api(operation_id=operation_id, domain=domain)
-        await ctx.info(f"Successfully retrieved operation: {operation_id}")
-        return result
+        return await get_operation_api(operation_id=operation_id, domain=domain)
     except Exception as e:
         await ctx.error(f"Failed to get operation {operation_id}: {str(e)}")
+        raise
+
+
+@mcp.tool()
+async def get_operation_output(
+    ctx: Context,
+    operation_id: str,
+    byte_offset: Optional[int] = None,
+    domain: Optional[str] = None,
+) -> Any:
+    """Display message output from an LRO.
+
+    Args:
+        operation_id: Operation ID of the LRO
+        byte_offset: Offset in bytes to start reading the console output
+        domain: Domain to be authorized against (default 'StorageScaleDomain')
+    """
+    await ctx.info(f"Tool called: get_operation_output with operation_id={operation_id}")
+    try:
+        return await get_operation_output_api(
+            operation_id=operation_id, byte_offset=byte_offset, domain=domain
+        )
+    except Exception as e:
+        await ctx.error(f"Failed to get output for operation {operation_id}: {str(e)}")
         raise
 
 
@@ -84,57 +91,35 @@ async def cancel_operation(
     operation_id: str,
     domain: Optional[str] = None,
 ) -> Any:
-    """Cancel a running operation.
-
-    Attempts to cancel a running operation. Not all operations can be cancelled.
+    """Cancel an LRO.
 
     Args:
-        operation_id: Operation ID to cancel
+        operation_id: Operation ID of the LRO to cancel
         domain: Domain to be authorized against (default 'StorageScaleDomain')
-
-    Returns:
-        Dictionary containing cancellation status
     """
-    await ctx.info(f"Tool called: cancel_operation for ID: {operation_id}")
-    await ctx.debug(f"Attempting to cancel operation: {operation_id}")
-
+    await ctx.info(f"Tool called: cancel_operation with operation_id={operation_id}")
     try:
-        result = await cancel_operation_api(operation_id=operation_id, domain=domain)
-        await ctx.info(f"Successfully cancelled operation: {operation_id}")
-        return result
+        return await cancel_operation_api(operation_id=operation_id, domain=domain)
     except Exception as e:
         await ctx.error(f"Failed to cancel operation {operation_id}: {str(e)}")
         raise
 
 
 @mcp.tool()
-async def wait_for_operation(
+async def delete_operation(
     ctx: Context,
     operation_id: str,
-    timeout: Optional[int] = None,
     domain: Optional[str] = None,
 ) -> Any:
-    """Wait for an operation to complete.
-
-    Polls an operation until it completes or times out.
+    """Delete an existing LRO record.
 
     Args:
-        operation_id: Operation ID to wait for
-        timeout: Maximum time to wait in seconds (optional)
+        operation_id: Operation ID of the LRO to delete
         domain: Domain to be authorized against (default 'StorageScaleDomain')
-
-    Returns:
-        Dictionary containing final operation status
     """
-    await ctx.info(f"Tool called: wait_for_operation for ID: {operation_id}")
-    await ctx.debug(f"Waiting for operation: {operation_id} (timeout: {timeout}s)")
-
+    await ctx.info(f"Tool called: delete_operation with operation_id={operation_id}")
     try:
-        result = await wait_for_operation_api(
-            operation_id=operation_id, timeout=timeout, domain=domain
-        )
-        await ctx.info(f"Operation completed: {operation_id}")
-        return result
+        return await delete_operation_api(operation_id=operation_id, domain=domain)
     except Exception as e:
-        await ctx.error(f"Failed to wait for operation {operation_id}: {str(e)}")
+        await ctx.error(f"Failed to delete operation {operation_id}: {str(e)}")
         raise
