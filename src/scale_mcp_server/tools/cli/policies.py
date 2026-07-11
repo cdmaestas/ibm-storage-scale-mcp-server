@@ -16,32 +16,40 @@ logger = logging.getLogger(__name__)
 # Create the CLI MCP server
 mcp = FastMCP("scale-cli", instructions="IBM Storage Scale CLI command operations via SSH")
 
-# Load configuration from default location
-config_path = Path(__file__).resolve().parents[4] / "config" / "scale_config.ini"
-config = read_config(config_path)
 
-# Get SSH connection details from config
-if 'ssh' not in config:
-    raise ValueError("Missing [ssh] section in configuration file")
+def _load_ssh_settings() -> dict:
+    """Load and validate SSH connection settings from the config file.
 
-ssh_config = config['ssh']
-if not ssh_config.get('hostname'):
-    raise ValueError("Missing 'hostname' in [ssh] configuration")
-if not ssh_config.get('username'):
-    raise ValueError("Missing 'username' in [ssh] configuration")
+    Loaded lazily at tool-call time so that importing this module (and thus
+    starting the server or running tests) does not require a config file.
+    """
+    config_path = Path(__file__).resolve().parents[4] / "config" / "scale_config.ini"
+    if not config_path.is_file():
+        raise FileNotFoundError(f"Config file '{config_path}' does not exist.")
+    config = read_config(config_path)
 
-SSH_HOST = ssh_config['hostname']
-SSH_PORT = int(ssh_config.get('port', 22))
-SSH_USERNAME = ssh_config['username']
-SSH_PASSWORD = ssh_config.get('password') or None
-SSH_KEY_PATH = ssh_config.get('key_path') or None
+    if 'ssh' not in config:
+        raise ValueError("Missing [ssh] section in configuration file")
 
-# Expand ~ to home directory if present in key path
-if SSH_KEY_PATH:
-    SSH_KEY_PATH = os.path.expanduser(SSH_KEY_PATH)
+    ssh_config = config['ssh']
+    if not ssh_config.get('hostname'):
+        raise ValueError("Missing 'hostname' in [ssh] configuration")
+    if not ssh_config.get('username'):
+        raise ValueError("Missing 'username' in [ssh] configuration")
 
-# Get timeout from config, default to 5.0 seconds (same as HTTP API)
-COMMAND_TIMEOUT = int(float(config.get('scale_api', {}).get('timeout', 5.0)))
+    key_path = ssh_config.get('key_path') or None
+    if key_path:
+        key_path = os.path.expanduser(key_path)
+
+    return {
+        "host": ssh_config['hostname'],
+        "port": int(ssh_config.get('port', 22)),
+        "username": ssh_config['username'],
+        "password": ssh_config.get('password') or None,
+        "key_filename": key_path,
+        # Same default timeout as the HTTP API
+        "command_timeout": int(float(config.get('scale_api', {}).get('timeout', 5.0))),
+    }
 
 
 @mcp.tool()
@@ -59,13 +67,14 @@ def apply_policy(filesystem: str) -> str:
     """
     try:
         # Create SSH executor with configured timeout
+        ssh = _load_ssh_settings()
         executor = SSHCommandExecutor(
-            host=SSH_HOST,
-            username=SSH_USERNAME,
-            password=SSH_PASSWORD if not SSH_KEY_PATH else None,
-            key_filename=SSH_KEY_PATH,
-            port=SSH_PORT,
-            command_timeout=COMMAND_TIMEOUT
+            host=ssh["host"],
+            username=ssh["username"],
+            password=ssh["password"] if not ssh["key_filename"] else None,
+            key_filename=ssh["key_filename"],
+            port=ssh["port"],
+            command_timeout=ssh["command_timeout"]
         )
         
         # Execute mmapplypolicy directly without extracting policy to file
