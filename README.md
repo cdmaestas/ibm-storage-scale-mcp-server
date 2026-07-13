@@ -50,7 +50,12 @@ Model Context Protocol (MCP) server for interacting with IBM Storage Scale.
    [authorization]
    username = your-username
    password = your-password
-   allow_insecure = true
+   # true disables TLS certificate verification (self-signed cluster certs)
+   allow_insecure = false
+   # mTLS alternative to username/password (see below):
+   # client_cert = /path/to/client-cert.pem
+   # client_key = /path/to/client-key.pem
+   # ca_cert = /path/to/ca-bundle.pem
    
    [domain]
    domain = your-domain
@@ -273,6 +278,24 @@ Follow the [setup instructions](https://github.com/modelcontextprotocol/inspecto
 ## Using with Agents
 
 For a higher-level conversational interface, consider using the [IBM Storage Scale Agents](https://github.com/IBM/ibm-storage-scale-agents) which are built on top of this MCP server. The agents provide an intuitive way to manage IBM Storage Scale operations through natural language interactions.
+
+## Development
+
+Install the project with its dev dependency group and run the checks that CI
+enforces (lint plus the endpoint-contract test suite):
+
+```bash
+uv sync --all-groups
+uv run ruff check src tests
+uv run pytest
+```
+
+The tests need no cluster and no config file: every REST wrapper is exercised
+against a mocked cluster and asserted to produce the documented HTTP method
+and path (see `tests/contracts.py`). If you add or change an endpoint, update
+the contract table in the same change and verify it against the
+[IBM Storage Scale native REST API reference](https://www.ibm.com/docs/en/storage-scale/6.0.1?topic=reference-storage-scale-native-rest-api-endpoints),
+and keep the README tool list in sync.
 
 ## Reporting Issues and Feedback
 
