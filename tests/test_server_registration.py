@@ -42,7 +42,7 @@ SUB_SERVERS = [
     xcp, nodes_health, filesystems_health, cli_policies,
 ]
 
-EXPECTED_TOOL_COUNT = 151
+EXPECTED_TOOL_COUNT = 152
 
 
 async def _mounted_tools():

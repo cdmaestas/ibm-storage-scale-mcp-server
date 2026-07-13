@@ -7,7 +7,10 @@ timeout = 5.0
 [authorization]
 username = your-username
 password = your-password
-allow_insecure = true
+# Set to true only for clusters with self-signed certificates; it disables
+# TLS certificate verification. Every value in this file can also be
+# provided via SCALE_API_* environment variables (see README).
+allow_insecure = false
 
 [domain]
 domain = your-domain

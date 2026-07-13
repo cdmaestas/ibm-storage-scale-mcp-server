@@ -1,9 +1,11 @@
 """IBM Storage Scale Operations endpoints.
 
 Operations endpoints for tracking and managing long-running operations (LRO),
-following the 6.0.1 native REST API.
+following the 6.0.1 native REST API, plus a client-side polling helper.
 """
 
+import asyncio
+import time
 from typing import Optional, Any, Dict
 from scale_mcp_server.utils.client import StorageScaleClient, StorageScaleAPIError
 
@@ -143,6 +145,41 @@ async def cancel_operation_api(
         raise StorageScaleAPIError(
             f"Failed to cancel operation '{operation_id}': {str(e)}"
         ) from e
+
+
+async def wait_for_operation_api(
+    operation_id: str,
+    poll_interval: float = 2.0,
+    timeout: float = 120.0,
+    domain: Optional[str] = None,
+) -> Any:
+    """Poll an LRO until it reports done, or the timeout elapses.
+
+    This is a client-side convenience: the native REST API has no blocking
+    wait endpoint, so this repeatedly issues GET /operations/{id}.
+
+    Args:
+        operation_id: Operation ID of the LRO
+        poll_interval: Seconds to sleep between polls
+        timeout: Maximum seconds to wait before raising
+        domain: Domain to be authorized against (default 'StorageScaleDomain')
+
+    Returns:
+        The final operation resource (with done == true)
+
+    Raises:
+        StorageScaleAPIError: If a poll fails or the timeout elapses
+    """
+    deadline = time.monotonic() + timeout
+    while True:
+        operation = await get_operation_api(operation_id, domain=domain)
+        if isinstance(operation, dict) and operation.get("done"):
+            return operation
+        if time.monotonic() >= deadline:
+            raise StorageScaleAPIError(
+                f"Timed out after {timeout}s waiting for operation '{operation_id}'"
+            )
+        await asyncio.sleep(poll_interval)
 
 
 async def delete_operation_api(
