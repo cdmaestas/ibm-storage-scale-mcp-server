@@ -25,6 +25,12 @@ RUN uv sync --no-dev
 USER 1001
 EXPOSE 8000
 
+# Cluster connection settings can be supplied without baking a config file
+# into the image, via SCALE_API_* environment variables (see README):
+# docker run -e SCALE_API_HOSTNAME=... -e SCALE_API_USERNAME=... \
+#   -e SCALE_API_PASSWORD=... scale-mcp-server
+# Alternatively mount a config file: -v ./scale_config.ini:/app/config/scale_config.ini
+#
 # To add filesystem paths, override CMD when running:
 # docker run -v /host/path:/container/path scale-mcp-server \
 #   --transport http --host 0.0.0.0 --port 8000 --filesystem-paths /container/path
