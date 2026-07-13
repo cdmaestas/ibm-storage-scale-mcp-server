@@ -43,8 +43,9 @@ def load_settings(refresh: bool = False) -> Dict[str, Any]:
 
     The config file is optional; every value can come from (or be overridden
     by) SCALE_API_HOSTNAME, SCALE_API_V2_PORT, SCALE_API_V3_PORT,
-    SCALE_API_TIMEOUT, SCALE_API_USERNAME, SCALE_API_PASSWORD, and
-    SCALE_API_ALLOW_INSECURE.
+    SCALE_API_TIMEOUT, SCALE_API_USERNAME, SCALE_API_PASSWORD,
+    SCALE_API_ALLOW_INSECURE, SCALE_API_CLIENT_CERT, SCALE_API_CLIENT_KEY,
+    and SCALE_API_CA_CERT.
     """
     global _settings_cache
     if _settings_cache is not None and not refresh:
@@ -65,7 +66,21 @@ def load_settings(refresh: bool = False) -> Dict[str, Any]:
         "allow_insecure": _as_bool(
             env.get("SCALE_API_ALLOW_INSECURE", auth.get("allow_insecure", False))
         ),
+        # mTLS: PEM client certificate (and separate key, if not bundled into
+        # the cert file) presented to the cluster, plus an optional CA bundle
+        # used to verify the server certificate.
+        "client_cert": env.get("SCALE_API_CLIENT_CERT", auth.get("client_cert"))
+        or None,
+        "client_key": env.get("SCALE_API_CLIENT_KEY", auth.get("client_key")) or None,
+        "ca_cert": env.get("SCALE_API_CA_CERT", auth.get("ca_cert")) or None,
     }
+    for key in ("client_cert", "client_key", "ca_cert"):
+        if settings[key]:
+            settings[key] = os.path.expanduser(settings[key])
+            if not Path(settings[key]).is_file():
+                raise FileNotFoundError(
+                    f"{key} file '{settings[key]}' does not exist"
+                )
     _settings_cache = settings
     return settings
 
@@ -113,7 +128,27 @@ class StorageScaleClient:
         self.base_url = (base_url or f"https://{settings['hostname']}:{port}").rstrip("/")
         self.username = username or settings["username"]
         self.password = password or settings["password"]
-        verify = verify_ssl if verify_ssl is not None else not settings["allow_insecure"]
+
+        client_cert = settings.get("client_cert")
+        client_key = settings.get("client_key")
+        self.cert = None
+        if client_cert:
+            self.cert = (client_cert, client_key) if client_key else client_cert
+
+        # With a client certificate configured and no password, identity comes
+        # from the certificate alone; do not send a basic-auth header.
+        password_configured = bool(password or settings["password"])
+        if self.cert and not password_configured:
+            self.auth = None
+        else:
+            self.auth = (self.username, self.password)
+
+        if verify_ssl is not None:
+            verify = verify_ssl
+        elif settings["allow_insecure"]:
+            verify = False
+        else:
+            verify = settings.get("ca_cert") or True
         timeout_val = timeout or settings["timeout"]
 
         has_overrides = any(
@@ -127,15 +162,16 @@ class StorageScaleClient:
 
         logger.debug(f"Initialized StorageScaleClient for {self.base_url}")
 
-    def _new_session(self, verify: bool, timeout_val: float) -> httpx.AsyncClient:
+    def _new_session(self, verify, timeout_val: float) -> httpx.AsyncClient:
         return httpx.AsyncClient(
             base_url=self.base_url,
-            auth=(self.username, self.password),
+            auth=self.auth,
+            cert=self.cert,
             timeout=httpx.Timeout(timeout=timeout_val),
             verify=verify,
         )
 
-    def _shared_session(self, verify: bool, timeout_val: float) -> httpx.AsyncClient:
+    def _shared_session(self, verify, timeout_val: float) -> httpx.AsyncClient:
         try:
             loop = asyncio.get_running_loop()
         except RuntimeError:

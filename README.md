@@ -79,9 +79,18 @@ Model Context Protocol (MCP) server for interacting with IBM Storage Scale.
    | `SCALE_API_TIMEOUT` | `scale_api.timeout` |
    | `SCALE_API_USERNAME` / `SCALE_API_PASSWORD` | `authorization.username` / `password` |
    | `SCALE_API_ALLOW_INSECURE` | `authorization.allow_insecure` |
+   | `SCALE_API_CLIENT_CERT` / `SCALE_API_CLIENT_KEY` | `authorization.client_cert` / `client_key` |
+   | `SCALE_API_CA_CERT` | `authorization.ca_cert` |
 
    With environment variables set, the `config/scale_config.ini` file is
    optional for the REST API tools.
+
+   **mTLS client-certificate authentication:** set `client_cert` (and
+   `client_key` if the private key is not bundled into the cert file) to
+   authenticate to the native REST API with a certificate instead of
+   username/password. When a client certificate is configured and `password`
+   is empty, no basic-auth header is sent. `ca_cert` points TLS verification
+   at your cluster's CA bundle instead of the system trust store.
 
 3. **Start the server using uv or python**:
    ```bash
