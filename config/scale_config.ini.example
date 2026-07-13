@@ -11,6 +11,14 @@ password = your-password
 # TLS certificate verification. Every value in this file can also be
 # provided via SCALE_API_* environment variables (see README).
 allow_insecure = false
+# mTLS client-certificate authentication (alternative to username/password):
+# PEM certificate presented to the cluster, its private key (omit client_key
+# if the key is bundled in the cert file), and an optional CA bundle used to
+# verify the server certificate. When a client cert is configured and
+# password is empty, no basic-auth header is sent.
+# client_cert = /path/to/client-cert.pem
+# client_key = /path/to/client-key.pem
+# ca_cert = /path/to/ca-bundle.pem
 
 [domain]
 domain = your-domain

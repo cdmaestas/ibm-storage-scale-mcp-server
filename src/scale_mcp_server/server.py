@@ -1,4 +1,5 @@
 import argparse
+from importlib.metadata import PackageNotFoundError, version as package_version
 from fastmcp import FastMCP
 from pathlib import Path
 from scale_mcp_server.utils.read_config import read_config, setup_logging
@@ -36,6 +37,14 @@ from scale_mcp_server.tools.v2 import (
     nodes_health,
     filesystems_health,
 )
+
+
+def _server_version() -> str:
+    """Version from the installed package metadata (single source: pyproject)."""
+    try:
+        return package_version("scale-mcp-server")
+    except PackageNotFoundError:
+        return "0.0.0+uninstalled"
 
 
 def main():
@@ -110,7 +119,7 @@ Examples:
     setup_logging(config_data)
 
     # Initialize MCP server
-    mcp = FastMCP(name="scale-mcp-server", version="1.0.0")
+    mcp = FastMCP(name="scale-mcp-server", version=_server_version())
 
     # Mounting sub-servers
     mcp.mount(afm.mcp)
