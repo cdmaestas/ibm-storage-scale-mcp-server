@@ -90,8 +90,8 @@ Examples:
         "--log-level",
         type=str,
         choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
-        default="DEBUG",
-        help="Log level for the MCP server (default: DEBUG).",
+        default="INFO",
+        help="Log level for the MCP server (default: INFO).",
     )
 
     parser.add_argument(

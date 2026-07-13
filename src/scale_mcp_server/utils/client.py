@@ -1,20 +1,102 @@
-import httpx
-from typing import Optional, Dict, Any
+"""HTTP client for the IBM Storage Scale REST APIs.
+
+Settings are read once (config file overlaid with SCALE_API_* environment
+variables) and connections are pooled in a shared httpx.AsyncClient per event
+loop, instead of re-reading the config and opening a new TLS connection for
+every request.
+"""
+
+import asyncio
+import os
+import weakref
 from pathlib import Path
+from typing import Any, Dict, Optional
+
+import httpx
 from fastmcp.utilities.logging import get_logger
+
 from scale_mcp_server.utils.read_config import read_config
 
 logger = get_logger(__name__)
 
+_CONFIG_PATH = (
+    Path(__file__).parent.parent.parent.parent / "config" / "scale_config.ini"
+)
+
+_settings_cache: Optional[Dict[str, Any]] = None
+
+# One shared AsyncClient per (event loop, base URL); entries disappear with
+# their loop so a dead loop's pooled connections are never reused.
+_shared_clients: "weakref.WeakKeyDictionary[asyncio.AbstractEventLoop, Dict[str, httpx.AsyncClient]]" = (
+    weakref.WeakKeyDictionary()
+)
+
+
+def _as_bool(value: Any) -> bool:
+    if isinstance(value, bool):
+        return value
+    return str(value).strip().lower() in ("1", "true", "yes", "on")
+
+
+def load_settings(refresh: bool = False) -> Dict[str, Any]:
+    """Resolve connection settings once and cache them.
+
+    The config file is optional; every value can come from (or be overridden
+    by) SCALE_API_HOSTNAME, SCALE_API_V2_PORT, SCALE_API_V3_PORT,
+    SCALE_API_TIMEOUT, SCALE_API_USERNAME, SCALE_API_PASSWORD, and
+    SCALE_API_ALLOW_INSECURE.
+    """
+    global _settings_cache
+    if _settings_cache is not None and not refresh:
+        return _settings_cache
+
+    config = read_config(config_path=_CONFIG_PATH) if _CONFIG_PATH.is_file() else {}
+    api = dict(config.get("scale_api", {}))
+    auth = dict(config.get("authorization", {}))
+    env = os.environ
+
+    settings = {
+        "hostname": env.get("SCALE_API_HOSTNAME", api.get("hostname", "localhost")),
+        "v2_port": int(env.get("SCALE_API_V2_PORT", api.get("v2_port", 443))),
+        "v3_port": int(env.get("SCALE_API_V3_PORT", api.get("v3_port", 46443))),
+        "timeout": float(env.get("SCALE_API_TIMEOUT", api.get("timeout", 5.0))),
+        "username": env.get("SCALE_API_USERNAME", auth.get("username", "admin")),
+        "password": env.get("SCALE_API_PASSWORD", auth.get("password", "")),
+        "allow_insecure": _as_bool(
+            env.get("SCALE_API_ALLOW_INSECURE", auth.get("allow_insecure", False))
+        ),
+    }
+    _settings_cache = settings
+    return settings
+
 
 class StorageScaleAPIError(Exception):
-    """Exception raised for Storage Scale API errors."""
+    """Exception raised for Storage Scale API errors.
 
-    pass
+    Attributes:
+        status_code: HTTP status code when the server responded, else None
+        details: Parsed JSON error body (or raw text) when available
+    """
+
+    def __init__(
+        self,
+        message: str,
+        status_code: Optional[int] = None,
+        details: Any = None,
+    ):
+        super().__init__(message)
+        self.status_code = status_code
+        self.details = details
 
 
 class StorageScaleClient:
-    """IBM Storage Scale REST API Client."""
+    """IBM Storage Scale REST API client.
+
+    Used as an async context manager. When constructed without overrides it
+    borrows a shared, connection-pooled httpx.AsyncClient for the current
+    event loop; explicit overrides get a private client that is closed on
+    exit.
+    """
 
     def __init__(
         self,
@@ -25,148 +107,107 @@ class StorageScaleClient:
         timeout: Optional[float] = None,
         api_version: Optional[str] = None,
     ):
-        config_path = (
-            Path(__file__).parent.parent.parent.parent / "config" / "scale_config.ini"
-        )
-        config = read_config(config_path=config_path)
+        settings = load_settings()
+        port = settings["v2_port"] if api_version == "v2" else settings["v3_port"]
 
-        api_config = config.get("scale_api", {})
-        hostname = api_config.get("hostname", "localhost")
-        if api_version == "v2":
-            port = api_config.get("v2_port", 443)
+        self.base_url = (base_url or f"https://{settings['hostname']}:{port}").rstrip("/")
+        self.username = username or settings["username"]
+        self.password = password or settings["password"]
+        verify = verify_ssl if verify_ssl is not None else not settings["allow_insecure"]
+        timeout_val = timeout or settings["timeout"]
+
+        has_overrides = any(
+            v is not None for v in (base_url, username, password, verify_ssl, timeout)
+        )
+        self._owns_session = has_overrides
+        if has_overrides:
+            self.session = self._new_session(verify, timeout_val)
         else:
-            port = api_config.get("v3_port", 46443)
-        config_base_url = f"https://{hostname}:{port}"
+            self.session = self._shared_session(verify, timeout_val)
 
-        auth_config = config.get("authorization", "")
-        config_username = auth_config.get("username", "")
-        config_password = auth_config.get("password", "")
+        logger.debug(f"Initialized StorageScaleClient for {self.base_url}")
 
-        # Override if provided via api
-        self.base_url = (base_url or config_base_url).rstrip("/")
-        self.username = username or config_username or "admin"
-        self.password = password or config_password or ""
-        verify = (
-            verify_ssl
-            if verify_ssl is not None
-            else not auth_config.get("allow_insecure", False)
-        )
-        timeout_val = timeout or float(api_config.get("timeout", 5.0))
-
-        self.session = httpx.AsyncClient(
+    def _new_session(self, verify: bool, timeout_val: float) -> httpx.AsyncClient:
+        return httpx.AsyncClient(
             base_url=self.base_url,
             auth=(self.username, self.password),
             timeout=httpx.Timeout(timeout=timeout_val),
             verify=verify,
         )
 
-        logger.debug(f"Initialized StorageScaleClient for {self.base_url}")
+    def _shared_session(self, verify: bool, timeout_val: float) -> httpx.AsyncClient:
+        try:
+            loop = asyncio.get_running_loop()
+        except RuntimeError:
+            # No running loop (e.g. constructed synchronously); fall back to a
+            # private client.
+            self._owns_session = True
+            return self._new_session(verify, timeout_val)
 
-    async def get(self, endpoint: str, **kwargs) -> Dict[str, Any]:
+        loop_clients = _shared_clients.setdefault(loop, {})
+        client = loop_clients.get(self.base_url)
+        if client is None or client.is_closed:
+            client = self._new_session(verify, timeout_val)
+            loop_clients[self.base_url] = client
+        return client
+
+    async def _request(self, method: str, endpoint: str, **kwargs) -> Any:
+        """Execute a request and return the parsed JSON body."""
+        try:
+            logger.debug(f"{method} {endpoint}")
+            response = await self.session.request(method, endpoint, **kwargs)
+            response.raise_for_status()
+            logger.debug(f"{method} {endpoint} - Status: {response.status_code}")
+            if response.status_code == 204 or not response.content:
+                return {}
+            return response.json()
+        except httpx.HTTPStatusError as e:
+            status = e.response.status_code
+            try:
+                details = e.response.json()
+            except ValueError:
+                details = e.response.text
+            message = None
+            if isinstance(details, dict):
+                message = details.get("message") or (details.get("error") or {}).get(
+                    "message"
+                )
+            logger.error(f"{method} {endpoint} failed with HTTP {status}: {details}")
+            raise StorageScaleAPIError(
+                f"API request failed with HTTP {status}"
+                + (f": {message}" if message else ""),
+                status_code=status,
+                details=details,
+            ) from e
+        except httpx.HTTPError as e:
+            logger.error(f"{method} {endpoint} failed: {e}")
+            raise StorageScaleAPIError(f"API request failed: {e}") from e
+
+    async def get(self, endpoint: str, **kwargs) -> Any:
         """Execute GET request."""
-        try:
-            logger.debug(f"GET {endpoint}")
-            response = await self.session.get(endpoint, **kwargs)
-            response.raise_for_status()
-            logger.debug(f"GET {endpoint} - Status: {response.status_code}")
-            return response.json()
-        except httpx.HTTPStatusError as e:
-            logger.error(f"GET {endpoint} failed: {e}")
-            try:
-                error_body = e.response.text
-                logger.error(f"Response body: {error_body}")
-            except Exception:
-                pass
-            raise StorageScaleAPIError(f"API request failed: {e}")
-        except httpx.HTTPError as e:
-            logger.error(f"GET {endpoint} failed: {e}")
-            raise StorageScaleAPIError(f"API request failed: {e}")
+        return await self._request("GET", endpoint, **kwargs)
 
-    async def post(self, endpoint: str, **kwargs) -> Dict[str, Any]:
+    async def post(self, endpoint: str, **kwargs) -> Any:
         """Execute POST request."""
-        try:
-            logger.debug(f"POST {endpoint}")
-            logger.debug(f"POST payload: {kwargs.get('json', {})}")
-            response = await self.session.post(endpoint, **kwargs)
-            response.raise_for_status()
-            logger.debug(f"POST {endpoint} - Status: {response.status_code}")
-            return response.json()
-        except httpx.HTTPStatusError as e:
-            logger.error(f"POST {endpoint} failed: {e}")
-            try:
-                error_body = e.response.text
-                logger.error(f"Response body: {error_body}")
-            except Exception:
-                pass
-            raise StorageScaleAPIError(f"API request failed: {e}")
-        except httpx.HTTPError as e:
-            logger.error(f"POST {endpoint} failed: {e}")
-            raise StorageScaleAPIError(f"API request failed: {e}")
+        return await self._request("POST", endpoint, **kwargs)
 
-    async def put(self, endpoint: str, **kwargs) -> Dict[str, Any]:
+    async def put(self, endpoint: str, **kwargs) -> Any:
         """Execute PUT request."""
-        try:
-            logger.debug(f"PUT {endpoint}")
-            response = await self.session.put(endpoint, **kwargs)
-            response.raise_for_status()
-            logger.debug(f"PUT {endpoint} - Status: {response.status_code}")
-            return response.json()
-        except httpx.HTTPStatusError as e:
-            logger.error(f"PUT {endpoint} failed: {e}")
-            try:
-                error_body = e.response.text
-                logger.error(f"Response body: {error_body}")
-            except Exception:
-                pass
-            raise StorageScaleAPIError(f"API request failed: {e}")
-        except httpx.HTTPError as e:
-            logger.error(f"PUT {endpoint} failed: {e}")
-            raise StorageScaleAPIError(f"API request failed: {e}")
+        return await self._request("PUT", endpoint, **kwargs)
 
-    async def patch(self, endpoint: str, **kwargs) -> Dict[str, Any]:
+    async def patch(self, endpoint: str, **kwargs) -> Any:
         """Execute PATCH request."""
-        try:
-            logger.debug(f"PATCH {endpoint}")
-            response = await self.session.patch(endpoint, **kwargs)
-            response.raise_for_status()
-            logger.debug(f"PATCH {endpoint} - Status: {response.status_code}")
-            return response.json()
-        except httpx.HTTPStatusError as e:
-            logger.error(f"PATCH {endpoint} failed: {e}")
-            try:
-                error_body = e.response.text
-                logger.error(f"Response body: {error_body}")
-            except Exception:
-                pass
-            raise StorageScaleAPIError(f"API request failed: {e}")
-        except httpx.HTTPError as e:
-            logger.error(f"PATCH {endpoint} failed: {e}")
-            raise StorageScaleAPIError(f"API request failed: {e}")
+        return await self._request("PATCH", endpoint, **kwargs)
 
-    async def delete(self, endpoint: str, **kwargs) -> Dict[str, Any]:
+    async def delete(self, endpoint: str, **kwargs) -> Any:
         """Execute DELETE request."""
-        try:
-            logger.debug(f"DELETE {endpoint}")
-            response = await self.session.delete(endpoint, **kwargs)
-            response.raise_for_status()
-            logger.debug(f"DELETE {endpoint} - Status: {response.status_code}")
-            return response.json()
-        except httpx.HTTPStatusError as e:
-            logger.error(f"DELETE {endpoint} failed: {e}")
-            try:
-                error_body = e.response.text
-                logger.error(f"Response body: {error_body}")
-            except Exception:
-                pass
-            raise StorageScaleAPIError(f"API request failed: {e}")
-        except httpx.HTTPError as e:
-            logger.error(f"DELETE {endpoint} failed: {e}")
-            raise StorageScaleAPIError(f"API request failed: {e}")
+        return await self._request("DELETE", endpoint, **kwargs)
 
     async def __aenter__(self):
         """Async context manager entry."""
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
-        """Async context manager exit."""
-        await self.session.aclose()
+        """Async context manager exit; only private clients are closed."""
+        if self._owns_session:
+            await self.session.aclose()

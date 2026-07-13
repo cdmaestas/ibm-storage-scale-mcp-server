@@ -68,6 +68,21 @@ Model Context Protocol (MCP) server for interacting with IBM Storage Scale.
 
    **Note:** The `[ssh]` section is required for CLI-based tools that execute commands directly on Scale nodes (such as policy operations). You can use either password or SSH key authentication (precedence over password authentication).
 
+   **Environment variable overrides:** every `[scale_api]` and
+   `[authorization]` value can be supplied (or overridden) via environment
+   variables, so containers and CI never need credentials on disk:
+
+   | Variable | Overrides |
+   |---|---|
+   | `SCALE_API_HOSTNAME` | `scale_api.hostname` |
+   | `SCALE_API_V2_PORT` / `SCALE_API_V3_PORT` | `scale_api.v2_port` / `v3_port` |
+   | `SCALE_API_TIMEOUT` | `scale_api.timeout` |
+   | `SCALE_API_USERNAME` / `SCALE_API_PASSWORD` | `authorization.username` / `password` |
+   | `SCALE_API_ALLOW_INSECURE` | `authorization.allow_insecure` |
+
+   With environment variables set, the `config/scale_config.ini` file is
+   optional for the REST API tools.
+
 3. **Start the server using uv or python**:
    ```bash
    # Using uv (default: HTTP transport on localhost:8000)
@@ -116,7 +131,7 @@ scale-mcp-server --transport http --filesystem-paths /path/to/dir1 /path/to/dir2
 
 The MCP server exposes the complete IBM Storage Scale 6.0.1 native REST API
 (`/scalemgmt/v3`, all 144 documented endpoints) plus v2 health monitoring and
-CLI-based tools — 151 tools in total.
+CLI-based tools — 152 tools in total.
 
 ### Native REST API (v3)
 
@@ -171,6 +186,7 @@ CLI-based tools — 151 tools in total.
 - **Operations (LRO)**: Track long-running operations returned by async requests
   - `list_operations`, `get_operation`, `get_operation_output`,
     `cancel_operation`, `delete_operation`
+  - `wait_for_operation`: client-side polling until an LRO completes
 - **Policies**: `get_policy`, `update_policy` — the file system policy
   (policy runs are CLI-based; see `apply_policy` below)
 - **Quotas**

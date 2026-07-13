@@ -11,6 +11,7 @@ from scale_mcp_server.api.v3.operations import (
     get_operation_output_api,
     cancel_operation_api,
     delete_operation_api,
+    wait_for_operation_api,
 )
 
 # Create the operations MCP server
@@ -102,6 +103,35 @@ async def cancel_operation(
         return await cancel_operation_api(operation_id=operation_id, domain=domain)
     except Exception as e:
         await ctx.error(f"Failed to cancel operation {operation_id}: {str(e)}")
+        raise
+
+
+@mcp.tool()
+async def wait_for_operation(
+    ctx: Context,
+    operation_id: str,
+    poll_interval: float = 2.0,
+    timeout: float = 120.0,
+    domain: Optional[str] = None,
+) -> Any:
+    """Poll an LRO until it completes (done == true) or the timeout elapses.
+
+    Args:
+        operation_id: Operation ID of the LRO
+        poll_interval: Seconds to sleep between polls
+        timeout: Maximum seconds to wait before failing
+        domain: Domain to be authorized against (default 'StorageScaleDomain')
+    """
+    await ctx.info(f"Tool called: wait_for_operation with operation_id={operation_id}")
+    try:
+        return await wait_for_operation_api(
+            operation_id=operation_id,
+            poll_interval=poll_interval,
+            timeout=timeout,
+            domain=domain,
+        )
+    except Exception as e:
+        await ctx.error(f"Failed waiting for operation {operation_id}: {str(e)}")
         raise
 
 
