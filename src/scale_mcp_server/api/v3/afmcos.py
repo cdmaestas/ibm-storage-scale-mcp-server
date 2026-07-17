@@ -4,13 +4,14 @@ AFMCOS endpoints for managing AFM-to-COS relationships and object transfers,
 following the 6.0.1 native REST API.
 """
 
-from typing import Optional, Any, Dict
-from scale_mcp_server.utils.client import StorageScaleClient, StorageScaleAPIError
+from typing import Any
+
+from scale_mcp_server.utils.client import StorageScaleAPIError, StorageScaleClient
 
 
-def _domain_headers(domain: Optional[str]) -> Dict[str, str]:
+def _domain_headers(domain: str | None) -> dict[str, str]:
     """Build request headers for the optional X-StorageScaleDomain."""
-    headers: Dict[str, str] = {}
+    headers: dict[str, str] = {}
     if domain:
         headers["X-StorageScaleDomain"] = domain
     return headers
@@ -18,10 +19,10 @@ def _domain_headers(domain: Optional[str]) -> Dict[str, str]:
 
 async def get_cos_keys_api(
     bucket_name: str,
-    bucket_region: Optional[str] = None,
-    bucket_exportmap: Optional[str] = None,
-    bucket_report: Optional[str] = None,
-    domain: Optional[str] = None,
+    bucket_region: str | None = None,
+    bucket_exportmap: str | None = None,
+    bucket_report: str | None = None,
+    domain: str | None = None,
 ) -> Any:
     """Retrieve keys for the given bucket for an AFM fileset.
 
@@ -38,7 +39,7 @@ async def get_cos_keys_api(
     Raises:
         StorageScaleAPIError: If API call fails
     """
-    params: Dict[str, Any] = {}
+    params: dict[str, Any] = {}
     if bucket_region is not None:
         params["bucket_region"] = bucket_region
     if bucket_exportmap is not None:
@@ -54,15 +55,13 @@ async def get_cos_keys_api(
                 headers=_domain_headers(domain),
             )
     except StorageScaleAPIError as e:
-        raise StorageScaleAPIError(
-            f"Failed to get COS keys for bucket '{bucket_name}': {str(e)}"
-        ) from e
+        raise StorageScaleAPIError(f"Failed to get COS keys for bucket '{bucket_name}': {str(e)}") from e
 
 
 async def set_cos_keys_api(
     bucket_name: str,
     bucket_coskeys: dict,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Set keys for the given bucket for an AFM fileset.
 
@@ -87,16 +86,14 @@ async def set_cos_keys_api(
                 headers=_domain_headers(domain),
             )
     except StorageScaleAPIError as e:
-        raise StorageScaleAPIError(
-            f"Failed to set COS keys for bucket '{bucket_name}': {str(e)}"
-        ) from e
+        raise StorageScaleAPIError(f"Failed to set COS keys for bucket '{bucket_name}': {str(e)}") from e
 
 
 async def delete_cos_keys_api(
     bucket_name: str,
-    bucket_region: Optional[str] = None,
-    bucket_exportmap: Optional[str] = None,
-    domain: Optional[str] = None,
+    bucket_region: str | None = None,
+    bucket_exportmap: str | None = None,
+    domain: str | None = None,
 ) -> Any:
     """Delete keys for the given bucket for an AFM fileset.
 
@@ -112,7 +109,7 @@ async def delete_cos_keys_api(
     Raises:
         StorageScaleAPIError: If API call fails
     """
-    params: Dict[str, Any] = {}
+    params: dict[str, Any] = {}
     if bucket_region is not None:
         params["bucket_region"] = bucket_region
     if bucket_exportmap is not None:
@@ -126,16 +123,14 @@ async def delete_cos_keys_api(
                 headers=_domain_headers(domain),
             )
     except StorageScaleAPIError as e:
-        raise StorageScaleAPIError(
-            f"Failed to delete COS keys for bucket '{bucket_name}': {str(e)}"
-        ) from e
+        raise StorageScaleAPIError(f"Failed to delete COS keys for bucket '{bucket_name}': {str(e)}") from e
 
 
 async def configure_afmcos_api(
     filesystem: str,
     fileset: str,
     fileset_config: dict,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Configure an AFM to cloud object storage relationship for a fileset.
 
@@ -169,7 +164,7 @@ async def delete_afmcos_objects_api(
     filesystem: str,
     fileset: str,
     delete_objects: dict,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Delete objects from cloud object storage for an AFM fileset.
 
@@ -203,7 +198,7 @@ async def download_afmcos_objects_api(
     filesystem: str,
     fileset: str,
     download_objects: dict,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Download objects from cloud object storage to the local AFM fileset cache.
 
@@ -237,7 +232,7 @@ async def evict_afmcos_objects_api(
     filesystem: str,
     fileset: str,
     evict_objects: dict,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Evict objects from the local cache of an AFM fileset.
 
@@ -271,7 +266,7 @@ async def reconcile_afmcos_api(
     filesystem: str,
     fileset: str,
     reconcile_objects: dict,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Reconcile objects between the local cache and cloud object storage.
 
@@ -305,7 +300,7 @@ async def upload_afmcos_objects_api(
     filesystem: str,
     fileset: str,
     upload_objects: dict,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Upload objects from the local AFM fileset to cloud object storage.
 

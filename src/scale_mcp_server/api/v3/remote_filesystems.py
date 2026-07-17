@@ -5,13 +5,14 @@ managing file systems owned by another cluster, following the 6.0.1 native
 REST API.
 """
 
-from typing import Optional, Any, Dict
-from scale_mcp_server.utils.client import StorageScaleClient, StorageScaleAPIError
+from typing import Any
+
+from scale_mcp_server.utils.client import StorageScaleAPIError, StorageScaleClient
 
 
-def _domain_headers(domain: Optional[str]) -> Dict[str, str]:
+def _domain_headers(domain: str | None) -> dict[str, str]:
     """Build request headers for the optional X-StorageScaleDomain."""
-    headers: Dict[str, str] = {}
+    headers: dict[str, str] = {}
     if domain:
         headers["X-StorageScaleDomain"] = domain
     return headers
@@ -19,7 +20,7 @@ def _domain_headers(domain: Optional[str]) -> Dict[str, str]:
 
 async def add_remote_filesystem_api(
     filesystem: dict,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Add a remote file system owned by another IBM Storage Scale cluster.
 
@@ -42,15 +43,13 @@ async def add_remote_filesystem_api(
             )
     except StorageScaleAPIError as e:
         name = filesystem.get("name", "unknown")
-        raise StorageScaleAPIError(
-            f"Failed to add remote filesystem '{name}': {str(e)}"
-        ) from e
+        raise StorageScaleAPIError(f"Failed to add remote filesystem '{name}': {str(e)}") from e
 
 
 async def update_remote_filesystem_api(
     filesystem: str,
     filesystem_data: dict,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Update the information associated with a remote file system.
 
@@ -73,15 +72,13 @@ async def update_remote_filesystem_api(
                 headers=_domain_headers(domain),
             )
     except StorageScaleAPIError as e:
-        raise StorageScaleAPIError(
-            f"Failed to update remote filesystem '{filesystem}': {str(e)}"
-        ) from e
+        raise StorageScaleAPIError(f"Failed to update remote filesystem '{filesystem}': {str(e)}") from e
 
 
 async def delete_remote_filesystem_api(
     filesystem: str,
-    permanently_damaged: Optional[bool] = None,
-    domain: Optional[str] = None,
+    permanently_damaged: bool | None = None,
+    domain: str | None = None,
 ) -> Any:
     """Delete a remote file system.
 
@@ -97,7 +94,7 @@ async def delete_remote_filesystem_api(
     Raises:
         StorageScaleAPIError: If API call fails
     """
-    params: Dict[str, Any] = {}
+    params: dict[str, Any] = {}
     if permanently_damaged is not None:
         params["permanently_damaged"] = permanently_damaged
 
@@ -109,6 +106,4 @@ async def delete_remote_filesystem_api(
                 headers=_domain_headers(domain),
             )
     except StorageScaleAPIError as e:
-        raise StorageScaleAPIError(
-            f"Failed to delete remote filesystem '{filesystem}': {str(e)}"
-        ) from e
+        raise StorageScaleAPIError(f"Failed to delete remote filesystem '{filesystem}': {str(e)}") from e

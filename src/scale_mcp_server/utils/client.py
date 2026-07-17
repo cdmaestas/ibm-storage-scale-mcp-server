@@ -10,7 +10,7 @@ import asyncio
 import os
 import weakref
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any
 
 import httpx
 from fastmcp.utilities.logging import get_logger
@@ -19,15 +19,13 @@ from scale_mcp_server.utils.read_config import read_config
 
 logger = get_logger(__name__)
 
-_CONFIG_PATH = (
-    Path(__file__).parent.parent.parent.parent / "config" / "scale_config.ini"
-)
+_CONFIG_PATH = Path(__file__).parent.parent.parent.parent / "config" / "scale_config.ini"
 
-_settings_cache: Optional[Dict[str, Any]] = None
+_settings_cache: dict[str, Any] | None = None
 
 # One shared AsyncClient per (event loop, base URL); entries disappear with
 # their loop so a dead loop's pooled connections are never reused.
-_shared_clients: "weakref.WeakKeyDictionary[asyncio.AbstractEventLoop, Dict[str, httpx.AsyncClient]]" = (
+_shared_clients: "weakref.WeakKeyDictionary[asyncio.AbstractEventLoop, dict[str, httpx.AsyncClient]]" = (
     weakref.WeakKeyDictionary()
 )
 
@@ -38,7 +36,7 @@ def _as_bool(value: Any) -> bool:
     return str(value).strip().lower() in ("1", "true", "yes", "on")
 
 
-def load_settings(refresh: bool = False) -> Dict[str, Any]:
+def load_settings(refresh: bool = False) -> dict[str, Any]:
     """Resolve connection settings once and cache them.
 
     The config file is optional; every value can come from (or be overridden
@@ -63,14 +61,11 @@ def load_settings(refresh: bool = False) -> Dict[str, Any]:
         "timeout": float(env.get("SCALE_API_TIMEOUT", api.get("timeout", 5.0))),
         "username": env.get("SCALE_API_USERNAME", auth.get("username", "admin")),
         "password": env.get("SCALE_API_PASSWORD", auth.get("password", "")),
-        "allow_insecure": _as_bool(
-            env.get("SCALE_API_ALLOW_INSECURE", auth.get("allow_insecure", False))
-        ),
+        "allow_insecure": _as_bool(env.get("SCALE_API_ALLOW_INSECURE", auth.get("allow_insecure", False))),
         # mTLS: PEM client certificate (and separate key, if not bundled into
         # the cert file) presented to the cluster, plus an optional CA bundle
         # used to verify the server certificate.
-        "client_cert": env.get("SCALE_API_CLIENT_CERT", auth.get("client_cert"))
-        or None,
+        "client_cert": env.get("SCALE_API_CLIENT_CERT", auth.get("client_cert")) or None,
         "client_key": env.get("SCALE_API_CLIENT_KEY", auth.get("client_key")) or None,
         "ca_cert": env.get("SCALE_API_CA_CERT", auth.get("ca_cert")) or None,
     }
@@ -78,9 +73,7 @@ def load_settings(refresh: bool = False) -> Dict[str, Any]:
         if settings[key]:
             settings[key] = os.path.expanduser(settings[key])
             if not Path(settings[key]).is_file():
-                raise FileNotFoundError(
-                    f"{key} file '{settings[key]}' does not exist"
-                )
+                raise FileNotFoundError(f"{key} file '{settings[key]}' does not exist")
     _settings_cache = settings
     return settings
 
@@ -96,7 +89,7 @@ class StorageScaleAPIError(Exception):
     def __init__(
         self,
         message: str,
-        status_code: Optional[int] = None,
+        status_code: int | None = None,
         details: Any = None,
     ):
         super().__init__(message)
@@ -115,12 +108,12 @@ class StorageScaleClient:
 
     def __init__(
         self,
-        base_url: Optional[str] = None,
-        username: Optional[str] = None,
-        password: Optional[str] = None,
-        verify_ssl: Optional[bool] = None,
-        timeout: Optional[float] = None,
-        api_version: Optional[str] = None,
+        base_url: str | None = None,
+        username: str | None = None,
+        password: str | None = None,
+        verify_ssl: bool | None = None,
+        timeout: float | None = None,
+        api_version: str | None = None,
     ):
         settings = load_settings()
         port = settings["v2_port"] if api_version == "v2" else settings["v3_port"]
@@ -151,9 +144,7 @@ class StorageScaleClient:
             verify = settings.get("ca_cert") or True
         timeout_val = timeout or settings["timeout"]
 
-        has_overrides = any(
-            v is not None for v in (base_url, username, password, verify_ssl, timeout)
-        )
+        has_overrides = any(v is not None for v in (base_url, username, password, verify_ssl, timeout))
         self._owns_session = has_overrides
         if has_overrides:
             self.session = self._new_session(verify, timeout_val)
@@ -205,13 +196,10 @@ class StorageScaleClient:
                 details = e.response.text
             message = None
             if isinstance(details, dict):
-                message = details.get("message") or (details.get("error") or {}).get(
-                    "message"
-                )
+                message = details.get("message") or (details.get("error") or {}).get("message")
             logger.error(f"{method} {endpoint} failed with HTTP {status}: {details}")
             raise StorageScaleAPIError(
-                f"API request failed with HTTP {status}"
-                + (f": {message}" if message else ""),
+                f"API request failed with HTTP {status}" + (f": {message}" if message else ""),
                 status_code=status,
                 details=details,
             ) from e

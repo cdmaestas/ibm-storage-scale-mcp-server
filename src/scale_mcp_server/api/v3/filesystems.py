@@ -4,22 +4,23 @@ File system endpoints, including mount state, rebalance/restripe, and
 directory operations, following the 6.0.1 native REST API.
 """
 
-from typing import Optional, Any, Dict
-from scale_mcp_server.utils.client import StorageScaleClient, StorageScaleAPIError
+from typing import Any
+
+from scale_mcp_server.utils.client import StorageScaleAPIError, StorageScaleClient
 
 
-def _domain_headers(domain: Optional[str]) -> Dict[str, str]:
+def _domain_headers(domain: str | None) -> dict[str, str]:
     """Build request headers for the optional X-StorageScaleDomain."""
-    headers: Dict[str, str] = {}
+    headers: dict[str, str] = {}
     if domain:
         headers["X-StorageScaleDomain"] = domain
     return headers
 
 
 async def list_filesystems_api(
-    page_size: Optional[int] = None,
-    page_token: Optional[str] = None,
-    domain: Optional[str] = None,
+    page_size: int | None = None,
+    page_token: str | None = None,
+    domain: str | None = None,
 ) -> Any:
     """List all filesystems registered in the cluster.
 
@@ -34,7 +35,7 @@ async def list_filesystems_api(
     Raises:
         StorageScaleAPIError: If API call fails
     """
-    params: Dict[str, Any] = {}
+    params: dict[str, Any] = {}
     if page_size is not None:
         params["page_size"] = page_size
     if page_token is not None:
@@ -53,7 +54,7 @@ async def list_filesystems_api(
 
 async def get_filesystem_api(
     filesystem: str,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Get detailed information about a specific filesystem.
 
@@ -74,14 +75,12 @@ async def get_filesystem_api(
                 headers=_domain_headers(domain),
             )
     except StorageScaleAPIError as e:
-        raise StorageScaleAPIError(
-            f"Failed to get filesystem '{filesystem}': {str(e)}"
-        ) from e
+        raise StorageScaleAPIError(f"Failed to get filesystem '{filesystem}': {str(e)}") from e
 
 
 async def create_filesystem_api(
     filesystem_data: dict,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Create a new filesystem.
 
@@ -104,15 +103,13 @@ async def create_filesystem_api(
             )
     except StorageScaleAPIError as e:
         fs_name = filesystem_data.get("name", "unknown")
-        raise StorageScaleAPIError(
-            f"Failed to create filesystem '{fs_name}': {str(e)}"
-        ) from e
+        raise StorageScaleAPIError(f"Failed to create filesystem '{fs_name}': {str(e)}") from e
 
 
 async def update_filesystem_api(
     filesystem: str,
     filesystem_data: dict,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Update the attributes of a filesystem.
 
@@ -138,15 +135,13 @@ async def update_filesystem_api(
                 headers=_domain_headers(domain),
             )
     except StorageScaleAPIError as e:
-        raise StorageScaleAPIError(
-            f"Failed to update filesystem '{filesystem}': {str(e)}"
-        ) from e
+        raise StorageScaleAPIError(f"Failed to update filesystem '{filesystem}': {str(e)}") from e
 
 
 async def delete_filesystem_api(
     name: str,
-    permanently_damaged: Optional[bool] = None,
-    domain: Optional[str] = None,
+    permanently_damaged: bool | None = None,
+    domain: str | None = None,
 ) -> Any:
     """Delete a filesystem.
 
@@ -162,7 +157,7 @@ async def delete_filesystem_api(
     Raises:
         StorageScaleAPIError: If API call fails
     """
-    params: Dict[str, Any] = {}
+    params: dict[str, Any] = {}
     if permanently_damaged is not None:
         params["permanently_damaged"] = permanently_damaged
 
@@ -174,15 +169,13 @@ async def delete_filesystem_api(
                 headers=_domain_headers(domain),
             )
     except StorageScaleAPIError as e:
-        raise StorageScaleAPIError(
-            f"Failed to delete filesystem '{name}': {str(e)}"
-        ) from e
+        raise StorageScaleAPIError(f"Failed to delete filesystem '{name}': {str(e)}") from e
 
 
 async def get_mount_status_api(
     filesystem: str,
-    cluster_name: Optional[str] = None,
-    domain: Optional[str] = None,
+    cluster_name: str | None = None,
+    domain: str | None = None,
 ) -> Any:
     """List the mount state of a filesystem.
 
@@ -199,7 +192,7 @@ async def get_mount_status_api(
     Raises:
         StorageScaleAPIError: If API call fails
     """
-    params: Dict[str, Any] = {}
+    params: dict[str, Any] = {}
     if cluster_name is not None:
         params["cluster_name"] = cluster_name
 
@@ -211,15 +204,13 @@ async def get_mount_status_api(
                 headers=_domain_headers(domain),
             )
     except StorageScaleAPIError as e:
-        raise StorageScaleAPIError(
-            f"Failed to get mount status for filesystem '{filesystem}': {str(e)}"
-        ) from e
+        raise StorageScaleAPIError(f"Failed to get mount status for filesystem '{filesystem}': {str(e)}") from e
 
 
 async def mount_filesystem_api(
     name: str,
-    mount_data: Optional[dict] = None,
-    domain: Optional[str] = None,
+    mount_data: dict | None = None,
+    domain: str | None = None,
 ) -> Any:
     """Mount a filesystem on one or more nodes.
 
@@ -246,15 +237,13 @@ async def mount_filesystem_api(
                 headers=_domain_headers(domain),
             )
     except StorageScaleAPIError as e:
-        raise StorageScaleAPIError(
-            f"Failed to mount filesystem '{name}': {str(e)}"
-        ) from e
+        raise StorageScaleAPIError(f"Failed to mount filesystem '{name}': {str(e)}") from e
 
 
 async def unmount_filesystem_api(
     name: str,
-    unmount_data: Optional[dict] = None,
-    domain: Optional[str] = None,
+    unmount_data: dict | None = None,
+    domain: str | None = None,
 ) -> Any:
     """Unmount a filesystem from one or more nodes.
 
@@ -281,14 +270,12 @@ async def unmount_filesystem_api(
                 headers=_domain_headers(domain),
             )
     except StorageScaleAPIError as e:
-        raise StorageScaleAPIError(
-            f"Failed to unmount filesystem '{name}': {str(e)}"
-        ) from e
+        raise StorageScaleAPIError(f"Failed to unmount filesystem '{name}': {str(e)}") from e
 
 
 async def mount_all_filesystems_api(
-    mount_data: Optional[dict] = None,
-    domain: Optional[str] = None,
+    mount_data: dict | None = None,
+    domain: str | None = None,
 ) -> Any:
     """Mount all existing filesystems.
 
@@ -315,8 +302,8 @@ async def mount_all_filesystems_api(
 
 
 async def unmount_all_filesystems_api(
-    unmount_data: Optional[dict] = None,
-    domain: Optional[str] = None,
+    unmount_data: dict | None = None,
+    domain: str | None = None,
 ) -> Any:
     """Unmount all filesystems on one or more nodes.
 
@@ -339,19 +326,17 @@ async def unmount_all_filesystems_api(
                 headers=_domain_headers(domain),
             )
     except StorageScaleAPIError as e:
-        raise StorageScaleAPIError(
-            f"Failed to unmount all filesystems: {str(e)}"
-        ) from e
+        raise StorageScaleAPIError(f"Failed to unmount all filesystems: {str(e)}") from e
 
 
 async def rebalance_filesystem_api(
     filesystem: str,
-    rebalance_strategy: Optional[str] = None,
-    metadata_only: Optional[bool] = None,
-    target_nodes: Optional[str] = None,
-    pit_continue_on_error: Optional[bool] = None,
-    qos_class: Optional[str] = None,
-    domain: Optional[str] = None,
+    rebalance_strategy: str | None = None,
+    metadata_only: bool | None = None,
+    target_nodes: str | None = None,
+    pit_continue_on_error: bool | None = None,
+    qos_class: str | None = None,
+    domain: str | None = None,
 ) -> Any:
     """Rebalance the filesystem by distributing file blocks evenly across disks.
 
@@ -371,7 +356,7 @@ async def rebalance_filesystem_api(
     Raises:
         StorageScaleAPIError: If API call fails
     """
-    params: Dict[str, Any] = {}
+    params: dict[str, Any] = {}
     if rebalance_strategy is not None:
         params["rebalance_strategy"] = rebalance_strategy
     if metadata_only is not None:
@@ -391,19 +376,17 @@ async def rebalance_filesystem_api(
                 headers=_domain_headers(domain),
             )
     except StorageScaleAPIError as e:
-        raise StorageScaleAPIError(
-            f"Failed to rebalance filesystem '{filesystem}': {str(e)}"
-        ) from e
+        raise StorageScaleAPIError(f"Failed to rebalance filesystem '{filesystem}': {str(e)}") from e
 
 
 async def restripe_filesystem_api(
     filesystem: str,
-    restripe_operation: Optional[str] = None,
-    metadata_only: Optional[bool] = None,
-    target_nodes: Optional[str] = None,
-    pit_continue_on_error: Optional[bool] = None,
-    qos_class: Optional[str] = None,
-    domain: Optional[str] = None,
+    restripe_operation: str | None = None,
+    metadata_only: bool | None = None,
+    target_nodes: str | None = None,
+    pit_continue_on_error: bool | None = None,
+    qos_class: str | None = None,
+    domain: str | None = None,
 ) -> Any:
     """Restripe the filesystem, restoring replication of all files.
 
@@ -425,7 +408,7 @@ async def restripe_filesystem_api(
     Raises:
         StorageScaleAPIError: If API call fails
     """
-    params: Dict[str, Any] = {}
+    params: dict[str, Any] = {}
     if restripe_operation is not None:
         params["restripe_operation"] = restripe_operation
     if metadata_only is not None:
@@ -445,17 +428,15 @@ async def restripe_filesystem_api(
                 headers=_domain_headers(domain),
             )
     except StorageScaleAPIError as e:
-        raise StorageScaleAPIError(
-            f"Failed to restripe filesystem '{filesystem}': {str(e)}"
-        ) from e
+        raise StorageScaleAPIError(f"Failed to restripe filesystem '{filesystem}': {str(e)}") from e
 
 
 async def list_directory_api(
     filesystem: str,
     dirpath: str,
-    page_size: Optional[int] = None,
-    page_token: Optional[str] = None,
-    domain: Optional[str] = None,
+    page_size: int | None = None,
+    page_token: str | None = None,
+    domain: str | None = None,
 ) -> Any:
     """Get information about the contents of a filesystem directory.
 
@@ -472,7 +453,7 @@ async def list_directory_api(
     Raises:
         StorageScaleAPIError: If API call fails
     """
-    params: Dict[str, Any] = {}
+    params: dict[str, Any] = {}
     if page_size is not None:
         params["page_size"] = page_size
     if page_token is not None:
@@ -494,7 +475,7 @@ async def list_directory_api(
 async def stat_directory_api(
     filesystem: str,
     dirpath: str,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Get detailed information (stat) of a filesystem directory.
 
@@ -524,8 +505,8 @@ async def stat_directory_api(
 async def create_directory_api(
     filesystem: str,
     dirpath: str,
-    directory_data: Optional[dict] = None,
-    domain: Optional[str] = None,
+    directory_data: dict | None = None,
+    domain: str | None = None,
 ) -> Any:
     """Create a filesystem directory.
 
@@ -557,8 +538,8 @@ async def create_directory_api(
 async def delete_directory_api(
     filesystem: str,
     dirpath: str,
-    force: Optional[bool] = None,
-    domain: Optional[str] = None,
+    force: bool | None = None,
+    domain: str | None = None,
 ) -> Any:
     """Delete a directory from a mounted filesystem.
 
@@ -577,7 +558,7 @@ async def delete_directory_api(
     Raises:
         StorageScaleAPIError: If API call fails
     """
-    params: Dict[str, Any] = {}
+    params: dict[str, Any] = {}
     if force is not None:
         params["force"] = force
 

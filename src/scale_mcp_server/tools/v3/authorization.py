@@ -4,17 +4,19 @@ Role-based access control (RBAC) tools: domains, permission checks, and the
 policy evaluation module.
 """
 
-from typing import Optional, Any
-from fastmcp import FastMCP, Context
+from typing import Any
+
+from fastmcp import Context, FastMCP
+
 from scale_mcp_server.api.v3.authorization import (
     can_i_api,
     can_i_impersonate_api,
-    list_rbac_domains_api,
     create_rbac_domain_api,
-    get_rbac_domain_api,
-    update_rbac_domain_api,
     delete_rbac_domain_api,
+    get_rbac_domain_api,
     get_rbac_module_api,
+    list_rbac_domains_api,
+    update_rbac_domain_api,
     update_rbac_module_api,
 )
 
@@ -27,7 +29,7 @@ async def can_i(
     ctx: Context,
     action: str,
     resource: str,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Check whether the current user may perform an action on a resource.
 
@@ -51,7 +53,7 @@ async def can_i_impersonate(
     action: str,
     resource: str,
     user: str,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Check whether a specified user may perform an action on a resource.
 
@@ -62,13 +64,9 @@ async def can_i_impersonate(
         user: User to test access for
         domain: Domain to be authorized against (default 'StorageScaleDomain')
     """
-    await ctx.info(
-        f"Tool called: can_i_impersonate with user={user}, action={action}, resource={resource}"
-    )
+    await ctx.info(f"Tool called: can_i_impersonate with user={user}, action={action}, resource={resource}")
     try:
-        return await can_i_impersonate_api(
-            action=action, resource=resource, user=user, domain=domain
-        )
+        return await can_i_impersonate_api(action=action, resource=resource, user=user, domain=domain)
     except Exception as e:
         await ctx.error(f"Failed impersonation check for {user}: {str(e)}")
         raise
@@ -77,9 +75,9 @@ async def can_i_impersonate(
 @mcp.tool()
 async def list_rbac_domains(
     ctx: Context,
-    page_size: Optional[int] = None,
-    page_token: Optional[str] = None,
-    domain: Optional[str] = None,
+    page_size: int | None = None,
+    page_token: str | None = None,
+    domain: str | None = None,
 ) -> Any:
     """List information about all RBAC domains.
 
@@ -90,9 +88,7 @@ async def list_rbac_domains(
     """
     await ctx.info("Tool called: list_rbac_domains")
     try:
-        return await list_rbac_domains_api(
-            page_size=page_size, page_token=page_token, domain=domain
-        )
+        return await list_rbac_domains_api(page_size=page_size, page_token=page_token, domain=domain)
     except Exception as e:
         await ctx.error(f"Failed to list RBAC domains: {str(e)}")
         raise
@@ -102,7 +98,7 @@ async def list_rbac_domains(
 async def create_rbac_domain(
     ctx: Context,
     domain_data: dict,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Create an RBAC domain.
 
@@ -122,7 +118,7 @@ async def create_rbac_domain(
 async def get_rbac_domain(
     ctx: Context,
     name: str,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Get information about a specific RBAC domain.
 
@@ -143,7 +139,7 @@ async def update_rbac_domain(
     ctx: Context,
     name: str,
     domain_data: dict,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Update an RBAC domain (permissions, memberships, resource groups).
 
@@ -154,9 +150,7 @@ async def update_rbac_domain(
     """
     await ctx.info(f"Tool called: update_rbac_domain with name={name}")
     try:
-        return await update_rbac_domain_api(
-            name=name, domain_data=domain_data, domain=domain
-        )
+        return await update_rbac_domain_api(name=name, domain_data=domain_data, domain=domain)
     except Exception as e:
         await ctx.error(f"Failed to update RBAC domain {name}: {str(e)}")
         raise
@@ -166,7 +160,7 @@ async def update_rbac_domain(
 async def delete_rbac_domain(
     ctx: Context,
     name: str,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Delete an RBAC domain.
 
@@ -185,7 +179,7 @@ async def delete_rbac_domain(
 @mcp.tool()
 async def get_rbac_module(
     ctx: Context,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Get the current RBAC policy evaluation rule set.
 
@@ -204,7 +198,7 @@ async def get_rbac_module(
 async def update_rbac_module(
     ctx: Context,
     module_data: dict,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Update the customer-defined RBAC policy rule set.
 

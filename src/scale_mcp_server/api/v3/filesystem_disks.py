@@ -4,13 +4,14 @@ File system disk endpoints for adding, deleting, and retrieving disks in a
 file system, following the 6.0.1 native REST API.
 """
 
-from typing import Optional, Any, Dict
-from scale_mcp_server.utils.client import StorageScaleClient, StorageScaleAPIError
+from typing import Any
+
+from scale_mcp_server.utils.client import StorageScaleAPIError, StorageScaleClient
 
 
-def _domain_headers(domain: Optional[str]) -> Dict[str, str]:
+def _domain_headers(domain: str | None) -> dict[str, str]:
     """Build request headers for the optional X-StorageScaleDomain."""
-    headers: Dict[str, str] = {}
+    headers: dict[str, str] = {}
     if domain:
         headers["X-StorageScaleDomain"] = domain
     return headers
@@ -18,9 +19,9 @@ def _domain_headers(domain: Optional[str]) -> Dict[str, str]:
 
 async def list_filesystem_disks_api(
     filesystem: str,
-    page_size: Optional[int] = None,
-    page_token: Optional[str] = None,
-    domain: Optional[str] = None,
+    page_size: int | None = None,
+    page_token: str | None = None,
+    domain: str | None = None,
 ) -> Any:
     """List all disks in a filesystem.
 
@@ -36,7 +37,7 @@ async def list_filesystem_disks_api(
     Raises:
         StorageScaleAPIError: If API call fails
     """
-    params: Dict[str, Any] = {}
+    params: dict[str, Any] = {}
     if page_size is not None:
         params["page_size"] = page_size
     if page_token is not None:
@@ -50,15 +51,13 @@ async def list_filesystem_disks_api(
                 headers=_domain_headers(domain),
             )
     except StorageScaleAPIError as e:
-        raise StorageScaleAPIError(
-            f"Failed to list disks for filesystem '{filesystem}': {str(e)}"
-        ) from e
+        raise StorageScaleAPIError(f"Failed to list disks for filesystem '{filesystem}': {str(e)}") from e
 
 
 async def get_filesystem_disk_api(
     filesystem: str,
     disk_name: str,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Get the current configuration and state of a disk in a filesystem.
 
@@ -80,17 +79,15 @@ async def get_filesystem_disk_api(
                 headers=_domain_headers(domain),
             )
     except StorageScaleAPIError as e:
-        raise StorageScaleAPIError(
-            f"Failed to get disk '{disk_name}' in filesystem '{filesystem}': {str(e)}"
-        ) from e
+        raise StorageScaleAPIError(f"Failed to get disk '{disk_name}' in filesystem '{filesystem}': {str(e)}") from e
 
 
 async def add_filesystem_disk_api(
     filesystem: str,
-    disk_data: Optional[dict] = None,
-    verify_disks: Optional[bool] = None,
-    target_nodes: Optional[str] = None,
-    domain: Optional[str] = None,
+    disk_data: dict | None = None,
+    verify_disks: bool | None = None,
+    target_nodes: str | None = None,
+    domain: str | None = None,
 ) -> Any:
     """Add disks to a filesystem.
 
@@ -109,7 +106,7 @@ async def add_filesystem_disk_api(
     Raises:
         StorageScaleAPIError: If API call fails
     """
-    params: Dict[str, Any] = {}
+    params: dict[str, Any] = {}
     if verify_disks is not None:
         params["verify_disks"] = verify_disks
     if target_nodes is not None:
@@ -124,23 +121,21 @@ async def add_filesystem_disk_api(
                 headers=_domain_headers(domain),
             )
     except StorageScaleAPIError as e:
-        raise StorageScaleAPIError(
-            f"Failed to add disks to filesystem '{filesystem}': {str(e)}"
-        ) from e
+        raise StorageScaleAPIError(f"Failed to add disks to filesystem '{filesystem}': {str(e)}") from e
 
 
 async def delete_filesystem_disk_api(
     filesystem: str,
     disk_name: str,
     continue_on_error: bool,
-    qos_class: Optional[str] = None,
-    rebalance_strategy: Optional[str] = None,
-    minimal_copy: Optional[bool] = None,
-    preserve_replication: Optional[bool] = None,
-    target_nodes: Optional[str] = None,
-    permanently_damaged: Optional[bool] = None,
-    pit_continue_on_error: Optional[bool] = None,
-    domain: Optional[str] = None,
+    qos_class: str | None = None,
+    rebalance_strategy: str | None = None,
+    minimal_copy: bool | None = None,
+    preserve_replication: bool | None = None,
+    target_nodes: str | None = None,
+    permanently_damaged: bool | None = None,
+    pit_continue_on_error: bool | None = None,
+    domain: str | None = None,
 ) -> Any:
     """Delete an existing filesystem disk, migrating its data to other disks.
 
@@ -164,7 +159,7 @@ async def delete_filesystem_disk_api(
     Raises:
         StorageScaleAPIError: If API call fails
     """
-    params: Dict[str, Any] = {"continue_on_error": continue_on_error}
+    params: dict[str, Any] = {"continue_on_error": continue_on_error}
     if qos_class is not None:
         params["qos_class"] = qos_class
     if rebalance_strategy is not None:
@@ -196,7 +191,7 @@ async def delete_filesystem_disk_api(
 async def batch_add_filesystem_disks_api(
     filesystem: str,
     disks_data: dict,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Add a batch of disks to a filesystem.
 
@@ -219,21 +214,19 @@ async def batch_add_filesystem_disks_api(
                 headers=_domain_headers(domain),
             )
     except StorageScaleAPIError as e:
-        raise StorageScaleAPIError(
-            f"Failed to batch add disks to filesystem '{filesystem}': {str(e)}"
-        ) from e
+        raise StorageScaleAPIError(f"Failed to batch add disks to filesystem '{filesystem}': {str(e)}") from e
 
 
 async def batch_delete_filesystem_disks_api(
     filesystem: str,
-    disk_names: Optional[str] = None,
-    qos_class: Optional[str] = None,
-    rebalance_strategy: Optional[str] = None,
-    minimal_copy: Optional[bool] = None,
-    preserve_replication: Optional[bool] = None,
-    target_nodes: Optional[str] = None,
-    pit_continues_on_error: Optional[bool] = None,
-    domain: Optional[str] = None,
+    disk_names: str | None = None,
+    qos_class: str | None = None,
+    rebalance_strategy: str | None = None,
+    minimal_copy: bool | None = None,
+    preserve_replication: bool | None = None,
+    target_nodes: str | None = None,
+    pit_continues_on_error: bool | None = None,
+    domain: str | None = None,
 ) -> Any:
     """Delete a batch of disks from a filesystem.
 
@@ -255,7 +248,7 @@ async def batch_delete_filesystem_disks_api(
     Raises:
         StorageScaleAPIError: If API call fails
     """
-    params: Dict[str, Any] = {}
+    params: dict[str, Any] = {}
     if disk_names is not None:
         params["disk_names"] = disk_names
     if qos_class is not None:
@@ -279,14 +272,12 @@ async def batch_delete_filesystem_disks_api(
                 headers=_domain_headers(domain),
             )
     except StorageScaleAPIError as e:
-        raise StorageScaleAPIError(
-            f"Failed to batch delete disks from filesystem '{filesystem}': {str(e)}"
-        ) from e
+        raise StorageScaleAPIError(f"Failed to batch delete disks from filesystem '{filesystem}': {str(e)}") from e
 
 
 async def get_disks_quorum_api(
     filesystem: str,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """List information about the file system descriptor (disk) quorum.
 
@@ -307,6 +298,4 @@ async def get_disks_quorum_api(
                 headers=_domain_headers(domain),
             )
     except StorageScaleAPIError as e:
-        raise StorageScaleAPIError(
-            f"Failed to get disk quorum for filesystem '{filesystem}': {str(e)}"
-        ) from e
+        raise StorageScaleAPIError(f"Failed to get disk quorum for filesystem '{filesystem}': {str(e)}") from e

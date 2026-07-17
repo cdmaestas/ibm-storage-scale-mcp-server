@@ -11,25 +11,25 @@ The v3 API provides health information through:
 """
 
 import warnings
-from typing import Optional, Any
-from fastmcp import FastMCP, Context
+from typing import Any
+
+from fastmcp import Context, FastMCP
+
 from scale_mcp_server.api.v2.nodes import (
-    get_node_health_states_api,
     get_node_health_events_api,
+    get_node_health_states_api,
 )
 
 # Create the nodes health MCP server
-mcp = FastMCP(
-    "nodes_health_v2", instructions="Node health monitoring operations (v2 API)"
-)
+mcp = FastMCP("nodes_health_v2", instructions="Node health monitoring operations (v2 API)")
 
 
 @mcp.tool()
 async def get_node_health_states(
     ctx: Context,
     name: str,
-    fields: Optional[str] = None,
-    filter: Optional[str] = None,
+    fields: str | None = None,
+    filter: str | None = None,
 ) -> Any:
     """Get System Health states for a node or nodeclass.
 
@@ -55,9 +55,7 @@ async def get_node_health_states(
     await ctx.debug(f"Retrieving health states for node: {name}")
 
     try:
-        result = await get_node_health_states_api(
-            name=name, fields=fields, filter=filter
-        )
+        result = await get_node_health_states_api(name=name, fields=fields, filter=filter)
         await ctx.info(f"Successfully retrieved health states for node: {name}")
         return result
     except Exception as e:
@@ -69,8 +67,8 @@ async def get_node_health_states(
 async def get_node_health_events(
     ctx: Context,
     name: str,
-    fields: Optional[str] = None,
-    filter: Optional[str] = None,
+    fields: str | None = None,
+    filter: str | None = None,
 ) -> Any:
     """Get System Health events for a node or nodeclass.
 
@@ -96,9 +94,7 @@ async def get_node_health_events(
     await ctx.debug(f"Retrieving health events for node: {name}")
 
     try:
-        result = await get_node_health_events_api(
-            name=name, fields=fields, filter=filter
-        )
+        result = await get_node_health_events_api(name=name, fields=fields, filter=filter)
         await ctx.info(f"Successfully retrieved health events for node: {name}")
         return result
     except Exception as e:

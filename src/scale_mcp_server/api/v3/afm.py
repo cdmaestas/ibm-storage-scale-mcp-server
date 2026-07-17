@@ -5,13 +5,14 @@ Endpoints follow the 6.0.1 native REST API:
 /scalemgmt/v3/filesystems/{filesystem}/filesets/[{fileset}/]afm...
 """
 
-from typing import Optional, Any, Dict
-from scale_mcp_server.utils.client import StorageScaleClient, StorageScaleAPIError
+from typing import Any
+
+from scale_mcp_server.utils.client import StorageScaleAPIError, StorageScaleClient
 
 
-def _domain_headers(domain: Optional[str]) -> Dict[str, str]:
+def _domain_headers(domain: str | None) -> dict[str, str]:
     """Build request headers for the optional X-StorageScaleDomain."""
-    headers: Dict[str, str] = {}
+    headers: dict[str, str] = {}
     if domain:
         headers["X-StorageScaleDomain"] = domain
     return headers
@@ -19,7 +20,7 @@ def _domain_headers(domain: Optional[str]) -> Dict[str, str]:
 
 async def list_afm_states_api(
     filesystem: str,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """List the AFM state of all AFM filesets in a filesystem.
 
@@ -40,15 +41,13 @@ async def list_afm_states_api(
                 headers=_domain_headers(domain),
             )
     except StorageScaleAPIError as e:
-        raise StorageScaleAPIError(
-            f"Failed to list AFM states for filesystem '{filesystem}': {str(e)}"
-        ) from e
+        raise StorageScaleAPIError(f"Failed to list AFM states for filesystem '{filesystem}': {str(e)}") from e
 
 
 async def get_afm_state_api(
     filesystem: str,
     fileset: str,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Describe the AFM state of a specific AFM fileset.
 
@@ -78,10 +77,10 @@ async def get_afm_state_api(
 async def check_afm_dirty_api(
     filesystem: str,
     fileset: str,
-    dir_path: Optional[str] = None,
-    dirty_data: Optional[bool] = None,
-    escaped_chars: Optional[bool] = None,
-    domain: Optional[str] = None,
+    dir_path: str | None = None,
+    dirty_data: bool | None = None,
+    escaped_chars: bool | None = None,
+    domain: str | None = None,
 ) -> Any:
     """Find all modified (dirty) directories and files in an AFM fileset.
 
@@ -99,7 +98,7 @@ async def check_afm_dirty_api(
     Raises:
         StorageScaleAPIError: If API call fails
     """
-    params: Dict[str, Any] = {}
+    params: dict[str, Any] = {}
     if dir_path is not None:
         params["dir_path"] = dir_path
     if dirty_data is not None:
@@ -123,10 +122,10 @@ async def check_afm_dirty_api(
 async def check_afm_uncached_api(
     filesystem: str,
     fileset: str,
-    dir_path: Optional[str] = None,
-    check_unmigrated: Optional[bool] = None,
-    escaped_chars: Optional[bool] = None,
-    domain: Optional[str] = None,
+    dir_path: str | None = None,
+    check_unmigrated: bool | None = None,
+    escaped_chars: bool | None = None,
+    domain: str | None = None,
 ) -> Any:
     """Find all uncached directories, files, and orphan files in an AFM fileset.
 
@@ -144,7 +143,7 @@ async def check_afm_uncached_api(
     Raises:
         StorageScaleAPIError: If API call fails
     """
-    params: Dict[str, Any] = {}
+    params: dict[str, Any] = {}
     if dir_path is not None:
         params["dir_path"] = dir_path
     if check_unmigrated is not None:
@@ -168,7 +167,7 @@ async def check_afm_uncached_api(
 async def flush_afm_queue_api(
     filesystem: str,
     fileset: str,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Flush all pending queued operations for an AFM fileset.
 
@@ -198,7 +197,7 @@ async def flush_afm_queue_api(
 async def resume_afm_requeued_api(
     filesystem: str,
     fileset: str,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Resume all pending requeued operations for an AFM fileset.
 
@@ -228,7 +227,7 @@ async def resume_afm_requeued_api(
 async def resync_afm_fileset_api(
     filesystem: str,
     fileset: str,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Resync all files from cache to home for a single-writer mode AFM fileset.
 
@@ -258,7 +257,7 @@ async def resync_afm_fileset_api(
 async def start_afm_fileset_api(
     filesystem: str,
     fileset: str,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Start operations for an AFM fileset.
 
@@ -288,7 +287,7 @@ async def start_afm_fileset_api(
 async def stop_afm_fileset_api(
     filesystem: str,
     fileset: str,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Stop all operations for an AFM fileset.
 
@@ -319,7 +318,7 @@ async def reset_afm_local_api(
     filesystem: str,
     fileset: str,
     file_path: str,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Reset the local bit for a filepath in an AFM fileset.
 
@@ -352,7 +351,7 @@ async def set_afm_local_api(
     filesystem: str,
     fileset: str,
     file_path: str,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Set the local bit for a filepath in an AFM fileset.
 

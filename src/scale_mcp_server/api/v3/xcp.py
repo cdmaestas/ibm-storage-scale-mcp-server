@@ -5,20 +5,21 @@ a single IBM Storage Scale cluster, following the 6.0.1 native REST API.
 Note: copy/sync/verify/enable are PATCH requests in the native API.
 """
 
-from typing import Optional, Any, Dict
-from scale_mcp_server.utils.client import StorageScaleClient, StorageScaleAPIError
+from typing import Any
+
+from scale_mcp_server.utils.client import StorageScaleAPIError, StorageScaleClient
 
 
-def _domain_headers(domain: Optional[str]) -> Dict[str, str]:
+def _domain_headers(domain: str | None) -> dict[str, str]:
     """Build request headers for the optional X-StorageScaleDomain."""
-    headers: Dict[str, str] = {}
+    headers: dict[str, str] = {}
     if domain:
         headers["X-StorageScaleDomain"] = domain
     return headers
 
 
 async def list_xcp_operations_api(
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """List configuration information of all currently running XCP operations.
 
@@ -33,16 +34,14 @@ async def list_xcp_operations_api(
     """
     try:
         async with StorageScaleClient() as client:
-            return await client.get(
-                "/scalemgmt/v3/xcp", headers=_domain_headers(domain)
-            )
+            return await client.get("/scalemgmt/v3/xcp", headers=_domain_headers(domain))
     except StorageScaleAPIError as e:
         raise StorageScaleAPIError(f"Failed to list XCP operations: {str(e)}") from e
 
 
 async def get_xcp_operation_api(
     id: str,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Retrieve configuration information of a specific XCP operation by ID.
 
@@ -58,17 +57,13 @@ async def get_xcp_operation_api(
     """
     try:
         async with StorageScaleClient() as client:
-            return await client.get(
-                f"/scalemgmt/v3/xcp/{id}", headers=_domain_headers(domain)
-            )
+            return await client.get(f"/scalemgmt/v3/xcp/{id}", headers=_domain_headers(domain))
     except StorageScaleAPIError as e:
-        raise StorageScaleAPIError(
-            f"Failed to get XCP operation '{id}': {str(e)}"
-        ) from e
+        raise StorageScaleAPIError(f"Failed to get XCP operation '{id}': {str(e)}") from e
 
 
 async def get_xcp_config_api(
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Retrieve the current XCP configuration limits for the cluster.
 
@@ -83,16 +78,14 @@ async def get_xcp_config_api(
     """
     try:
         async with StorageScaleClient() as client:
-            return await client.get(
-                "/scalemgmt/v3/xcp/config", headers=_domain_headers(domain)
-            )
+            return await client.get("/scalemgmt/v3/xcp/config", headers=_domain_headers(domain))
     except StorageScaleAPIError as e:
         raise StorageScaleAPIError(f"Failed to get XCP config: {str(e)}") from e
 
 
 async def update_xcp_config_api(
     config_data: dict,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Update the XCP configuration limits for the cluster.
 
@@ -120,7 +113,7 @@ async def update_xcp_config_api(
 
 async def enable_xcp_copy_api(
     copy_data: dict,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Start a parallel copy of files from a source to a target in the cluster.
 
@@ -152,7 +145,7 @@ async def enable_xcp_copy_api(
 
 async def sync_xcp_api(
     sync_data: dict,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Synchronize files from a source directory to a target directory.
 
@@ -182,7 +175,7 @@ async def sync_xcp_api(
 
 async def verify_xcp_api(
     verify_data: dict,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Compare metadata between a source and target of a previous XCP copy.
 

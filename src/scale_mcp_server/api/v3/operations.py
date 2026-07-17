@@ -6,22 +6,23 @@ following the 6.0.1 native REST API, plus a client-side polling helper.
 
 import asyncio
 import time
-from typing import Optional, Any, Dict
-from scale_mcp_server.utils.client import StorageScaleClient, StorageScaleAPIError
+from typing import Any
+
+from scale_mcp_server.utils.client import StorageScaleAPIError, StorageScaleClient
 
 
-def _domain_headers(domain: Optional[str]) -> Dict[str, str]:
+def _domain_headers(domain: str | None) -> dict[str, str]:
     """Build request headers for the optional X-StorageScaleDomain."""
-    headers: Dict[str, str] = {}
+    headers: dict[str, str] = {}
     if domain:
         headers["X-StorageScaleDomain"] = domain
     return headers
 
 
 async def list_operations_api(
-    page_size: Optional[int] = None,
-    page_token: Optional[str] = None,
-    domain: Optional[str] = None,
+    page_size: int | None = None,
+    page_token: str | None = None,
+    domain: str | None = None,
 ) -> Any:
     """List information about all long-running operations (LROs).
 
@@ -36,7 +37,7 @@ async def list_operations_api(
     Raises:
         StorageScaleAPIError: If API call fails
     """
-    params: Dict[str, Any] = {}
+    params: dict[str, Any] = {}
     if page_size is not None:
         params["page_size"] = page_size
     if page_token is not None:
@@ -55,7 +56,7 @@ async def list_operations_api(
 
 async def get_operation_api(
     operation_id: str,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """List details of an existing LRO.
 
@@ -76,15 +77,13 @@ async def get_operation_api(
                 headers=_domain_headers(domain),
             )
     except StorageScaleAPIError as e:
-        raise StorageScaleAPIError(
-            f"Failed to get operation '{operation_id}': {str(e)}"
-        ) from e
+        raise StorageScaleAPIError(f"Failed to get operation '{operation_id}': {str(e)}") from e
 
 
 async def get_operation_output_api(
     operation_id: str,
-    byte_offset: Optional[int] = None,
-    domain: Optional[str] = None,
+    byte_offset: int | None = None,
+    domain: str | None = None,
 ) -> Any:
     """Display message output from an LRO.
 
@@ -99,7 +98,7 @@ async def get_operation_output_api(
     Raises:
         StorageScaleAPIError: If API call fails
     """
-    params: Dict[str, Any] = {}
+    params: dict[str, Any] = {}
     if byte_offset is not None:
         params["byte_offset"] = byte_offset
 
@@ -111,14 +110,12 @@ async def get_operation_output_api(
                 headers=_domain_headers(domain),
             )
     except StorageScaleAPIError as e:
-        raise StorageScaleAPIError(
-            f"Failed to get output for operation '{operation_id}': {str(e)}"
-        ) from e
+        raise StorageScaleAPIError(f"Failed to get output for operation '{operation_id}': {str(e)}") from e
 
 
 async def cancel_operation_api(
     operation_id: str,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Cancel an LRO.
 
@@ -142,16 +139,14 @@ async def cancel_operation_api(
                 headers=_domain_headers(domain),
             )
     except StorageScaleAPIError as e:
-        raise StorageScaleAPIError(
-            f"Failed to cancel operation '{operation_id}': {str(e)}"
-        ) from e
+        raise StorageScaleAPIError(f"Failed to cancel operation '{operation_id}': {str(e)}") from e
 
 
 async def wait_for_operation_api(
     operation_id: str,
     poll_interval: float = 2.0,
     timeout: float = 120.0,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Poll an LRO until it reports done, or the timeout elapses.
 
@@ -176,15 +171,13 @@ async def wait_for_operation_api(
         if isinstance(operation, dict) and operation.get("done"):
             return operation
         if time.monotonic() >= deadline:
-            raise StorageScaleAPIError(
-                f"Timed out after {timeout}s waiting for operation '{operation_id}'"
-            )
+            raise StorageScaleAPIError(f"Timed out after {timeout}s waiting for operation '{operation_id}'")
         await asyncio.sleep(poll_interval)
 
 
 async def delete_operation_api(
     operation_id: str,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Delete an existing LRO record.
 
@@ -205,6 +198,4 @@ async def delete_operation_api(
                 headers=_domain_headers(domain),
             )
     except StorageScaleAPIError as e:
-        raise StorageScaleAPIError(
-            f"Failed to delete operation '{operation_id}': {str(e)}"
-        ) from e
+        raise StorageScaleAPIError(f"Failed to delete operation '{operation_id}': {str(e)}") from e

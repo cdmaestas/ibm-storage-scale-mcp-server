@@ -2,9 +2,9 @@
 
 import httpx
 import pytest
+from conftest import REAL_LOAD_SETTINGS
 
 import scale_mcp_server.utils.client as client_module
-from conftest import REAL_LOAD_SETTINGS
 from scale_mcp_server.utils.client import StorageScaleAPIError, StorageScaleClient
 
 
@@ -26,9 +26,7 @@ async def test_override_client_is_private_and_closed(mock_api):
 
 
 async def test_error_carries_status_and_details(mock_api):
-    mock_api.route(host="testhost").mock(
-        return_value=httpx.Response(422, json={"message": "invalid fileset"})
-    )
+    mock_api.route(host="testhost").mock(return_value=httpx.Response(422, json={"message": "invalid fileset"}))
     async with StorageScaleClient() as client:
         with pytest.raises(StorageScaleAPIError) as excinfo:
             await client.get("/scalemgmt/v3/filesystems")
@@ -82,9 +80,7 @@ async def test_wait_for_operation_polls_until_done(mock_api):
 async def test_wait_for_operation_times_out(mock_api):
     from scale_mcp_server.api.v3.operations import wait_for_operation_api
 
-    mock_api.route(host="testhost").mock(
-        return_value=httpx.Response(200, json={"name": "op-2", "done": False})
-    )
+    mock_api.route(host="testhost").mock(return_value=httpx.Response(200, json={"name": "op-2", "done": False}))
 
     with pytest.raises(StorageScaleAPIError, match="Timed out"):
         await wait_for_operation_api("op-2", poll_interval=0.01, timeout=0.05)
@@ -177,9 +173,7 @@ def test_no_cert_settings_leave_defaults_unchanged(monkeypatch):
             self.is_closed = False
 
     monkeypatch.setattr(client_module.httpx, "AsyncClient", FakeAsyncClient)
-    monkeypatch.setattr(
-        client_module, "load_settings", lambda refresh=False: _mtls_settings()
-    )
+    monkeypatch.setattr(client_module, "load_settings", lambda refresh=False: _mtls_settings())
 
     StorageScaleClient()
 

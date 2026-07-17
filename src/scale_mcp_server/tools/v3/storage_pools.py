@@ -1,10 +1,12 @@
 """IBM Storage Scale Storage Pool Management MCP Server."""
 
-from typing import Optional, Any
-from fastmcp import FastMCP, Context
+from typing import Any
+
+from fastmcp import Context, FastMCP
+
 from scale_mcp_server.api.v3.storage_pools import (
-    list_storage_pools_api,
     get_storage_pool_api,
+    list_storage_pools_api,
     update_storage_pool_api,
 )
 
@@ -16,9 +18,9 @@ mcp = FastMCP("storage_pools", instructions="Storage pool management operations"
 async def list_storage_pools(
     ctx: Context,
     filesystem: str,
-    page_size: Optional[int] = None,
-    page_token: Optional[str] = None,
-    domain: Optional[str] = None,
+    page_size: int | None = None,
+    page_token: str | None = None,
+    domain: str | None = None,
 ) -> Any:
     """List storage pools for a filesystem.
 
@@ -46,7 +48,7 @@ async def get_storage_pool(
     ctx: Context,
     filesystem: str,
     pool_name: str,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Get information about a specific storage pool.
 
@@ -55,13 +57,9 @@ async def get_storage_pool(
         pool_name: Storage pool name
         domain: Domain to be authorized against (default 'StorageScaleDomain')
     """
-    await ctx.info(
-        f"Tool called: get_storage_pool with filesystem={filesystem}, pool_name={pool_name}"
-    )
+    await ctx.info(f"Tool called: get_storage_pool with filesystem={filesystem}, pool_name={pool_name}")
     try:
-        return await get_storage_pool_api(
-            filesystem=filesystem, pool_name=pool_name, domain=domain
-        )
+        return await get_storage_pool_api(filesystem=filesystem, pool_name=pool_name, domain=domain)
     except Exception as e:
         await ctx.error(f"Failed to get storage pool {pool_name}: {str(e)}")
         raise
@@ -73,7 +71,7 @@ async def update_storage_pool(
     filesystem: str,
     pool_name: str,
     pool_data: dict,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Update an existing storage pool of a filesystem.
 
@@ -83,9 +81,7 @@ async def update_storage_pool(
         pool_data: Updated storage pool definition
         domain: Domain to be authorized against (default 'StorageScaleDomain')
     """
-    await ctx.info(
-        f"Tool called: update_storage_pool with filesystem={filesystem}, pool_name={pool_name}"
-    )
+    await ctx.info(f"Tool called: update_storage_pool with filesystem={filesystem}, pool_name={pool_name}")
     try:
         return await update_storage_pool_api(
             filesystem=filesystem,
