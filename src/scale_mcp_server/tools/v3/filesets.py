@@ -1,16 +1,18 @@
 """IBM Storage Scale Fileset Management MCP Server."""
 
-from typing import Optional, Any
-from fastmcp import FastMCP, Context
+from typing import Any
+
+from fastmcp import Context, FastMCP
+
 from scale_mcp_server.api.v3.filesets import (
-    list_filesets_api,
     create_fileset_api,
-    get_fileset_api,
     delete_fileset_api,
-    update_fileset_api,
+    get_fileset_api,
     get_fileset_usage_api,
     link_fileset_api,
+    list_filesets_api,
     unlink_fileset_api,
+    update_fileset_api,
 )
 
 # Create the filesets MCP server
@@ -21,7 +23,7 @@ mcp = FastMCP("filesets", instructions="Fileset management operations")
 async def list_filesets(
     ctx: Context,
     filesystem: str,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """List all filesets in a filesystem.
 
@@ -49,7 +51,7 @@ async def create_independent_fileset(
     ctx: Context,
     filesystem: str,
     fileset_data: dict,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Create an INDEPENDENT fileset with its own inode space.
 
@@ -83,13 +85,8 @@ async def create_independent_fileset(
             }
         )
     """
-    await ctx.info(
-        f"Tool called: create_independent_fileset with filesystem={filesystem}"
-    )
-    await ctx.warning(
-        "Creating INDEPENDENT fileset with own inode space. "
-        "This is PERMANENT and cannot be changed!"
-    )
+    await ctx.info(f"Tool called: create_independent_fileset with filesystem={filesystem}")
+    await ctx.warning("Creating INDEPENDENT fileset with own inode space. This is PERMANENT and cannot be changed!")
 
     # Set inode_space_designation to "new" for independent fileset
     fileset_data["inode_space_designation"] = "new"
@@ -97,15 +94,11 @@ async def create_independent_fileset(
     await ctx.debug(f"Fileset data: {fileset_data}")
 
     try:
-        result = await create_fileset_api(
-            filesystem=filesystem, fileset_data=fileset_data, domain=domain
-        )
+        result = await create_fileset_api(filesystem=filesystem, fileset_data=fileset_data, domain=domain)
         await ctx.info(f"Successfully created INDEPENDENT fileset in {filesystem}")
         return result
     except Exception as e:
-        await ctx.error(
-            f"Failed to create independent fileset in {filesystem}: {str(e)}"
-        )
+        await ctx.error(f"Failed to create independent fileset in {filesystem}: {str(e)}")
         raise
 
 
@@ -114,7 +107,7 @@ async def create_dependent_fileset(
     ctx: Context,
     filesystem: str,
     fileset_data: dict,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Create a DEPENDENT fileset that shares the parent's inode space.
 
@@ -149,12 +142,9 @@ async def create_dependent_fileset(
             }
         )
     """
-    await ctx.info(
-        f"Tool called: create_dependent_fileset with filesystem={filesystem}"
-    )
+    await ctx.info(f"Tool called: create_dependent_fileset with filesystem={filesystem}")
     await ctx.warning(
-        "Creating DEPENDENT fileset sharing parent's inode space. "
-        "This is PERMANENT and cannot be changed!"
+        "Creating DEPENDENT fileset sharing parent's inode space. This is PERMANENT and cannot be changed!"
     )
 
     # Ensure inode_space_designation is NOT set for dependent fileset
@@ -163,9 +153,7 @@ async def create_dependent_fileset(
     await ctx.debug(f"Fileset data: {fileset_data}")
 
     try:
-        result = await create_fileset_api(
-            filesystem=filesystem, fileset_data=fileset_data, domain=domain
-        )
+        result = await create_fileset_api(filesystem=filesystem, fileset_data=fileset_data, domain=domain)
         await ctx.info(f"✓ Successfully created DEPENDENT fileset in {filesystem}")
         return result
     except Exception as e:
@@ -178,7 +166,7 @@ async def get_fileset(
     ctx: Context,
     filesystem: str,
     fileset_name: str,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Get information about a specific fileset.
 
@@ -190,15 +178,11 @@ async def get_fileset(
     Returns:
         Dictionary containing fileset information
     """
-    await ctx.info(
-        f"Tool called: get_fileset with filesystem={filesystem}, fileset_name={fileset_name}"
-    )
+    await ctx.info(f"Tool called: get_fileset with filesystem={filesystem}, fileset_name={fileset_name}")
     await ctx.debug(f"Retrieving fileset {fileset_name} from filesystem {filesystem}")
 
     try:
-        result = await get_fileset_api(
-            filesystem=filesystem, fileset_name=fileset_name, domain=domain
-        )
+        result = await get_fileset_api(filesystem=filesystem, fileset_name=fileset_name, domain=domain)
         await ctx.info(f"Successfully retrieved fileset {fileset_name}")
         return result
     except Exception as e:
@@ -211,7 +195,7 @@ async def delete_fileset(
     ctx: Context,
     filesystem: str,
     fileset_name: str,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Delete a fileset from a filesystem.
 
@@ -223,15 +207,11 @@ async def delete_fileset(
     Returns:
         Dictionary containing deletion status
     """
-    await ctx.info(
-        f"Tool called: delete_fileset with filesystem={filesystem}, fileset_name={fileset_name}"
-    )
+    await ctx.info(f"Tool called: delete_fileset with filesystem={filesystem}, fileset_name={fileset_name}")
     await ctx.debug(f"Deleting fileset {fileset_name} from filesystem {filesystem}")
 
     try:
-        result = await delete_fileset_api(
-            filesystem=filesystem, fileset_name=fileset_name, domain=domain
-        )
+        result = await delete_fileset_api(filesystem=filesystem, fileset_name=fileset_name, domain=domain)
         await ctx.info(f"Successfully deleted fileset {fileset_name}")
         return result
     except Exception as e:
@@ -245,7 +225,7 @@ async def update_fileset(
     filesystem: str,
     fileset_name: str,
     fileset_data: dict,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Update a fileset's configuration.
 
@@ -258,9 +238,7 @@ async def update_fileset(
     Returns:
         Dictionary containing update status
     """
-    await ctx.info(
-        f"Tool called: update_fileset with filesystem={filesystem}, fileset_name={fileset_name}"
-    )
+    await ctx.info(f"Tool called: update_fileset with filesystem={filesystem}, fileset_name={fileset_name}")
     await ctx.debug(f"Updating fileset {fileset_name} in filesystem {filesystem}")
 
     try:
@@ -282,7 +260,7 @@ async def get_fileset_usage(
     ctx: Context,
     filesystem: str,
     fileset_name: str,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Get usage information for a fileset.
 
@@ -294,15 +272,11 @@ async def get_fileset_usage(
     Returns:
         Dictionary containing fileset usage information
     """
-    await ctx.info(
-        f"Tool called: get_fileset_usage with filesystem={filesystem}, fileset_name={fileset_name}"
-    )
+    await ctx.info(f"Tool called: get_fileset_usage with filesystem={filesystem}, fileset_name={fileset_name}")
     await ctx.debug(f"Retrieving usage for fileset {fileset_name}")
 
     try:
-        result = await get_fileset_usage_api(
-            filesystem=filesystem, fileset_name=fileset_name, domain=domain
-        )
+        result = await get_fileset_usage_api(filesystem=filesystem, fileset_name=fileset_name, domain=domain)
         await ctx.info(f"Successfully retrieved usage for fileset {fileset_name}")
         return result
     except Exception as e:
@@ -316,7 +290,7 @@ async def link_fileset(
     filesystem: str,
     fileset_name: str,
     link_data: dict,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Link a fileset to a junction path.
 
@@ -329,9 +303,7 @@ async def link_fileset(
     Returns:
         Dictionary containing link status
     """
-    await ctx.info(
-        f"Tool called: link_fileset with filesystem={filesystem}, fileset_name={fileset_name}"
-    )
+    await ctx.info(f"Tool called: link_fileset with filesystem={filesystem}, fileset_name={fileset_name}")
     await ctx.debug(f"Linking fileset {fileset_name} to junction path")
 
     try:
@@ -353,8 +325,8 @@ async def unlink_fileset(
     ctx: Context,
     filesystem: str,
     fileset_name: str,
-    unlink_data: Optional[dict] = None,
-    domain: Optional[str] = None,
+    unlink_data: dict | None = None,
+    domain: str | None = None,
 ) -> Any:
     """Unlink a fileset from its junction path.
 
@@ -367,9 +339,7 @@ async def unlink_fileset(
     Returns:
         Dictionary containing unlink status
     """
-    await ctx.info(
-        f"Tool called: unlink_fileset with filesystem={filesystem}, fileset_name={fileset_name}"
-    )
+    await ctx.info(f"Tool called: unlink_fileset with filesystem={filesystem}, fileset_name={fileset_name}")
     await ctx.debug(f"Unlinking fileset {fileset_name} from junction path")
 
     try:

@@ -1,20 +1,21 @@
 import configparser
 import logging
-import sys
-from pathlib import Path
-from typing import Dict, Any
 from logging.handlers import RotatingFileHandler
+from pathlib import Path
+from typing import Any
 
 
-def read_config(config_path: Path) -> Dict[str, Any]:
+def read_config(config_path: Path) -> dict[str, Any]:
     """Read specified configuration file.
 
     Returns:
         Dictionary containing configuration settings
+
+    Raises:
+        FileNotFoundError: If the config file does not exist.
     """
     if not config_path.is_file():
-        print(f"Config file '{config_path}' does not exist.")
-        sys.exit(1)
+        raise FileNotFoundError(f"Config file '{config_path}' does not exist.")
 
     config = configparser.ConfigParser()
     config.read(config_path)
@@ -22,7 +23,7 @@ def read_config(config_path: Path) -> Dict[str, Any]:
     return {section: dict(config[section]) for section in config.sections()}
 
 
-def setup_logging(config: Dict[str, Any]) -> None:
+def setup_logging(config: dict[str, Any]) -> None:
     """Setup logging based on MCP configuration.
 
     Args:
@@ -39,9 +40,7 @@ def setup_logging(config: Dict[str, Any]) -> None:
             '{"time":"%(asctime)s","name":"%(name)s","level":"%(levelname)s","message":"%(message)s"}'
         )
     else:
-        formatter = logging.Formatter(
-            "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-        )
+        formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 
     # Setup root logger
     root_logger = logging.getLogger()

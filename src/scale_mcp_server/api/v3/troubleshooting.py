@@ -5,13 +5,14 @@ volume IDs and managing persistent reserve registration keys. Follows the
 6.0.1 native REST API.
 """
 
-from typing import Optional, Any, Dict
-from scale_mcp_server.utils.client import StorageScaleClient, StorageScaleAPIError
+from typing import Any
+
+from scale_mcp_server.utils.client import StorageScaleAPIError, StorageScaleClient
 
 
-def _domain_headers(domain: Optional[str]) -> Dict[str, str]:
+def _domain_headers(domain: str | None) -> dict[str, str]:
     """Build request headers for the optional X-StorageScaleDomain."""
-    headers: Dict[str, str] = {}
+    headers: dict[str, str] = {}
     if domain:
         headers["X-StorageScaleDomain"] = domain
     return headers
@@ -19,8 +20,8 @@ def _domain_headers(domain: Optional[str]) -> Dict[str, str]:
 
 async def clear_nsd_id_api(
     id: str,
-    node_name: Optional[str] = None,
-    domain: Optional[str] = None,
+    node_name: str | None = None,
+    domain: str | None = None,
 ) -> Any:
     """Delete the NSD volume ID from a device.
 
@@ -35,7 +36,7 @@ async def clear_nsd_id_api(
     Raises:
         StorageScaleAPIError: If API call fails
     """
-    params: Dict[str, Any] = {"id": id}
+    params: dict[str, Any] = {"id": id}
     if node_name is not None:
         params["node_name"] = node_name
 
@@ -47,15 +48,13 @@ async def clear_nsd_id_api(
                 headers=_domain_headers(domain),
             )
     except StorageScaleAPIError as e:
-        raise StorageScaleAPIError(
-            f"Failed to clear NSD volume ID '{id}': {str(e)}"
-        ) from e
+        raise StorageScaleAPIError(f"Failed to clear NSD volume ID '{id}': {str(e)}") from e
 
 
 async def get_persistent_reserve_keys_api(
     device: str,
-    node_name: Optional[str] = None,
-    domain: Optional[str] = None,
+    node_name: str | None = None,
+    domain: str | None = None,
 ) -> Any:
     """Get persistent reserve registration key values from a device.
 
@@ -70,7 +69,7 @@ async def get_persistent_reserve_keys_api(
     Raises:
         StorageScaleAPIError: If API call fails
     """
-    params: Dict[str, Any] = {}
+    params: dict[str, Any] = {}
     if node_name is not None:
         params["node_name"] = node_name
 
@@ -82,17 +81,15 @@ async def get_persistent_reserve_keys_api(
                 headers=_domain_headers(domain),
             )
     except StorageScaleAPIError as e:
-        raise StorageScaleAPIError(
-            f"Failed to get persistent reserve keys for device '{device}': {str(e)}"
-        ) from e
+        raise StorageScaleAPIError(f"Failed to get persistent reserve keys for device '{device}': {str(e)}") from e
 
 
 async def clear_persistent_reserve_keys_api(
     device: str,
-    key: Optional[str] = None,
-    node_name: Optional[str] = None,
-    force: Optional[bool] = None,
-    domain: Optional[str] = None,
+    key: str | None = None,
+    node_name: str | None = None,
+    force: bool | None = None,
+    domain: str | None = None,
 ) -> Any:
     """Delete the persistent reserve registration key from a device.
 
@@ -110,7 +107,7 @@ async def clear_persistent_reserve_keys_api(
     Raises:
         StorageScaleAPIError: If API call fails
     """
-    params: Dict[str, Any] = {}
+    params: dict[str, Any] = {}
     if key is not None:
         params["key"] = key
     if node_name is not None:
@@ -126,6 +123,4 @@ async def clear_persistent_reserve_keys_api(
                 headers=_domain_headers(domain),
             )
     except StorageScaleAPIError as e:
-        raise StorageScaleAPIError(
-            f"Failed to clear persistent reserve keys for device '{device}': {str(e)}"
-        ) from e
+        raise StorageScaleAPIError(f"Failed to clear persistent reserve keys for device '{device}': {str(e)}") from e

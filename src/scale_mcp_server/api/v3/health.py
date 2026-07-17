@@ -7,13 +7,14 @@ Instead, health information is obtained through:
 - Diagnostics endpoints (/nodes/{node}/diagnostics/*)
 """
 
-from typing import Optional, Any, Dict
-from scale_mcp_server.utils.client import StorageScaleClient, StorageScaleAPIError
+from typing import Any
+
+from scale_mcp_server.utils.client import StorageScaleAPIError, StorageScaleClient
 
 
 async def get_filesystem_health_api(
     filesystem: str,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Get health information for a filesystem.
 
@@ -30,15 +31,13 @@ async def get_filesystem_health_api(
     Raises:
         StorageScaleAPIError: If API call fails
     """
-    headers: Dict[str, str] = {}
+    headers: dict[str, str] = {}
     if domain:
         headers["X-StorageScaleDomain"] = domain
 
     try:
         async with StorageScaleClient() as client:
-            result = await client.get(
-                f"/scalemgmt/v3/filesystems/{filesystem}", headers=headers
-            )
+            result = await client.get(f"/scalemgmt/v3/filesystems/{filesystem}", headers=headers)
             # Extract health-relevant information
             if result and "filesystems" in result:
                 fs_data = result["filesystems"][0] if result["filesystems"] else {}
@@ -49,25 +48,19 @@ async def get_filesystem_health_api(
                         "nodes": fs_data.get("mount", {}).get("nodes", []),
                     },
                     "config": {
-                        "defaultMountPoint": fs_data.get("config", {}).get(
-                            "defaultMountPoint"
-                        ),
-                        "automaticMountOption": fs_data.get("config", {}).get(
-                            "automaticMountOption"
-                        ),
+                        "defaultMountPoint": fs_data.get("config", {}).get("defaultMountPoint"),
+                        "automaticMountOption": fs_data.get("config", {}).get("automaticMountOption"),
                     },
                     "capacity": fs_data.get("capacity", {}),
                 }
             return result
     except StorageScaleAPIError as e:
-        raise StorageScaleAPIError(
-            f"Failed to get health information for filesystem '{filesystem}': {str(e)}"
-        ) from e
+        raise StorageScaleAPIError(f"Failed to get health information for filesystem '{filesystem}': {str(e)}") from e
 
 
 async def get_node_health_api(
-    node: Optional[str] = None,
-    domain: Optional[str] = None,
+    node: str | None = None,
+    domain: str | None = None,
 ) -> Any:
     """Get health/status information for nodes.
 
@@ -84,7 +77,7 @@ async def get_node_health_api(
     Raises:
         StorageScaleAPIError: If API call fails
     """
-    headers: Dict[str, str] = {}
+    headers: dict[str, str] = {}
     if domain:
         headers["X-StorageScaleDomain"] = domain
 
@@ -94,9 +87,7 @@ async def get_node_health_api(
 
             # If specific node requested, filter the results
             if node and result and "nodes" in result:
-                filtered_nodes = [
-                    n for n in result["nodes"] if n.get("name") == node
-                ]
+                filtered_nodes = [n for n in result["nodes"] if n.get("name") == node]
                 if filtered_nodes:
                     return {"nodes": filtered_nodes}
                 else:
@@ -105,14 +96,12 @@ async def get_node_health_api(
             return result
     except StorageScaleAPIError as e:
         node_info = f" for node '{node}'" if node else ""
-        raise StorageScaleAPIError(
-            f"Failed to get health/status information{node_info}: {str(e)}"
-        ) from e
+        raise StorageScaleAPIError(f"Failed to get health/status information{node_info}: {str(e)}") from e
 
 
 async def get_node_diagnostics_api(
     node: str,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Get diagnostic information for a specific node.
 
@@ -126,23 +115,19 @@ async def get_node_diagnostics_api(
     Raises:
         StorageScaleAPIError: If API call fails
     """
-    headers: Dict[str, str] = {}
+    headers: dict[str, str] = {}
     if domain:
         headers["X-StorageScaleDomain"] = domain
 
     try:
         async with StorageScaleClient() as client:
-            return await client.get(
-                f"/scalemgmt/v3/nodes/{node}/diagnostics/version", headers=headers
-            )
+            return await client.get(f"/scalemgmt/v3/nodes/{node}/diagnostics/version", headers=headers)
     except StorageScaleAPIError as e:
-        raise StorageScaleAPIError(
-            f"Failed to get diagnostics for node '{node}': {str(e)}"
-        ) from e
+        raise StorageScaleAPIError(f"Failed to get diagnostics for node '{node}': {str(e)}") from e
 
 
 async def get_cluster_health_summary_api(
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Get overall cluster health summary.
 
@@ -157,39 +142,31 @@ async def get_cluster_health_summary_api(
     Raises:
         StorageScaleAPIError: If API call fails
     """
-    headers: Dict[str, str] = {}
+    headers: dict[str, str] = {}
     if domain:
         headers["X-StorageScaleDomain"] = domain
 
     try:
         async with StorageScaleClient() as client:
             # Get nodes status
-            nodes_status = await client.get(
-                "/scalemgmt/v3/nodes/status", headers=headers
-            )
+            nodes_status = await client.get("/scalemgmt/v3/nodes/status", headers=headers)
 
             # Get filesystems list
-            filesystems = await client.get(
-                "/scalemgmt/v3/filesystems", headers=headers
-            )
+            filesystems = await client.get("/scalemgmt/v3/filesystems", headers=headers)
 
             # Compile health summary
             summary = {
                 "nodes": {
                     "total": len(nodes_status.get("nodes", [])),
                     "active": sum(
-                        1
-                        for n in nodes_status.get("nodes", [])
-                        if n.get("status", {}).get("daemon") == "active"
+                        1 for n in nodes_status.get("nodes", []) if n.get("status", {}).get("daemon") == "active"
                     ),
                     "details": nodes_status.get("nodes", []),
                 },
                 "filesystems": {
                     "total": len(filesystems.get("filesystems", [])),
                     "mounted": sum(
-                        1
-                        for fs in filesystems.get("filesystems", [])
-                        if fs.get("mount", {}).get("status") == "mounted"
+                        1 for fs in filesystems.get("filesystems", []) if fs.get("mount", {}).get("status") == "mounted"
                     ),
                     "details": filesystems.get("filesystems", []),
                 },
@@ -197,6 +174,4 @@ async def get_cluster_health_summary_api(
 
             return summary
     except StorageScaleAPIError as e:
-        raise StorageScaleAPIError(
-            f"Failed to get cluster health summary: {str(e)}"
-        ) from e
+        raise StorageScaleAPIError(f"Failed to get cluster health summary: {str(e)}") from e

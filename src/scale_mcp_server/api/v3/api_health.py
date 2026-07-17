@@ -4,22 +4,23 @@ API-health endpoints for the health status of the administration daemon
 (scaleadmd) on cluster nodes, following the 6.0.1 native REST API.
 """
 
-from typing import Optional, Any, Dict
-from scale_mcp_server.utils.client import StorageScaleClient, StorageScaleAPIError
+from typing import Any
+
+from scale_mcp_server.utils.client import StorageScaleAPIError, StorageScaleClient
 
 
-def _domain_headers(domain: Optional[str]) -> Dict[str, str]:
+def _domain_headers(domain: str | None) -> dict[str, str]:
     """Build request headers for the optional X-StorageScaleDomain."""
-    headers: Dict[str, str] = {}
+    headers: dict[str, str] = {}
     if domain:
         headers["X-StorageScaleDomain"] = domain
     return headers
 
 
 async def get_api_health_api(
-    page_size: Optional[int] = None,
-    page_token: Optional[str] = None,
-    domain: Optional[str] = None,
+    page_size: int | None = None,
+    page_token: str | None = None,
+    domain: str | None = None,
 ) -> Any:
     """List the health status of the native REST API services on nodes.
 
@@ -34,7 +35,7 @@ async def get_api_health_api(
     Raises:
         StorageScaleAPIError: If API call fails
     """
-    params: Dict[str, Any] = {}
+    params: dict[str, Any] = {}
     if page_size is not None:
         params["page_size"] = page_size
     if page_token is not None:
@@ -53,7 +54,7 @@ async def get_api_health_api(
 
 async def get_node_api_health_api(
     node_name: str,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Get the health status of the native REST API service on a node.
 
@@ -74,6 +75,4 @@ async def get_node_api_health_api(
                 headers=_domain_headers(domain),
             )
     except StorageScaleAPIError as e:
-        raise StorageScaleAPIError(
-            f"Failed to get API health for node '{node_name}': {str(e)}"
-        ) from e
+        raise StorageScaleAPIError(f"Failed to get API health for node '{node_name}': {str(e)}") from e

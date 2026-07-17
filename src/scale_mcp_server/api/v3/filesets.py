@@ -1,12 +1,13 @@
 """IBM Storage Scale Fileset operations."""
 
-from typing import Optional, Any
-from scale_mcp_server.utils.client import StorageScaleClient, StorageScaleAPIError
+from typing import Any
+
+from scale_mcp_server.utils.client import StorageScaleAPIError, StorageScaleClient
 
 
 async def list_filesets_api(
     filesystem: str,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """List all filesets in a filesystem.
 
@@ -26,19 +27,15 @@ async def list_filesets_api(
 
     try:
         async with StorageScaleClient() as client:
-            return await client.get(
-                f"/scalemgmt/v3/filesystems/{filesystem}/filesets", headers=headers
-            )
+            return await client.get(f"/scalemgmt/v3/filesystems/{filesystem}/filesets", headers=headers)
     except StorageScaleAPIError as e:
-        raise StorageScaleAPIError(
-            f"Failed to list filesets for filesystem '{filesystem}': {str(e)}"
-        ) from e
+        raise StorageScaleAPIError(f"Failed to list filesets for filesystem '{filesystem}': {str(e)}") from e
 
 
 async def create_fileset_api(
     filesystem: str,
     fileset_data: dict,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Create a new fileset in a filesystem.
 
@@ -72,15 +69,13 @@ async def create_fileset_api(
                 headers=headers,
             )
     except StorageScaleAPIError as e:
-        raise StorageScaleAPIError(
-            f"Failed to create fileset in filesystem '{filesystem}': {str(e)}"
-        ) from e
+        raise StorageScaleAPIError(f"Failed to create fileset in filesystem '{filesystem}': {str(e)}") from e
 
 
 async def get_fileset_api(
     filesystem: str,
     fileset_name: str,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Get information about a specific fileset.
 
@@ -114,7 +109,7 @@ async def get_fileset_api(
 async def delete_fileset_api(
     filesystem: str,
     fileset_name: str,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Delete a fileset from a filesystem.
 
@@ -149,7 +144,7 @@ async def update_fileset_api(
     filesystem: str,
     fileset_name: str,
     fileset_data: dict,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Update a fileset's configuration.
 
@@ -185,7 +180,7 @@ async def update_fileset_api(
 async def get_fileset_usage_api(
     filesystem: str,
     fileset_name: str,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Get usage information for a fileset.
 
@@ -220,7 +215,7 @@ async def link_fileset_api(
     filesystem: str,
     fileset_name: str,
     link_data: dict,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Link a fileset to a junction path.
 
@@ -256,8 +251,8 @@ async def link_fileset_api(
 async def unlink_fileset_api(
     filesystem: str,
     fileset_name: str,
-    unlink_data: Optional[dict] = None,
-    domain: Optional[str] = None,
+    unlink_data: dict | None = None,
+    domain: str | None = None,
 ) -> Any:
     """Unlink a fileset from its junction path.
 
@@ -296,7 +291,7 @@ async def unlink_fileset_api(
 async def list_fileset_snapshots_api(
     filesystem: str,
     fileset: str,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """List snapshots for a fileset.
 
@@ -331,7 +326,7 @@ async def create_fileset_snapshot_api(
     filesystem: str,
     fileset: str,
     snapshot_data: dict,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Create a snapshot for a fileset.
 
@@ -368,7 +363,7 @@ async def get_fileset_snapshot_api(
     filesystem: str,
     fileset: str,
     snapshot_name: str,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Get information about a specific fileset snapshot.
 
@@ -404,7 +399,7 @@ async def delete_fileset_snapshot_api(
     filesystem: str,
     fileset: str,
     snapshot_name: str,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Delete a fileset snapshot.
 
@@ -432,14 +427,15 @@ async def delete_fileset_snapshot_api(
             )
     except StorageScaleAPIError as e:
         raise StorageScaleAPIError(
-            f"Failed to delete snapshot '{snapshot_name}' for fileset '{fileset}' in filesystem '{filesystem}': {str(e)}"
+            f"Failed to delete snapshot '{snapshot_name}' for fileset '{fileset}' "
+            f"in filesystem '{filesystem}': {str(e)}"
         ) from e
 
 
 async def batch_create_fileset_snapshots_api(
     filesystem: str,
     snapshot_data: dict,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Create snapshots for multiple filesets.
 
@@ -474,7 +470,7 @@ async def batch_create_fileset_snapshots_api(
 async def batch_delete_fileset_snapshots_api(
     filesystem: str,
     snapshot_data: dict,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Delete snapshots for multiple filesets.
 

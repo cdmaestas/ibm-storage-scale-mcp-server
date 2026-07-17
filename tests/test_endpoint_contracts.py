@@ -8,13 +8,10 @@ are asserted against the contract table in contracts.py.
 import importlib
 
 import pytest
-
 from contracts import CONTRACTS
 
 
-@pytest.mark.parametrize(
-    "contract", CONTRACTS, ids=[f"{c.module}.{c.func}" for c in CONTRACTS]
-)
+@pytest.mark.parametrize("contract", CONTRACTS, ids=[f"{c.module}.{c.func}" for c in CONTRACTS])
 async def test_endpoint_contract(contract, mock_api):
     module = importlib.import_module(f"scale_mcp_server.api.{contract.module}")
     func = getattr(module, contract.func)
@@ -46,9 +43,7 @@ async def test_api_error_is_wrapped(mock_api):
     from scale_mcp_server.api.v3.version import get_version_api
     from scale_mcp_server.utils.client import StorageScaleAPIError
 
-    mock_api.route(host="testhost").mock(
-        return_value=httpx.Response(500, json={"message": "boom"})
-    )
+    mock_api.route(host="testhost").mock(return_value=httpx.Response(500, json={"message": "boom"}))
 
     with pytest.raises(StorageScaleAPIError):
         await get_version_api()

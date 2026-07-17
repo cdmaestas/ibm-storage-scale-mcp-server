@@ -35,11 +35,34 @@ from scale_mcp_server.tools.v3 import (
 )
 
 SUB_SERVERS = [
-    afm, afmcos, api_health, authorization, clusters, config, diagnostics,
-    filesets, filesystem_disks, filesystems, health, managers, node_classes,
-    nodes, nsds, operations, policies, quotas, remote_clusters,
-    remote_filesystems, snapshots, storage_pools, troubleshooting, version,
-    xcp, nodes_health, filesystems_health, cli_policies,
+    afm,
+    afmcos,
+    api_health,
+    authorization,
+    clusters,
+    config,
+    diagnostics,
+    filesets,
+    filesystem_disks,
+    filesystems,
+    health,
+    managers,
+    node_classes,
+    nodes,
+    nsds,
+    operations,
+    policies,
+    quotas,
+    remote_clusters,
+    remote_filesystems,
+    snapshots,
+    storage_pools,
+    troubleshooting,
+    version,
+    xcp,
+    nodes_health,
+    filesystems_health,
+    cli_policies,
 ]
 
 EXPECTED_TOOL_COUNT = 152
@@ -68,19 +91,39 @@ async def test_server_module_mounts_every_tool_package():
     """server.py must mount every module that defines an mcp sub-server."""
     from pathlib import Path
 
-    server_src = (
-        Path(__file__).parent.parent / "src" / "scale_mcp_server" / "server.py"
-    ).read_text()
+    server_src = (Path(__file__).parent.parent / "src" / "scale_mcp_server" / "server.py").read_text()
     mounted = set(re.findall(r"mcp\.mount\((\w+)\.mcp\)", server_src))
 
     # tools.cli.policies is imported in server.py under the alias cli_policies
     expected = {
-        "afm", "afmcos", "api_health", "authorization", "clusters", "config",
-        "diagnostics", "filesets", "filesystem_disks", "filesystems", "health",
-        "managers", "node_classes", "nodes", "nsds", "operations", "policies",
-        "quotas", "remote_clusters", "remote_filesystems", "snapshots",
-        "storage_pools", "troubleshooting", "version", "xcp",
-        "nodes_health", "filesystems_health", "cli_policies",
+        "afm",
+        "afmcos",
+        "api_health",
+        "authorization",
+        "clusters",
+        "config",
+        "diagnostics",
+        "filesets",
+        "filesystem_disks",
+        "filesystems",
+        "health",
+        "managers",
+        "node_classes",
+        "nodes",
+        "nsds",
+        "operations",
+        "policies",
+        "quotas",
+        "remote_clusters",
+        "remote_filesystems",
+        "snapshots",
+        "storage_pools",
+        "troubleshooting",
+        "version",
+        "xcp",
+        "nodes_health",
+        "filesystems_health",
+        "cli_policies",
     }
     missing = expected - mounted
     assert not missing, f"sub-servers not mounted in server.py: {sorted(missing)}"

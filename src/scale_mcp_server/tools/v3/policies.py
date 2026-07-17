@@ -4,8 +4,10 @@ Policy tools for listing and updating the file system policy. Policy runs
 (mmapplypolicy) are handled by the CLI policy tools.
 """
 
-from typing import Optional, Any
-from fastmcp import FastMCP, Context
+from typing import Any
+
+from fastmcp import Context, FastMCP
+
 from scale_mcp_server.api.v3.policies import (
     get_policy_api,
     update_policy_api,
@@ -19,7 +21,7 @@ mcp = FastMCP("policies", instructions="File system policy operations")
 async def get_policy(
     ctx: Context,
     filesystem: str,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """List information about the file system policy.
 
@@ -40,8 +42,8 @@ async def update_policy(
     ctx: Context,
     filesystem: str,
     policy: dict,
-    test_only: Optional[bool] = None,
-    domain: Optional[str] = None,
+    test_only: bool | None = None,
+    domain: str | None = None,
 ) -> Any:
     """Update the file system policy.
 
@@ -53,9 +55,7 @@ async def update_policy(
     """
     await ctx.info(f"Tool called: update_policy with filesystem={filesystem}")
     try:
-        return await update_policy_api(
-            filesystem=filesystem, policy=policy, test_only=test_only, domain=domain
-        )
+        return await update_policy_api(filesystem=filesystem, policy=policy, test_only=test_only, domain=domain)
     except Exception as e:
         await ctx.error(f"Failed to update policy for {filesystem}: {str(e)}")
         raise

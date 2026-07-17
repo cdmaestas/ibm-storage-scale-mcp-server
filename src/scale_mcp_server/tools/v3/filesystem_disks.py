@@ -3,16 +3,18 @@
 File system disk tools for adding, deleting, and inspecting disks.
 """
 
-from typing import Optional, Any
-from fastmcp import FastMCP, Context
+from typing import Any
+
+from fastmcp import Context, FastMCP
+
 from scale_mcp_server.api.v3.filesystem_disks import (
-    list_filesystem_disks_api,
-    get_filesystem_disk_api,
     add_filesystem_disk_api,
-    delete_filesystem_disk_api,
     batch_add_filesystem_disks_api,
     batch_delete_filesystem_disks_api,
+    delete_filesystem_disk_api,
     get_disks_quorum_api,
+    get_filesystem_disk_api,
+    list_filesystem_disks_api,
 )
 
 # Create the filesystem_disks MCP server
@@ -23,9 +25,9 @@ mcp = FastMCP("filesystem_disks", instructions="Filesystem disk management opera
 async def list_filesystem_disks(
     ctx: Context,
     filesystem: str,
-    page_size: Optional[int] = None,
-    page_token: Optional[str] = None,
-    domain: Optional[str] = None,
+    page_size: int | None = None,
+    page_token: str | None = None,
+    domain: str | None = None,
 ) -> Any:
     """List all disks in a filesystem.
 
@@ -53,7 +55,7 @@ async def get_filesystem_disk(
     ctx: Context,
     filesystem: str,
     disk_name: str,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Get the current configuration and state of a disk in a filesystem.
 
@@ -62,13 +64,9 @@ async def get_filesystem_disk(
         disk_name: Disk name
         domain: Domain to be authorized against (default 'StorageScaleDomain')
     """
-    await ctx.info(
-        f"Tool called: get_filesystem_disk with filesystem={filesystem}, disk_name={disk_name}"
-    )
+    await ctx.info(f"Tool called: get_filesystem_disk with filesystem={filesystem}, disk_name={disk_name}")
     try:
-        return await get_filesystem_disk_api(
-            filesystem=filesystem, disk_name=disk_name, domain=domain
-        )
+        return await get_filesystem_disk_api(filesystem=filesystem, disk_name=disk_name, domain=domain)
     except Exception as e:
         await ctx.error(f"Failed to get disk {disk_name}: {str(e)}")
         raise
@@ -78,10 +76,10 @@ async def get_filesystem_disk(
 async def add_filesystem_disk(
     ctx: Context,
     filesystem: str,
-    disk_data: Optional[dict] = None,
-    verify_disks: Optional[bool] = None,
-    target_nodes: Optional[str] = None,
-    domain: Optional[str] = None,
+    disk_data: dict | None = None,
+    verify_disks: bool | None = None,
+    target_nodes: str | None = None,
+    domain: str | None = None,
 ) -> Any:
     """Add disks to a filesystem.
 
@@ -112,14 +110,14 @@ async def delete_filesystem_disk(
     filesystem: str,
     disk_name: str,
     continue_on_error: bool,
-    qos_class: Optional[str] = None,
-    rebalance_strategy: Optional[str] = None,
-    minimal_copy: Optional[bool] = None,
-    preserve_replication: Optional[bool] = None,
-    target_nodes: Optional[str] = None,
-    permanently_damaged: Optional[bool] = None,
-    pit_continue_on_error: Optional[bool] = None,
-    domain: Optional[str] = None,
+    qos_class: str | None = None,
+    rebalance_strategy: str | None = None,
+    minimal_copy: bool | None = None,
+    preserve_replication: bool | None = None,
+    target_nodes: str | None = None,
+    permanently_damaged: bool | None = None,
+    pit_continue_on_error: bool | None = None,
+    domain: str | None = None,
 ) -> Any:
     """Delete an existing filesystem disk, migrating its data to other disks.
 
@@ -137,9 +135,7 @@ async def delete_filesystem_disk(
         pit_continue_on_error: Continue deleting remaining files on PIT errors
         domain: Domain to be authorized against (default 'StorageScaleDomain')
     """
-    await ctx.info(
-        f"Tool called: delete_filesystem_disk with filesystem={filesystem}, disk_name={disk_name}"
-    )
+    await ctx.info(f"Tool called: delete_filesystem_disk with filesystem={filesystem}, disk_name={disk_name}")
     try:
         return await delete_filesystem_disk_api(
             filesystem=filesystem,
@@ -164,7 +160,7 @@ async def batch_add_filesystem_disks(
     ctx: Context,
     filesystem: str,
     disks_data: dict,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Add a batch of disks to a filesystem.
 
@@ -173,13 +169,9 @@ async def batch_add_filesystem_disks(
         disks_data: Batch disk definitions
         domain: Domain to be authorized against (default 'StorageScaleDomain')
     """
-    await ctx.info(
-        f"Tool called: batch_add_filesystem_disks with filesystem={filesystem}"
-    )
+    await ctx.info(f"Tool called: batch_add_filesystem_disks with filesystem={filesystem}")
     try:
-        return await batch_add_filesystem_disks_api(
-            filesystem=filesystem, disks_data=disks_data, domain=domain
-        )
+        return await batch_add_filesystem_disks_api(filesystem=filesystem, disks_data=disks_data, domain=domain)
     except Exception as e:
         await ctx.error(f"Failed to batch add disks to {filesystem}: {str(e)}")
         raise
@@ -189,14 +181,14 @@ async def batch_add_filesystem_disks(
 async def batch_delete_filesystem_disks(
     ctx: Context,
     filesystem: str,
-    disk_names: Optional[str] = None,
-    qos_class: Optional[str] = None,
-    rebalance_strategy: Optional[str] = None,
-    minimal_copy: Optional[bool] = None,
-    preserve_replication: Optional[bool] = None,
-    target_nodes: Optional[str] = None,
-    pit_continues_on_error: Optional[bool] = None,
-    domain: Optional[str] = None,
+    disk_names: str | None = None,
+    qos_class: str | None = None,
+    rebalance_strategy: str | None = None,
+    minimal_copy: bool | None = None,
+    preserve_replication: bool | None = None,
+    target_nodes: str | None = None,
+    pit_continues_on_error: bool | None = None,
+    domain: str | None = None,
 ) -> Any:
     """Delete a batch of disks from a filesystem.
 
@@ -212,9 +204,7 @@ async def batch_delete_filesystem_disks(
         pit_continues_on_error: Continue repairing remaining files on PIT errors
         domain: Domain to be authorized against (default 'StorageScaleDomain')
     """
-    await ctx.info(
-        f"Tool called: batch_delete_filesystem_disks with filesystem={filesystem}"
-    )
+    await ctx.info(f"Tool called: batch_delete_filesystem_disks with filesystem={filesystem}")
     try:
         return await batch_delete_filesystem_disks_api(
             filesystem=filesystem,
@@ -236,7 +226,7 @@ async def batch_delete_filesystem_disks(
 async def get_disks_quorum(
     ctx: Context,
     filesystem: str,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """List information about the file system descriptor (disk) quorum.
 

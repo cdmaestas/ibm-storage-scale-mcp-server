@@ -1,11 +1,12 @@
 """IBM Storage Scale Version operations."""
 
-from typing import Optional, Any, Dict
-from scale_mcp_server.utils.client import StorageScaleClient, StorageScaleAPIError
+from typing import Any
+
+from scale_mcp_server.utils.client import StorageScaleAPIError, StorageScaleClient
 
 
 async def get_version_api(
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Get IBM Storage Scale version information.
 
@@ -18,7 +19,7 @@ async def get_version_api(
     Raises:
         StorageScaleAPIError: If API call fails
     """
-    headers: Dict[str, str] = {}
+    headers: dict[str, str] = {}
     if domain:
         headers["X-StorageScaleDomain"] = domain
 
@@ -26,6 +27,4 @@ async def get_version_api(
         async with StorageScaleClient() as client:
             return await client.get("/scalemgmt/v3/version", headers=headers)
     except StorageScaleAPIError as e:
-        raise StorageScaleAPIError(
-            f"Failed to get version information: {str(e)}"
-        ) from e
+        raise StorageScaleAPIError(f"Failed to get version information: {str(e)}") from e

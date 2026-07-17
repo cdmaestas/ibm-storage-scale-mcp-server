@@ -4,23 +4,24 @@ Remote cluster endpoints (/scalemgmt/v3/clusters/remote...) for managing
 owning/accessing cluster relationships, following the 6.0.1 native REST API.
 """
 
-from typing import Optional, Any, Dict
-from scale_mcp_server.utils.client import StorageScaleClient, StorageScaleAPIError
+from typing import Any
+
+from scale_mcp_server.utils.client import StorageScaleAPIError, StorageScaleClient
 
 
-def _domain_headers(domain: Optional[str]) -> Dict[str, str]:
+def _domain_headers(domain: str | None) -> dict[str, str]:
     """Build request headers for the optional X-StorageScaleDomain."""
-    headers: Dict[str, str] = {}
+    headers: dict[str, str] = {}
     if domain:
         headers["X-StorageScaleDomain"] = domain
     return headers
 
 
 async def list_remote_clusters_api(
-    page_size: Optional[int] = None,
-    page_token: Optional[str] = None,
-    view: Optional[str] = None,
-    domain: Optional[str] = None,
+    page_size: int | None = None,
+    page_token: str | None = None,
+    view: str | None = None,
+    domain: str | None = None,
 ) -> Any:
     """List remote clusters known to the accessing cluster.
 
@@ -36,7 +37,7 @@ async def list_remote_clusters_api(
     Raises:
         StorageScaleAPIError: If API call fails
     """
-    params: Dict[str, Any] = {}
+    params: dict[str, Any] = {}
     if page_size is not None:
         params["page_size"] = page_size
     if page_token is not None:
@@ -57,8 +58,8 @@ async def list_remote_clusters_api(
 
 async def get_remote_cluster_api(
     name: str,
-    view: Optional[str] = None,
-    domain: Optional[str] = None,
+    view: str | None = None,
+    domain: str | None = None,
 ) -> Any:
     """Retrieve details about a remote cluster.
 
@@ -73,7 +74,7 @@ async def get_remote_cluster_api(
     Raises:
         StorageScaleAPIError: If API call fails
     """
-    params: Dict[str, Any] = {}
+    params: dict[str, Any] = {}
     if view is not None:
         params["view"] = view
 
@@ -85,14 +86,12 @@ async def get_remote_cluster_api(
                 headers=_domain_headers(domain),
             )
     except StorageScaleAPIError as e:
-        raise StorageScaleAPIError(
-            f"Failed to get remote cluster '{name}': {str(e)}"
-        ) from e
+        raise StorageScaleAPIError(f"Failed to get remote cluster '{name}': {str(e)}") from e
 
 
 async def add_remote_cluster_api(
     remote_cluster: dict,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Add an owning cluster to the set of remote clusters known to this cluster.
 
@@ -116,16 +115,14 @@ async def add_remote_cluster_api(
             )
     except StorageScaleAPIError as e:
         name = remote_cluster.get("name", "unknown")
-        raise StorageScaleAPIError(
-            f"Failed to add remote cluster '{name}': {str(e)}"
-        ) from e
+        raise StorageScaleAPIError(f"Failed to add remote cluster '{name}': {str(e)}") from e
 
 
 async def update_remote_cluster_api(
     name: str,
     remote_cluster: dict,
-    resource_update: Optional[bool] = None,
-    domain: Optional[str] = None,
+    resource_update: bool | None = None,
+    domain: str | None = None,
 ) -> Any:
     """Update information associated with a remote cluster.
 
@@ -141,7 +138,7 @@ async def update_remote_cluster_api(
     Raises:
         StorageScaleAPIError: If API call fails
     """
-    params: Dict[str, Any] = {}
+    params: dict[str, Any] = {}
     if resource_update is not None:
         params["resource_update"] = resource_update
 
@@ -154,15 +151,13 @@ async def update_remote_cluster_api(
                 headers=_domain_headers(domain),
             )
     except StorageScaleAPIError as e:
-        raise StorageScaleAPIError(
-            f"Failed to update remote cluster '{name}': {str(e)}"
-        ) from e
+        raise StorageScaleAPIError(f"Failed to update remote cluster '{name}': {str(e)}") from e
 
 
 async def delete_remote_cluster_api(
     name: str,
-    force: Optional[bool] = None,
-    domain: Optional[str] = None,
+    force: bool | None = None,
+    domain: str | None = None,
 ) -> Any:
     """Delete an owning cluster definition from the accessing cluster.
 
@@ -177,7 +172,7 @@ async def delete_remote_cluster_api(
     Raises:
         StorageScaleAPIError: If API call fails
     """
-    params: Dict[str, Any] = {}
+    params: dict[str, Any] = {}
     if force is not None:
         params["force"] = force
 
@@ -189,14 +184,12 @@ async def delete_remote_cluster_api(
                 headers=_domain_headers(domain),
             )
     except StorageScaleAPIError as e:
-        raise StorageScaleAPIError(
-            f"Failed to delete remote cluster '{name}': {str(e)}"
-        ) from e
+        raise StorageScaleAPIError(f"Failed to delete remote cluster '{name}': {str(e)}") from e
 
 
 async def authorize_remote_cluster_api(
     authorization: dict,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Authorize an accessing cluster to access resources on the owning cluster.
 
@@ -221,14 +214,12 @@ async def authorize_remote_cluster_api(
             )
     except StorageScaleAPIError as e:
         name = authorization.get("name", "unknown")
-        raise StorageScaleAPIError(
-            f"Failed to authorize remote cluster '{name}': {str(e)}"
-        ) from e
+        raise StorageScaleAPIError(f"Failed to authorize remote cluster '{name}': {str(e)}") from e
 
 
 async def deauthorize_remote_cluster_api(
     name: str,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Delete the authorization of an accessing cluster on the owning cluster.
 
@@ -249,14 +240,12 @@ async def deauthorize_remote_cluster_api(
                 headers=_domain_headers(domain),
             )
     except StorageScaleAPIError as e:
-        raise StorageScaleAPIError(
-            f"Failed to deauthorize remote cluster '{name}': {str(e)}"
-        ) from e
+        raise StorageScaleAPIError(f"Failed to deauthorize remote cluster '{name}': {str(e)}") from e
 
 
 async def refresh_remote_cluster_api(
     name: str,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Refresh the information of an owning cluster on the accessing cluster.
 
@@ -280,6 +269,4 @@ async def refresh_remote_cluster_api(
                 headers=_domain_headers(domain),
             )
     except StorageScaleAPIError as e:
-        raise StorageScaleAPIError(
-            f"Failed to refresh remote cluster '{name}': {str(e)}"
-        ) from e
+        raise StorageScaleAPIError(f"Failed to refresh remote cluster '{name}': {str(e)}") from e

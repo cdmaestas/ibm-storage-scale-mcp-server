@@ -11,10 +11,12 @@ The v3 API provides health information through:
 
 import warnings
 from typing import Any
-from fastmcp import FastMCP, Context
+
+from fastmcp import Context, FastMCP
+
 from scale_mcp_server.api.v2.filesystems import (
-    get_filesystem_health_states_api,
     get_filesystem_health_events_api,
+    get_filesystem_health_states_api,
 )
 
 # Create the filesystems health MCP server
@@ -47,21 +49,15 @@ async def get_filesystem_health_states(
         DeprecationWarning,
         stacklevel=2,
     )
-    await ctx.info(
-        f"Tool called: get_filesystem_health_states for filesystem: {filesystem}"
-    )
+    await ctx.info(f"Tool called: get_filesystem_health_states for filesystem: {filesystem}")
     await ctx.debug(f"Retrieving health states for filesystem: {filesystem}")
 
     try:
         result = await get_filesystem_health_states_api(filesystem=filesystem)
-        await ctx.info(
-            f"Successfully retrieved health states for filesystem: {filesystem}"
-        )
+        await ctx.info(f"Successfully retrieved health states for filesystem: {filesystem}")
         return result
     except Exception as e:
-        await ctx.error(
-            f"Failed to get health states for filesystem {filesystem}: {str(e)}"
-        )
+        await ctx.error(f"Failed to get health states for filesystem {filesystem}: {str(e)}")
         raise
 
 
@@ -88,19 +84,13 @@ async def get_filesystem_health_events(
         DeprecationWarning,
         stacklevel=2,
     )
-    await ctx.info(
-        f"Tool called: get_filesystem_health_events for filesystem: {filesystem_name}"
-    )
+    await ctx.info(f"Tool called: get_filesystem_health_events for filesystem: {filesystem_name}")
     await ctx.debug(f"Retrieving health events for filesystem: {filesystem_name}")
 
     try:
         result = await get_filesystem_health_events_api(filesystem_name=filesystem_name)
-        await ctx.info(
-            f"Successfully retrieved health events for filesystem: {filesystem_name}"
-        )
+        await ctx.info(f"Successfully retrieved health events for filesystem: {filesystem_name}")
         return result
     except Exception as e:
-        await ctx.error(
-            f"Failed to get health events for filesystem {filesystem_name}: {str(e)}"
-        )
+        await ctx.error(f"Failed to get health events for filesystem {filesystem_name}: {str(e)}")
         raise

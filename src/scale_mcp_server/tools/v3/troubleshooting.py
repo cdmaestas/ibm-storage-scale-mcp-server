@@ -3,12 +3,14 @@
 Troubleshooting tools for clearing NSD volume IDs and persistent reserve keys.
 """
 
-from typing import Optional, Any
-from fastmcp import FastMCP, Context
+from typing import Any
+
+from fastmcp import Context, FastMCP
+
 from scale_mcp_server.api.v3.troubleshooting import (
     clear_nsd_id_api,
-    get_persistent_reserve_keys_api,
     clear_persistent_reserve_keys_api,
+    get_persistent_reserve_keys_api,
 )
 
 # Create the troubleshooting MCP server
@@ -19,8 +21,8 @@ mcp = FastMCP("troubleshooting", instructions="Troubleshooting and recovery oper
 async def clear_nsd_id(
     ctx: Context,
     id: str,
-    node_name: Optional[str] = None,
-    domain: Optional[str] = None,
+    node_name: str | None = None,
+    domain: str | None = None,
 ) -> Any:
     """Delete the NSD volume ID from a device.
 
@@ -41,8 +43,8 @@ async def clear_nsd_id(
 async def get_persistent_reserve_keys(
     ctx: Context,
     device: str,
-    node_name: Optional[str] = None,
-    domain: Optional[str] = None,
+    node_name: str | None = None,
+    domain: str | None = None,
 ) -> Any:
     """Get persistent reserve registration key values from a device.
 
@@ -53,9 +55,7 @@ async def get_persistent_reserve_keys(
     """
     await ctx.info(f"Tool called: get_persistent_reserve_keys with device={device}")
     try:
-        return await get_persistent_reserve_keys_api(
-            device=device, node_name=node_name, domain=domain
-        )
+        return await get_persistent_reserve_keys_api(device=device, node_name=node_name, domain=domain)
     except Exception as e:
         await ctx.error(f"Failed to get persistent reserve keys for {device}: {str(e)}")
         raise
@@ -65,10 +65,10 @@ async def get_persistent_reserve_keys(
 async def clear_persistent_reserve_keys(
     ctx: Context,
     device: str,
-    key: Optional[str] = None,
-    node_name: Optional[str] = None,
-    force: Optional[bool] = None,
-    domain: Optional[str] = None,
+    key: str | None = None,
+    node_name: str | None = None,
+    force: bool | None = None,
+    domain: str | None = None,
 ) -> Any:
     """Delete the persistent reserve registration key from a device.
 
@@ -86,7 +86,5 @@ async def clear_persistent_reserve_keys(
             device=device, key=key, node_name=node_name, force=force, domain=domain
         )
     except Exception as e:
-        await ctx.error(
-            f"Failed to clear persistent reserve keys for {device}: {str(e)}"
-        )
+        await ctx.error(f"Failed to clear persistent reserve keys for {device}: {str(e)}")
         raise
