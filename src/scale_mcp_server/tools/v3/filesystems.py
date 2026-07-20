@@ -4,25 +4,27 @@ File system tools, including mount state, rebalance/restripe, and directory
 operations.
 """
 
-from typing import Optional, Any
-from fastmcp import FastMCP, Context
+from typing import Any
+
+from fastmcp import Context, FastMCP
+
 from scale_mcp_server.api.v3.filesystems import (
-    list_filesystems_api,
-    get_filesystem_api,
+    create_directory_api,
     create_filesystem_api,
-    update_filesystem_api,
+    delete_directory_api,
     delete_filesystem_api,
+    get_filesystem_api,
     get_mount_status_api,
-    mount_filesystem_api,
-    unmount_filesystem_api,
+    list_directory_api,
+    list_filesystems_api,
     mount_all_filesystems_api,
-    unmount_all_filesystems_api,
+    mount_filesystem_api,
     rebalance_filesystem_api,
     restripe_filesystem_api,
-    list_directory_api,
     stat_directory_api,
-    create_directory_api,
-    delete_directory_api,
+    unmount_all_filesystems_api,
+    unmount_filesystem_api,
+    update_filesystem_api,
 )
 
 # Create the filesystems MCP server
@@ -32,9 +34,9 @@ mcp = FastMCP("filesystems", instructions="Filesystem management operations")
 @mcp.tool()
 async def list_filesystems(
     ctx: Context,
-    page_size: Optional[int] = None,
-    page_token: Optional[str] = None,
-    domain: Optional[str] = None,
+    page_size: int | None = None,
+    page_token: str | None = None,
+    domain: str | None = None,
 ) -> Any:
     """List all filesystems registered in the cluster.
 
@@ -45,9 +47,7 @@ async def list_filesystems(
     """
     await ctx.info("Tool called: list_filesystems")
     try:
-        return await list_filesystems_api(
-            page_size=page_size, page_token=page_token, domain=domain
-        )
+        return await list_filesystems_api(page_size=page_size, page_token=page_token, domain=domain)
     except Exception as e:
         await ctx.error(f"Failed to list filesystems: {str(e)}")
         raise
@@ -57,7 +57,7 @@ async def list_filesystems(
 async def get_filesystem(
     ctx: Context,
     filesystem: str,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Get detailed information about a specific filesystem.
 
@@ -77,7 +77,7 @@ async def get_filesystem(
 async def create_filesystem(
     ctx: Context,
     filesystem_data: dict,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Create a new filesystem.
 
@@ -87,9 +87,7 @@ async def create_filesystem(
     """
     await ctx.info("Tool called: create_filesystem")
     try:
-        return await create_filesystem_api(
-            filesystem_data=filesystem_data, domain=domain
-        )
+        return await create_filesystem_api(filesystem_data=filesystem_data, domain=domain)
     except Exception as e:
         await ctx.error(f"Failed to create filesystem: {str(e)}")
         raise
@@ -100,7 +98,7 @@ async def update_filesystem(
     ctx: Context,
     filesystem: str,
     filesystem_data: dict,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Update the attributes of a filesystem.
 
@@ -111,9 +109,7 @@ async def update_filesystem(
     """
     await ctx.info(f"Tool called: update_filesystem with filesystem={filesystem}")
     try:
-        return await update_filesystem_api(
-            filesystem=filesystem, filesystem_data=filesystem_data, domain=domain
-        )
+        return await update_filesystem_api(filesystem=filesystem, filesystem_data=filesystem_data, domain=domain)
     except Exception as e:
         await ctx.error(f"Failed to update filesystem {filesystem}: {str(e)}")
         raise
@@ -123,8 +119,8 @@ async def update_filesystem(
 async def delete_filesystem(
     ctx: Context,
     name: str,
-    permanently_damaged: Optional[bool] = None,
-    domain: Optional[str] = None,
+    permanently_damaged: bool | None = None,
+    domain: str | None = None,
 ) -> Any:
     """Delete a filesystem.
 
@@ -135,9 +131,7 @@ async def delete_filesystem(
     """
     await ctx.info(f"Tool called: delete_filesystem with name={name}")
     try:
-        return await delete_filesystem_api(
-            name=name, permanently_damaged=permanently_damaged, domain=domain
-        )
+        return await delete_filesystem_api(name=name, permanently_damaged=permanently_damaged, domain=domain)
     except Exception as e:
         await ctx.error(f"Failed to delete filesystem {name}: {str(e)}")
         raise
@@ -147,8 +141,8 @@ async def delete_filesystem(
 async def get_mount_status(
     ctx: Context,
     filesystem: str,
-    cluster_name: Optional[str] = None,
-    domain: Optional[str] = None,
+    cluster_name: str | None = None,
+    domain: str | None = None,
 ) -> Any:
     """List the mount state of a filesystem.
 
@@ -159,9 +153,7 @@ async def get_mount_status(
     """
     await ctx.info(f"Tool called: get_mount_status with filesystem={filesystem}")
     try:
-        return await get_mount_status_api(
-            filesystem=filesystem, cluster_name=cluster_name, domain=domain
-        )
+        return await get_mount_status_api(filesystem=filesystem, cluster_name=cluster_name, domain=domain)
     except Exception as e:
         await ctx.error(f"Failed to get mount status for {filesystem}: {str(e)}")
         raise
@@ -171,8 +163,8 @@ async def get_mount_status(
 async def mount_filesystem(
     ctx: Context,
     name: str,
-    mount_data: Optional[dict] = None,
-    domain: Optional[str] = None,
+    mount_data: dict | None = None,
+    domain: str | None = None,
 ) -> Any:
     """Mount a filesystem on one or more nodes.
 
@@ -184,9 +176,7 @@ async def mount_filesystem(
     """
     await ctx.info(f"Tool called: mount_filesystem with name={name}")
     try:
-        return await mount_filesystem_api(
-            name=name, mount_data=mount_data, domain=domain
-        )
+        return await mount_filesystem_api(name=name, mount_data=mount_data, domain=domain)
     except Exception as e:
         await ctx.error(f"Failed to mount filesystem {name}: {str(e)}")
         raise
@@ -196,8 +186,8 @@ async def mount_filesystem(
 async def unmount_filesystem(
     ctx: Context,
     name: str,
-    unmount_data: Optional[dict] = None,
-    domain: Optional[str] = None,
+    unmount_data: dict | None = None,
+    domain: str | None = None,
 ) -> Any:
     """Unmount a filesystem from one or more nodes.
 
@@ -209,9 +199,7 @@ async def unmount_filesystem(
     """
     await ctx.info(f"Tool called: unmount_filesystem with name={name}")
     try:
-        return await unmount_filesystem_api(
-            name=name, unmount_data=unmount_data, domain=domain
-        )
+        return await unmount_filesystem_api(name=name, unmount_data=unmount_data, domain=domain)
     except Exception as e:
         await ctx.error(f"Failed to unmount filesystem {name}: {str(e)}")
         raise
@@ -220,8 +208,8 @@ async def unmount_filesystem(
 @mcp.tool()
 async def mount_all_filesystems(
     ctx: Context,
-    mount_data: Optional[dict] = None,
-    domain: Optional[str] = None,
+    mount_data: dict | None = None,
+    domain: str | None = None,
 ) -> Any:
     """Mount all existing filesystems.
 
@@ -241,8 +229,8 @@ async def mount_all_filesystems(
 @mcp.tool()
 async def unmount_all_filesystems(
     ctx: Context,
-    unmount_data: Optional[dict] = None,
-    domain: Optional[str] = None,
+    unmount_data: dict | None = None,
+    domain: str | None = None,
 ) -> Any:
     """Unmount all filesystems on one or more nodes.
 
@@ -253,9 +241,7 @@ async def unmount_all_filesystems(
     """
     await ctx.info("Tool called: unmount_all_filesystems")
     try:
-        return await unmount_all_filesystems_api(
-            unmount_data=unmount_data, domain=domain
-        )
+        return await unmount_all_filesystems_api(unmount_data=unmount_data, domain=domain)
     except Exception as e:
         await ctx.error(f"Failed to unmount all filesystems: {str(e)}")
         raise
@@ -265,12 +251,12 @@ async def unmount_all_filesystems(
 async def rebalance_filesystem(
     ctx: Context,
     filesystem: str,
-    rebalance_strategy: Optional[str] = None,
-    metadata_only: Optional[bool] = None,
-    target_nodes: Optional[str] = None,
-    pit_continue_on_error: Optional[bool] = None,
-    qos_class: Optional[str] = None,
-    domain: Optional[str] = None,
+    rebalance_strategy: str | None = None,
+    metadata_only: bool | None = None,
+    target_nodes: str | None = None,
+    pit_continue_on_error: bool | None = None,
+    qos_class: str | None = None,
+    domain: str | None = None,
 ) -> Any:
     """Rebalance the filesystem by distributing file blocks evenly across disks.
 
@@ -304,12 +290,12 @@ async def rebalance_filesystem(
 async def restripe_filesystem(
     ctx: Context,
     filesystem: str,
-    restripe_operation: Optional[str] = None,
-    metadata_only: Optional[bool] = None,
-    target_nodes: Optional[str] = None,
-    pit_continue_on_error: Optional[bool] = None,
-    qos_class: Optional[str] = None,
-    domain: Optional[str] = None,
+    restripe_operation: str | None = None,
+    metadata_only: bool | None = None,
+    target_nodes: str | None = None,
+    pit_continue_on_error: bool | None = None,
+    qos_class: str | None = None,
+    domain: str | None = None,
 ) -> Any:
     """Restripe the filesystem, restoring replication of all files.
 
@@ -343,9 +329,9 @@ async def list_directory(
     ctx: Context,
     filesystem: str,
     dirpath: str,
-    page_size: Optional[int] = None,
-    page_token: Optional[str] = None,
-    domain: Optional[str] = None,
+    page_size: int | None = None,
+    page_token: str | None = None,
+    domain: str | None = None,
 ) -> Any:
     """Get information about the contents of a filesystem directory.
 
@@ -356,9 +342,7 @@ async def list_directory(
         page_token: Token to navigate to the next page
         domain: Domain to be authorized against (default 'StorageScaleDomain')
     """
-    await ctx.info(
-        f"Tool called: list_directory with filesystem={filesystem}, dirpath={dirpath}"
-    )
+    await ctx.info(f"Tool called: list_directory with filesystem={filesystem}, dirpath={dirpath}")
     try:
         return await list_directory_api(
             filesystem=filesystem,
@@ -377,7 +361,7 @@ async def stat_directory(
     ctx: Context,
     filesystem: str,
     dirpath: str,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Get detailed information (stat) of a filesystem directory.
 
@@ -386,13 +370,9 @@ async def stat_directory(
         dirpath: Path of the filesystem directory
         domain: Domain to be authorized against (default 'StorageScaleDomain')
     """
-    await ctx.info(
-        f"Tool called: stat_directory with filesystem={filesystem}, dirpath={dirpath}"
-    )
+    await ctx.info(f"Tool called: stat_directory with filesystem={filesystem}, dirpath={dirpath}")
     try:
-        return await stat_directory_api(
-            filesystem=filesystem, dirpath=dirpath, domain=domain
-        )
+        return await stat_directory_api(filesystem=filesystem, dirpath=dirpath, domain=domain)
     except Exception as e:
         await ctx.error(f"Failed to stat directory {dirpath}: {str(e)}")
         raise
@@ -403,8 +383,8 @@ async def create_directory(
     ctx: Context,
     filesystem: str,
     dirpath: str,
-    directory_data: Optional[dict] = None,
-    domain: Optional[str] = None,
+    directory_data: dict | None = None,
+    domain: str | None = None,
 ) -> Any:
     """Create a filesystem directory.
 
@@ -414,9 +394,7 @@ async def create_directory(
         directory_data: Directory creation parameters
         domain: Domain to be authorized against (default 'StorageScaleDomain')
     """
-    await ctx.info(
-        f"Tool called: create_directory with filesystem={filesystem}, dirpath={dirpath}"
-    )
+    await ctx.info(f"Tool called: create_directory with filesystem={filesystem}, dirpath={dirpath}")
     try:
         return await create_directory_api(
             filesystem=filesystem,
@@ -434,8 +412,8 @@ async def delete_directory(
     ctx: Context,
     filesystem: str,
     dirpath: str,
-    force: Optional[bool] = None,
-    domain: Optional[str] = None,
+    force: bool | None = None,
+    domain: str | None = None,
 ) -> Any:
     """Delete a directory from a mounted filesystem.
 
@@ -445,13 +423,9 @@ async def delete_directory(
         force: Forcefully delete the directory even if it is not empty
         domain: Domain to be authorized against (default 'StorageScaleDomain')
     """
-    await ctx.info(
-        f"Tool called: delete_directory with filesystem={filesystem}, dirpath={dirpath}"
-    )
+    await ctx.info(f"Tool called: delete_directory with filesystem={filesystem}, dirpath={dirpath}")
     try:
-        return await delete_directory_api(
-            filesystem=filesystem, dirpath=dirpath, force=force, domain=domain
-        )
+        return await delete_directory_api(filesystem=filesystem, dirpath=dirpath, force=force, domain=domain)
     except Exception as e:
         await ctx.error(f"Failed to delete directory {dirpath}: {str(e)}")
         raise

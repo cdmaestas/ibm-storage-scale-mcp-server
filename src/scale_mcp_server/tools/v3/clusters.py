@@ -3,13 +3,15 @@
 Local cluster tools. Remote cluster tools live in remote_clusters.py.
 """
 
-from typing import Optional, Any
-from fastmcp import FastMCP, Context
+from typing import Any
+
+from fastmcp import Context, FastMCP
+
 from scale_mcp_server.api.v3.clusters import (
-    list_clusters_api,
     create_cluster_api,
-    migrate_cluster_api,
     list_cluster_trust_api,
+    list_clusters_api,
+    migrate_cluster_api,
 )
 
 # Create the clusters MCP server
@@ -19,8 +21,8 @@ mcp = FastMCP("clusters", instructions="Cluster management operations")
 @mcp.tool()
 async def list_clusters(
     ctx: Context,
-    view: Optional[str] = None,
-    domain: Optional[str] = None,
+    view: str | None = None,
+    domain: str | None = None,
 ) -> Any:
     """List information about the local cluster.
 
@@ -40,7 +42,7 @@ async def list_clusters(
 async def create_cluster(
     ctx: Context,
     cluster_data: dict,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Create an IBM Storage Scale cluster.
 
@@ -59,8 +61,8 @@ async def create_cluster(
 @mcp.tool()
 async def migrate_cluster(
     ctx: Context,
-    precheck: Optional[bool] = None,
-    domain: Optional[str] = None,
+    precheck: bool | None = None,
+    domain: str | None = None,
 ) -> Any:
     """Migrate a legacy cluster to the native REST API.
 
@@ -79,8 +81,8 @@ async def migrate_cluster(
 @mcp.tool()
 async def list_cluster_trust(
     ctx: Context,
-    end_point: Optional[str] = None,
-    domain: Optional[str] = None,
+    end_point: str | None = None,
+    domain: str | None = None,
 ) -> Any:
     """List all CA chains that are currently trusted by the local cluster.
 

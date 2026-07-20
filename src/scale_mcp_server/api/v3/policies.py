@@ -5,13 +5,14 @@ the 6.0.1 native REST API. Policy runs (mmapplypolicy) are not available via
 the native REST API; see the CLI policy tools for that.
 """
 
-from typing import Optional, Any, Dict
-from scale_mcp_server.utils.client import StorageScaleClient, StorageScaleAPIError
+from typing import Any
+
+from scale_mcp_server.utils.client import StorageScaleAPIError, StorageScaleClient
 
 
-def _domain_headers(domain: Optional[str]) -> Dict[str, str]:
+def _domain_headers(domain: str | None) -> dict[str, str]:
     """Build request headers for the optional X-StorageScaleDomain."""
-    headers: Dict[str, str] = {}
+    headers: dict[str, str] = {}
     if domain:
         headers["X-StorageScaleDomain"] = domain
     return headers
@@ -19,7 +20,7 @@ def _domain_headers(domain: Optional[str]) -> Dict[str, str]:
 
 async def get_policy_api(
     filesystem: str,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """List information about the file system policy.
 
@@ -40,16 +41,14 @@ async def get_policy_api(
                 headers=_domain_headers(domain),
             )
     except StorageScaleAPIError as e:
-        raise StorageScaleAPIError(
-            f"Failed to get policy for filesystem '{filesystem}': {str(e)}"
-        ) from e
+        raise StorageScaleAPIError(f"Failed to get policy for filesystem '{filesystem}': {str(e)}") from e
 
 
 async def update_policy_api(
     filesystem: str,
     policy: dict,
-    test_only: Optional[bool] = None,
-    domain: Optional[str] = None,
+    test_only: bool | None = None,
+    domain: str | None = None,
 ) -> Any:
     """Update the file system policy.
 
@@ -65,7 +64,7 @@ async def update_policy_api(
     Raises:
         StorageScaleAPIError: If API call fails
     """
-    params: Dict[str, Any] = {}
+    params: dict[str, Any] = {}
     if test_only is not None:
         params["test_only"] = test_only
 
@@ -78,6 +77,4 @@ async def update_policy_api(
                 headers=_domain_headers(domain),
             )
     except StorageScaleAPIError as e:
-        raise StorageScaleAPIError(
-            f"Failed to update policy for filesystem '{filesystem}': {str(e)}"
-        ) from e
+        raise StorageScaleAPIError(f"Failed to update policy for filesystem '{filesystem}': {str(e)}") from e

@@ -3,8 +3,10 @@
 API health tools for the administration daemon (scaleadmd) on cluster nodes.
 """
 
-from typing import Optional, Any
-from fastmcp import FastMCP, Context
+from typing import Any
+
+from fastmcp import Context, FastMCP
+
 from scale_mcp_server.api.v3.api_health import (
     get_api_health_api,
     get_node_api_health_api,
@@ -17,9 +19,9 @@ mcp = FastMCP("api_health", instructions="Native REST API health operations")
 @mcp.tool()
 async def get_api_health(
     ctx: Context,
-    page_size: Optional[int] = None,
-    page_token: Optional[str] = None,
-    domain: Optional[str] = None,
+    page_size: int | None = None,
+    page_token: str | None = None,
+    domain: str | None = None,
 ) -> Any:
     """List the health status of the native REST API services on nodes.
 
@@ -30,9 +32,7 @@ async def get_api_health(
     """
     await ctx.info("Tool called: get_api_health")
     try:
-        return await get_api_health_api(
-            page_size=page_size, page_token=page_token, domain=domain
-        )
+        return await get_api_health_api(page_size=page_size, page_token=page_token, domain=domain)
     except Exception as e:
         await ctx.error(f"Failed to get API health: {str(e)}")
         raise
@@ -42,7 +42,7 @@ async def get_api_health(
 async def get_node_api_health(
     ctx: Context,
     node_name: str,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Get the health status of the native REST API service on a node.
 

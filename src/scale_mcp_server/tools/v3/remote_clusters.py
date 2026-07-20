@@ -3,17 +3,19 @@
 Remote cluster tools for managing owning/accessing cluster relationships.
 """
 
-from typing import Optional, Any
-from fastmcp import FastMCP, Context
+from typing import Any
+
+from fastmcp import Context, FastMCP
+
 from scale_mcp_server.api.v3.remote_clusters import (
-    list_remote_clusters_api,
-    get_remote_cluster_api,
     add_remote_cluster_api,
-    update_remote_cluster_api,
-    delete_remote_cluster_api,
     authorize_remote_cluster_api,
     deauthorize_remote_cluster_api,
+    delete_remote_cluster_api,
+    get_remote_cluster_api,
+    list_remote_clusters_api,
     refresh_remote_cluster_api,
+    update_remote_cluster_api,
 )
 
 # Create the remote_clusters MCP server
@@ -23,10 +25,10 @@ mcp = FastMCP("remote_clusters", instructions="Remote cluster management operati
 @mcp.tool()
 async def list_remote_clusters(
     ctx: Context,
-    page_size: Optional[int] = None,
-    page_token: Optional[str] = None,
-    view: Optional[str] = None,
-    domain: Optional[str] = None,
+    page_size: int | None = None,
+    page_token: str | None = None,
+    view: str | None = None,
+    domain: str | None = None,
 ) -> Any:
     """List remote clusters known to the accessing cluster.
 
@@ -38,9 +40,7 @@ async def list_remote_clusters(
     """
     await ctx.info("Tool called: list_remote_clusters")
     try:
-        return await list_remote_clusters_api(
-            page_size=page_size, page_token=page_token, view=view, domain=domain
-        )
+        return await list_remote_clusters_api(page_size=page_size, page_token=page_token, view=view, domain=domain)
     except Exception as e:
         await ctx.error(f"Failed to list remote clusters: {str(e)}")
         raise
@@ -50,8 +50,8 @@ async def list_remote_clusters(
 async def get_remote_cluster(
     ctx: Context,
     name: str,
-    view: Optional[str] = None,
-    domain: Optional[str] = None,
+    view: str | None = None,
+    domain: str | None = None,
 ) -> Any:
     """Retrieve details about a remote cluster.
 
@@ -72,7 +72,7 @@ async def get_remote_cluster(
 async def add_remote_cluster(
     ctx: Context,
     remote_cluster: dict,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Add an owning cluster to the set of remote clusters known to this cluster.
 
@@ -83,9 +83,7 @@ async def add_remote_cluster(
     """
     await ctx.info("Tool called: add_remote_cluster")
     try:
-        return await add_remote_cluster_api(
-            remote_cluster=remote_cluster, domain=domain
-        )
+        return await add_remote_cluster_api(remote_cluster=remote_cluster, domain=domain)
     except Exception as e:
         await ctx.error(f"Failed to add remote cluster: {str(e)}")
         raise
@@ -96,8 +94,8 @@ async def update_remote_cluster(
     ctx: Context,
     name: str,
     remote_cluster: dict,
-    resource_update: Optional[bool] = None,
-    domain: Optional[str] = None,
+    resource_update: bool | None = None,
+    domain: str | None = None,
 ) -> Any:
     """Update information associated with a remote cluster.
 
@@ -124,8 +122,8 @@ async def update_remote_cluster(
 async def delete_remote_cluster(
     ctx: Context,
     name: str,
-    force: Optional[bool] = None,
-    domain: Optional[str] = None,
+    force: bool | None = None,
+    domain: str | None = None,
 ) -> Any:
     """Delete an owning cluster definition from the accessing cluster.
 
@@ -146,7 +144,7 @@ async def delete_remote_cluster(
 async def authorize_remote_cluster(
     ctx: Context,
     authorization: dict,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Authorize an accessing cluster to access resources on the owning cluster.
 
@@ -158,9 +156,7 @@ async def authorize_remote_cluster(
     """
     await ctx.info("Tool called: authorize_remote_cluster")
     try:
-        return await authorize_remote_cluster_api(
-            authorization=authorization, domain=domain
-        )
+        return await authorize_remote_cluster_api(authorization=authorization, domain=domain)
     except Exception as e:
         await ctx.error(f"Failed to authorize remote cluster: {str(e)}")
         raise
@@ -170,7 +166,7 @@ async def authorize_remote_cluster(
 async def deauthorize_remote_cluster(
     ctx: Context,
     name: str,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Delete the authorization of an accessing cluster on the owning cluster.
 
@@ -190,7 +186,7 @@ async def deauthorize_remote_cluster(
 async def refresh_remote_cluster(
     ctx: Context,
     name: str,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Refresh the information of an owning cluster on the accessing cluster.
 

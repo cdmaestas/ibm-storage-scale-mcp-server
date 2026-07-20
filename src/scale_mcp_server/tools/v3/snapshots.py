@@ -1,19 +1,21 @@
 """IBM Storage Scale Snapshot Management MCP Server."""
 
-from typing import Optional, Any
-from fastmcp import FastMCP, Context
+from typing import Any
+
+from fastmcp import Context, FastMCP
+
+from scale_mcp_server.api.v3.filesets import (
+    create_fileset_snapshot_api,
+    delete_fileset_snapshot_api,
+    get_fileset_snapshot_api,
+    list_fileset_snapshots_api,
+)
 from scale_mcp_server.api.v3.snapshots import (
-    list_snapshots_api,
     create_snapshot_api,
-    get_snapshot_api,
     delete_snapshot_api,
     get_snapdir_settings_api,
-)
-from scale_mcp_server.api.v3.filesets import (
-    list_fileset_snapshots_api,
-    create_fileset_snapshot_api,
-    get_fileset_snapshot_api,
-    delete_fileset_snapshot_api,
+    get_snapshot_api,
+    list_snapshots_api,
 )
 
 # Create the snapshots MCP server
@@ -24,7 +26,7 @@ mcp = FastMCP("snapshots", instructions="Snapshot management operations")
 async def list_filesystem_snapshots(
     ctx: Context,
     filesystem: str,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """List all snapshots for a filesystem.
 
@@ -35,9 +37,7 @@ async def list_filesystem_snapshots(
     Returns:
         Dictionary containing snapshots information
     """
-    await ctx.info(
-        f"Tool called: list_filesystem_snapshots with filesystem={filesystem}"
-    )
+    await ctx.info(f"Tool called: list_filesystem_snapshots with filesystem={filesystem}")
     await ctx.debug(f"Listing all snapshots for filesystem: {filesystem}")
 
     try:
@@ -54,7 +54,7 @@ async def create_filesystem_snapshot(
     ctx: Context,
     filesystem: str,
     snapshot_data: dict,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Create a new filesystem snapshot.
 
@@ -66,15 +66,11 @@ async def create_filesystem_snapshot(
     Returns:
         Dictionary containing snapshot information
     """
-    await ctx.info(
-        f"Tool called: create_filesystem_snapshot with filesystem={filesystem}"
-    )
+    await ctx.info(f"Tool called: create_filesystem_snapshot with filesystem={filesystem}")
     await ctx.debug(f"Creating new snapshot for filesystem: {filesystem}")
 
     try:
-        result = await create_snapshot_api(
-            filesystem=filesystem, snapshot_data=snapshot_data, domain=domain
-        )
+        result = await create_snapshot_api(filesystem=filesystem, snapshot_data=snapshot_data, domain=domain)
         await ctx.info(f"Snapshot created successfully for {filesystem}")
         return result
     except Exception as e:
@@ -87,7 +83,7 @@ async def get_filesystem_snapshot(
     ctx: Context,
     filesystem: str,
     snapshot_name: str,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Get information about a specific filesystem snapshot.
 
@@ -99,15 +95,11 @@ async def get_filesystem_snapshot(
     Returns:
         Dictionary containing snapshot information
     """
-    await ctx.info(
-        f"Tool called: get_filesystem_snapshot with filesystem={filesystem}, snapshot_name={snapshot_name}"
-    )
+    await ctx.info(f"Tool called: get_filesystem_snapshot with filesystem={filesystem}, snapshot_name={snapshot_name}")
     await ctx.debug(f"Retrieving snapshot {snapshot_name} from filesystem {filesystem}")
 
     try:
-        result = await get_snapshot_api(
-            filesystem=filesystem, snapshot_name=snapshot_name, domain=domain
-        )
+        result = await get_snapshot_api(filesystem=filesystem, snapshot_name=snapshot_name, domain=domain)
         await ctx.info(f"Successfully retrieved snapshot {snapshot_name}")
         return result
     except Exception as e:
@@ -120,7 +112,7 @@ async def delete_filesystem_snapshot(
     ctx: Context,
     filesystem: str,
     snapshot_name: str,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Delete a filesystem snapshot.
 
@@ -138,9 +130,7 @@ async def delete_filesystem_snapshot(
     await ctx.debug(f"Deleting snapshot {snapshot_name} from filesystem {filesystem}")
 
     try:
-        result = await delete_snapshot_api(
-            filesystem=filesystem, snapshot_name=snapshot_name, domain=domain
-        )
+        result = await delete_snapshot_api(filesystem=filesystem, snapshot_name=snapshot_name, domain=domain)
         await ctx.info(f"Snapshot {snapshot_name} deleted successfully")
         return result
     except Exception as e:
@@ -153,7 +143,7 @@ async def list_fileset_snapshots(
     ctx: Context,
     filesystem: str,
     fileset: str,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """List snapshots for a fileset.
 
@@ -165,15 +155,11 @@ async def list_fileset_snapshots(
     Returns:
         Dictionary containing fileset snapshots information
     """
-    await ctx.info(
-        f"Tool called: list_fileset_snapshots with filesystem={filesystem}, fileset={fileset}"
-    )
+    await ctx.info(f"Tool called: list_fileset_snapshots with filesystem={filesystem}, fileset={fileset}")
     await ctx.debug(f"Listing snapshots for fileset {fileset}")
 
     try:
-        result = await list_fileset_snapshots_api(
-            filesystem=filesystem, fileset=fileset, domain=domain
-        )
+        result = await list_fileset_snapshots_api(filesystem=filesystem, fileset=fileset, domain=domain)
         await ctx.info(f"Successfully retrieved snapshots for fileset {fileset}")
         return result
     except Exception as e:
@@ -187,7 +173,7 @@ async def create_fileset_snapshot(
     filesystem: str,
     fileset: str,
     snapshot_data: dict,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Create a snapshot for a fileset.
 
@@ -200,9 +186,7 @@ async def create_fileset_snapshot(
     Returns:
         Dictionary containing snapshot creation status
     """
-    await ctx.info(
-        f"Tool called: create_fileset_snapshot with filesystem={filesystem}, fileset={fileset}"
-    )
+    await ctx.info(f"Tool called: create_fileset_snapshot with filesystem={filesystem}, fileset={fileset}")
     await ctx.debug(f"Creating snapshot for fileset {fileset}")
 
     try:
@@ -225,7 +209,7 @@ async def get_fileset_snapshot(
     filesystem: str,
     fileset: str,
     snapshot_name: str,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Get information about a specific fileset snapshot.
 
@@ -239,7 +223,8 @@ async def get_fileset_snapshot(
         Dictionary containing snapshot information
     """
     await ctx.info(
-        f"Tool called: get_fileset_snapshot with filesystem={filesystem}, fileset={fileset}, snapshot_name={snapshot_name}"
+        f"Tool called: get_fileset_snapshot with filesystem={filesystem}, "
+        f"fileset={fileset}, snapshot_name={snapshot_name}"
     )
     await ctx.debug(f"Retrieving snapshot {snapshot_name} for fileset {fileset}")
 
@@ -250,14 +235,10 @@ async def get_fileset_snapshot(
             snapshot_name=snapshot_name,
             domain=domain,
         )
-        await ctx.info(
-            f"Successfully retrieved snapshot {snapshot_name} for fileset {fileset}"
-        )
+        await ctx.info(f"Successfully retrieved snapshot {snapshot_name} for fileset {fileset}")
         return result
     except Exception as e:
-        await ctx.error(
-            f"Failed to get snapshot {snapshot_name} for fileset {fileset}: {str(e)}"
-        )
+        await ctx.error(f"Failed to get snapshot {snapshot_name} for fileset {fileset}: {str(e)}")
         raise
 
 
@@ -267,7 +248,7 @@ async def delete_fileset_snapshot(
     filesystem: str,
     fileset: str,
     snapshot_name: str,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Delete a fileset snapshot.
 
@@ -281,7 +262,8 @@ async def delete_fileset_snapshot(
         Dictionary containing deletion status
     """
     await ctx.info(
-        f"Tool called: delete_fileset_snapshot with filesystem={filesystem}, fileset={fileset}, snapshot_name={snapshot_name}"
+        f"Tool called: delete_fileset_snapshot with filesystem={filesystem}, "
+        f"fileset={fileset}, snapshot_name={snapshot_name}"
     )
     await ctx.debug(f"Deleting snapshot {snapshot_name} for fileset {fileset}")
 
@@ -292,14 +274,10 @@ async def delete_fileset_snapshot(
             snapshot_name=snapshot_name,
             domain=domain,
         )
-        await ctx.info(
-            f"Successfully deleted snapshot {snapshot_name} for fileset {fileset}"
-        )
+        await ctx.info(f"Successfully deleted snapshot {snapshot_name} for fileset {fileset}")
         return result
     except Exception as e:
-        await ctx.error(
-            f"Failed to delete snapshot {snapshot_name} for fileset {fileset}: {str(e)}"
-        )
+        await ctx.error(f"Failed to delete snapshot {snapshot_name} for fileset {fileset}: {str(e)}")
         raise
 
 
@@ -307,7 +285,7 @@ async def delete_fileset_snapshot(
 async def get_snapdir_settings(
     ctx: Context,
     filesystem: str,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Get snapdir settings for a filesystem.
 

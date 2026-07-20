@@ -1,7 +1,8 @@
 """IBM Storage Scale Filesystem Health operations."""
 
 from typing import Any
-from scale_mcp_server.utils.client import StorageScaleClient, StorageScaleAPIError
+
+from scale_mcp_server.utils.client import StorageScaleAPIError, StorageScaleClient
 
 
 async def get_filesystem_health_states_api(
@@ -24,9 +25,7 @@ async def get_filesystem_health_states_api(
                 f"/scalemgmt/v2/cluster/filesystems/{filesystem}/health/state",
             )
     except StorageScaleAPIError as e:
-        raise StorageScaleAPIError(
-            f"Failed to get health state for filesystem '{filesystem}': {str(e)}"
-        ) from e
+        raise StorageScaleAPIError(f"Failed to get health state for filesystem '{filesystem}': {str(e)}") from e
 
 
 async def get_filesystem_health_events_api(
@@ -51,6 +50,4 @@ async def get_filesystem_health_events_api(
                 f"/scalemgmt/v2/cluster/filesystems/{filesystem_name}/health/events",
             )
     except StorageScaleAPIError as e:
-        raise StorageScaleAPIError(
-            f"Failed to get health events for filesystem '{filesystem_name}': {str(e)}"
-        ) from e
+        raise StorageScaleAPIError(f"Failed to get health events for filesystem '{filesystem_name}': {str(e)}") from e

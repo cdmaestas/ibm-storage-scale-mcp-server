@@ -4,15 +4,17 @@ Parallel copy (XCP) tools for copying, synchronizing, and verifying files
 within a single IBM Storage Scale cluster.
 """
 
-from typing import Optional, Any
-from fastmcp import FastMCP, Context
+from typing import Any
+
+from fastmcp import Context, FastMCP
+
 from scale_mcp_server.api.v3.xcp import (
-    list_xcp_operations_api,
-    get_xcp_operation_api,
-    get_xcp_config_api,
-    update_xcp_config_api,
     enable_xcp_copy_api,
+    get_xcp_config_api,
+    get_xcp_operation_api,
+    list_xcp_operations_api,
     sync_xcp_api,
+    update_xcp_config_api,
     verify_xcp_api,
 )
 
@@ -23,7 +25,7 @@ mcp = FastMCP("xcp", instructions="XCP parallel copy operations")
 @mcp.tool()
 async def list_xcp_operations(
     ctx: Context,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """List configuration information of all currently running XCP operations.
 
@@ -42,7 +44,7 @@ async def list_xcp_operations(
 async def get_xcp_operation(
     ctx: Context,
     id: str,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Retrieve configuration information of a specific XCP operation by ID.
 
@@ -61,7 +63,7 @@ async def get_xcp_operation(
 @mcp.tool()
 async def get_xcp_config(
     ctx: Context,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Retrieve the current XCP configuration limits for the cluster.
 
@@ -80,7 +82,7 @@ async def get_xcp_config(
 async def update_xcp_config(
     ctx: Context,
     config_data: dict,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Update the XCP configuration limits for the cluster.
 
@@ -101,7 +103,7 @@ async def update_xcp_config(
 async def start_xcp_copy(
     ctx: Context,
     copy_data: dict,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Start a parallel copy of files from a source to a target in the cluster.
 
@@ -126,7 +128,7 @@ async def start_xcp_copy(
 async def sync_xcp(
     ctx: Context,
     sync_data: dict,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Synchronize files from a source directory to a target directory.
 
@@ -148,7 +150,7 @@ async def sync_xcp(
 async def verify_xcp(
     ctx: Context,
     verify_data: dict,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Compare metadata between a source and target of a previous XCP copy.
 

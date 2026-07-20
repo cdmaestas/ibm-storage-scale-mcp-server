@@ -4,14 +4,16 @@ Configuration tools for the administration daemon (scaleadmd) and IO daemon
 (mmfsd) settings.
 """
 
-from typing import Optional, Any
-from fastmcp import FastMCP, Context
+from typing import Any
+
+from fastmcp import Context, FastMCP
+
 from scale_mcp_server.api.v3.config import (
     get_admin_config_api,
     get_admin_config_attribute_api,
-    update_admin_config_api,
     get_cluster_config_api,
     get_cluster_config_attribute_api,
+    update_admin_config_api,
     update_cluster_config_api,
 )
 
@@ -22,10 +24,10 @@ mcp = FastMCP("config", instructions="Configuration management operations")
 @mcp.tool()
 async def get_admin_config(
     ctx: Context,
-    page_size: Optional[int] = None,
-    page_token: Optional[str] = None,
-    running: Optional[bool] = None,
-    domain: Optional[str] = None,
+    page_size: int | None = None,
+    page_token: str | None = None,
+    running: bool | None = None,
+    domain: str | None = None,
 ) -> Any:
     """List the configuration data for the administration daemon (scaleadmd).
 
@@ -37,9 +39,7 @@ async def get_admin_config(
     """
     await ctx.info("Tool called: get_admin_config")
     try:
-        return await get_admin_config_api(
-            page_size=page_size, page_token=page_token, running=running, domain=domain
-        )
+        return await get_admin_config_api(page_size=page_size, page_token=page_token, running=running, domain=domain)
     except Exception as e:
         await ctx.error(f"Failed to get admin config: {str(e)}")
         raise
@@ -49,8 +49,8 @@ async def get_admin_config(
 async def get_admin_config_attribute(
     ctx: Context,
     name: str,
-    running: Optional[bool] = None,
-    domain: Optional[str] = None,
+    running: bool | None = None,
+    domain: str | None = None,
 ) -> Any:
     """Get the admin daemon configuration value for a specified attribute.
 
@@ -61,9 +61,7 @@ async def get_admin_config_attribute(
     """
     await ctx.info(f"Tool called: get_admin_config_attribute with name={name}")
     try:
-        return await get_admin_config_attribute_api(
-            name=name, running=running, domain=domain
-        )
+        return await get_admin_config_attribute_api(name=name, running=running, domain=domain)
     except Exception as e:
         await ctx.error(f"Failed to get admin config attribute {name}: {str(e)}")
         raise
@@ -73,7 +71,7 @@ async def get_admin_config_attribute(
 async def update_admin_config(
     ctx: Context,
     config_data: dict,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Batch-update configuration values of the administration daemon.
 
@@ -92,11 +90,11 @@ async def update_admin_config(
 @mcp.tool()
 async def get_cluster_config(
     ctx: Context,
-    view: Optional[str] = None,
-    page_size: Optional[int] = None,
-    page_token: Optional[str] = None,
-    running: Optional[bool] = None,
-    domain: Optional[str] = None,
+    view: str | None = None,
+    page_size: int | None = None,
+    page_token: str | None = None,
+    running: bool | None = None,
+    domain: str | None = None,
 ) -> Any:
     """List the configuration data for the IO daemon (mmfsd).
 
@@ -126,8 +124,8 @@ async def get_cluster_config(
 async def get_cluster_config_attribute(
     ctx: Context,
     name: str,
-    running: Optional[bool] = None,
-    domain: Optional[str] = None,
+    running: bool | None = None,
+    domain: str | None = None,
 ) -> Any:
     """Get the IO daemon configuration value for a specified attribute.
 
@@ -138,9 +136,7 @@ async def get_cluster_config_attribute(
     """
     await ctx.info(f"Tool called: get_cluster_config_attribute with name={name}")
     try:
-        return await get_cluster_config_attribute_api(
-            name=name, running=running, domain=domain
-        )
+        return await get_cluster_config_attribute_api(name=name, running=running, domain=domain)
     except Exception as e:
         await ctx.error(f"Failed to get cluster config attribute {name}: {str(e)}")
         raise
@@ -150,7 +146,7 @@ async def get_cluster_config_attribute(
 async def update_cluster_config(
     ctx: Context,
     config_data: dict,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Batch-update configuration values of the IO daemon (mmfsd).
 

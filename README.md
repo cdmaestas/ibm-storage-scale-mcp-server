@@ -282,13 +282,27 @@ For a higher-level conversational interface, consider using the [IBM Storage Sca
 ## Development
 
 Install the project with its dev dependency group and run the checks that CI
-enforces (lint plus the endpoint-contract test suite):
+enforces (lint, format, tests, and a dependency vulnerability audit):
 
 ```bash
 uv sync --all-groups
 uv run ruff check src tests
+uv run ruff format --check src tests
 uv run pytest
+uv run pip-audit
 ```
+
+### Git hooks
+
+Pre-commit hooks run ruff (lint + format) on staged Python and the full test
+suite on push, using the same pinned tool versions as CI. Enable them once
+after cloning:
+
+```bash
+uv run pre-commit install --hook-type pre-commit --hook-type pre-push
+```
+
+### Adding or changing endpoints
 
 The tests need no cluster and no config file: every REST wrapper is exercised
 against a mocked cluster and asserted to produce the documented HTTP method

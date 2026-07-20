@@ -3,14 +3,16 @@
 Node class tools for creating and managing user-defined node classes.
 """
 
-from typing import Optional, Any
-from fastmcp import FastMCP, Context
+from typing import Any
+
+from fastmcp import Context, FastMCP
+
 from scale_mcp_server.api.v3.node_classes import (
-    list_node_classes_api,
-    get_node_class_api,
     create_node_class_api,
-    update_node_class_api,
     delete_node_class_api,
+    get_node_class_api,
+    list_node_classes_api,
+    update_node_class_api,
 )
 
 # Create the node_classes MCP server
@@ -20,9 +22,9 @@ mcp = FastMCP("node_classes", instructions="Node class management operations")
 @mcp.tool()
 async def list_node_classes(
     ctx: Context,
-    page_size: Optional[int] = None,
-    page_token: Optional[str] = None,
-    domain: Optional[str] = None,
+    page_size: int | None = None,
+    page_token: str | None = None,
+    domain: str | None = None,
 ) -> Any:
     """List all node classes registered to the cluster.
 
@@ -33,9 +35,7 @@ async def list_node_classes(
     """
     await ctx.info("Tool called: list_node_classes")
     try:
-        return await list_node_classes_api(
-            page_size=page_size, page_token=page_token, domain=domain
-        )
+        return await list_node_classes_api(page_size=page_size, page_token=page_token, domain=domain)
     except Exception as e:
         await ctx.error(f"Failed to list node classes: {str(e)}")
         raise
@@ -45,7 +45,7 @@ async def list_node_classes(
 async def get_node_class(
     ctx: Context,
     node_class: str,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """List the members of the specified node class.
 
@@ -65,7 +65,7 @@ async def get_node_class(
 async def create_node_class(
     ctx: Context,
     nodeclass_data: dict,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Create a user-defined node class.
 
@@ -76,9 +76,7 @@ async def create_node_class(
     """
     await ctx.info("Tool called: create_node_class")
     try:
-        return await create_node_class_api(
-            nodeclass_data=nodeclass_data, domain=domain
-        )
+        return await create_node_class_api(nodeclass_data=nodeclass_data, domain=domain)
     except Exception as e:
         await ctx.error(f"Failed to create node class: {str(e)}")
         raise
@@ -89,7 +87,7 @@ async def update_node_class(
     ctx: Context,
     node_class: str,
     nodeclass_data: dict,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Update an existing node class.
 
@@ -100,9 +98,7 @@ async def update_node_class(
     """
     await ctx.info(f"Tool called: update_node_class with node_class={node_class}")
     try:
-        return await update_node_class_api(
-            node_class=node_class, nodeclass_data=nodeclass_data, domain=domain
-        )
+        return await update_node_class_api(node_class=node_class, nodeclass_data=nodeclass_data, domain=domain)
     except Exception as e:
         await ctx.error(f"Failed to update node class {node_class}: {str(e)}")
         raise
@@ -112,7 +108,7 @@ async def update_node_class(
 async def delete_node_class(
     ctx: Context,
     node_class: str,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Delete an existing node class.
 
