@@ -30,3 +30,7 @@ port = 22
 username = your-username
 password = your-ssh-password
 key_path = your-ssh-key  # Alternative to password authentication
+# By default the SSH host key must be present in the known_hosts store or the
+# connection is rejected. Set to true to auto-trust unknown host keys instead
+# (insecure - susceptible to man-in-the-middle attacks).
+auto_add_host_keys = false

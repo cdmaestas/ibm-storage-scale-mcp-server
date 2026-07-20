@@ -3,25 +3,25 @@
 Remote file system tools for file systems owned by another cluster.
 """
 
-from typing import Optional, Any
-from fastmcp import FastMCP, Context
+from typing import Any
+
+from fastmcp import Context, FastMCP
+
 from scale_mcp_server.api.v3.remote_filesystems import (
     add_remote_filesystem_api,
-    update_remote_filesystem_api,
     delete_remote_filesystem_api,
+    update_remote_filesystem_api,
 )
 
 # Create the remote_filesystems MCP server
-mcp = FastMCP(
-    "remote_filesystems", instructions="Remote file system management operations"
-)
+mcp = FastMCP("remote_filesystems", instructions="Remote file system management operations")
 
 
 @mcp.tool()
 async def add_remote_filesystem(
     ctx: Context,
     filesystem: dict,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Add a remote file system owned by another IBM Storage Scale cluster.
 
@@ -42,7 +42,7 @@ async def update_remote_filesystem(
     ctx: Context,
     filesystem: str,
     filesystem_data: dict,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Update the information associated with a remote file system.
 
@@ -53,9 +53,7 @@ async def update_remote_filesystem(
     """
     await ctx.info(f"Tool called: update_remote_filesystem with filesystem={filesystem}")
     try:
-        return await update_remote_filesystem_api(
-            filesystem=filesystem, filesystem_data=filesystem_data, domain=domain
-        )
+        return await update_remote_filesystem_api(filesystem=filesystem, filesystem_data=filesystem_data, domain=domain)
     except Exception as e:
         await ctx.error(f"Failed to update remote filesystem {filesystem}: {str(e)}")
         raise
@@ -65,8 +63,8 @@ async def update_remote_filesystem(
 async def delete_remote_filesystem(
     ctx: Context,
     filesystem: str,
-    permanently_damaged: Optional[bool] = None,
-    domain: Optional[str] = None,
+    permanently_damaged: bool | None = None,
+    domain: str | None = None,
 ) -> Any:
     """Delete a remote file system.
 

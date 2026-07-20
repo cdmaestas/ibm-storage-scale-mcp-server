@@ -23,16 +23,12 @@ TEST_SETTINGS = {
 @pytest.fixture(autouse=True)
 def test_config(monkeypatch):
     """Point StorageScaleClient at fixed test settings instead of config/env."""
-    monkeypatch.setattr(
-        client_module, "load_settings", lambda refresh=False: dict(TEST_SETTINGS)
-    )
+    monkeypatch.setattr(client_module, "load_settings", lambda refresh=False: dict(TEST_SETTINGS))
 
 
 @pytest.fixture
 def mock_api():
     """Intercept all HTTP traffic to the test cluster and record requests."""
     with respx.mock(assert_all_called=False) as router:
-        router.route(host="testhost").mock(
-            return_value=httpx.Response(200, json={"status": "ok"})
-        )
+        router.route(host="testhost").mock(return_value=httpx.Response(200, json={"status": "ok"}))
         yield router

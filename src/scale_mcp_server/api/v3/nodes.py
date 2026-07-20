@@ -5,13 +5,14 @@ service, and displaying node status/configuration, following the 6.0.1
 native REST API.
 """
 
-from typing import Optional, Any, Dict
-from scale_mcp_server.utils.client import StorageScaleClient, StorageScaleAPIError
+from typing import Any
+
+from scale_mcp_server.utils.client import StorageScaleAPIError, StorageScaleClient
 
 
-def _domain_headers(domain: Optional[str]) -> Dict[str, str]:
+def _domain_headers(domain: str | None) -> dict[str, str]:
     """Build request headers for the optional X-StorageScaleDomain."""
-    headers: Dict[str, str] = {}
+    headers: dict[str, str] = {}
     if domain:
         headers["X-StorageScaleDomain"] = domain
     return headers
@@ -19,7 +20,7 @@ def _domain_headers(domain: Optional[str]) -> Dict[str, str]:
 
 async def add_node_api(
     node_data: dict,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Add a node to the IBM Storage Scale cluster.
 
@@ -47,7 +48,7 @@ async def add_node_api(
 
 async def batch_add_nodes_api(
     nodes_data: dict,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Add one or more nodes to the IBM Storage Scale cluster.
 
@@ -73,8 +74,8 @@ async def batch_add_nodes_api(
 
 
 async def start_nodes_api(
-    start_data: Optional[dict] = None,
-    domain: Optional[str] = None,
+    start_data: dict | None = None,
+    domain: str | None = None,
 ) -> Any:
     """Start the mmfsd service on one or more nodes.
 
@@ -100,8 +101,8 @@ async def start_nodes_api(
 
 
 async def stop_nodes_api(
-    stop_data: Optional[dict] = None,
-    domain: Optional[str] = None,
+    stop_data: dict | None = None,
+    domain: str | None = None,
 ) -> Any:
     """Stop the mmfsd service on one or more nodes.
 
@@ -127,8 +128,8 @@ async def stop_nodes_api(
 
 
 async def get_nodes_status_api(
-    target_nodes: Optional[str] = None,
-    domain: Optional[str] = None,
+    target_nodes: str | None = None,
+    domain: str | None = None,
 ) -> Any:
     """Check the mmfsd status of cluster nodes.
 
@@ -142,7 +143,7 @@ async def get_nodes_status_api(
     Raises:
         StorageScaleAPIError: If the API request fails
     """
-    params: Dict[str, Any] = {}
+    params: dict[str, Any] = {}
     if target_nodes is not None:
         params["target_nodes"] = target_nodes
 
@@ -158,7 +159,7 @@ async def get_nodes_status_api(
 
 
 async def get_nodes_config_api(
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """List the configuration details about the node.
 
@@ -173,8 +174,6 @@ async def get_nodes_config_api(
     """
     try:
         async with StorageScaleClient() as client:
-            return await client.get(
-                "/scalemgmt/v3/nodes/config", headers=_domain_headers(domain)
-            )
+            return await client.get("/scalemgmt/v3/nodes/config", headers=_domain_headers(domain))
     except StorageScaleAPIError as e:
         raise StorageScaleAPIError(f"Failed to get nodes config: {str(e)}") from e

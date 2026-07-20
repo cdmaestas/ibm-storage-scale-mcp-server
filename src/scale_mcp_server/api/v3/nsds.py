@@ -4,25 +4,26 @@ NSD endpoints for creating and managing network-shared disks, following the
 6.0.1 native REST API.
 """
 
-from typing import Optional, Any, Dict
-from scale_mcp_server.utils.client import StorageScaleClient, StorageScaleAPIError
+from typing import Any
+
+from scale_mcp_server.utils.client import StorageScaleAPIError, StorageScaleClient
 
 
-def _domain_headers(domain: Optional[str]) -> Dict[str, str]:
+def _domain_headers(domain: str | None) -> dict[str, str]:
     """Build request headers for the optional X-StorageScaleDomain."""
-    headers: Dict[str, str] = {}
+    headers: dict[str, str] = {}
     if domain:
         headers["X-StorageScaleDomain"] = domain
     return headers
 
 
 async def list_nsds_api(
-    not_assigned: Optional[bool] = None,
-    filesystem_device: Optional[str] = None,
-    view: Optional[str] = None,
-    page_size: Optional[int] = None,
-    page_token: Optional[str] = None,
-    domain: Optional[str] = None,
+    not_assigned: bool | None = None,
+    filesystem_device: str | None = None,
+    view: str | None = None,
+    page_size: int | None = None,
+    page_token: str | None = None,
+    domain: str | None = None,
 ) -> Any:
     """List all NSDs (Network Shared Disks).
 
@@ -41,7 +42,7 @@ async def list_nsds_api(
     Raises:
         StorageScaleAPIError: If the API request fails
     """
-    params: Dict[str, Any] = {}
+    params: dict[str, Any] = {}
     if not_assigned is not None:
         params["not_assigned"] = not_assigned
     if filesystem_device is not None:
@@ -66,8 +67,8 @@ async def list_nsds_api(
 
 async def get_nsd_api(
     nsd_name: str,
-    view: Optional[str] = None,
-    domain: Optional[str] = None,
+    view: str | None = None,
+    domain: str | None = None,
 ) -> Any:
     """Get information about a specific NSD.
 
@@ -83,7 +84,7 @@ async def get_nsd_api(
     Raises:
         StorageScaleAPIError: If the API request fails
     """
-    params: Dict[str, Any] = {}
+    params: dict[str, Any] = {}
     if view is not None:
         params["view"] = view
 
@@ -100,8 +101,8 @@ async def get_nsd_api(
 
 async def create_nsd_api(
     nsd_data: dict,
-    no_verify: Optional[bool] = None,
-    domain: Optional[str] = None,
+    no_verify: bool | None = None,
+    domain: str | None = None,
 ) -> Any:
     """Create an NSD in the cluster.
 
@@ -117,7 +118,7 @@ async def create_nsd_api(
     Raises:
         StorageScaleAPIError: If the API request fails
     """
-    params: Dict[str, Any] = {}
+    params: dict[str, Any] = {}
     if no_verify is not None:
         params["no_verify"] = no_verify
 
@@ -137,7 +138,7 @@ async def create_nsd_api(
 async def update_nsd_api(
     nsd_name: str,
     nsd_data: dict,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Update an existing NSD (for example, the assigned NSD servers).
 
@@ -160,14 +161,12 @@ async def update_nsd_api(
                 headers=_domain_headers(domain),
             )
     except StorageScaleAPIError as e:
-        raise StorageScaleAPIError(
-            f"Failed to update NSD '{nsd_name}': {str(e)}"
-        ) from e
+        raise StorageScaleAPIError(f"Failed to update NSD '{nsd_name}': {str(e)}") from e
 
 
 async def delete_nsd_api(
     nsd_name: str,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Delete an existing NSD.
 
@@ -183,18 +182,14 @@ async def delete_nsd_api(
     """
     try:
         async with StorageScaleClient() as client:
-            return await client.delete(
-                f"/scalemgmt/v3/nsds/{nsd_name}", headers=_domain_headers(domain)
-            )
+            return await client.delete(f"/scalemgmt/v3/nsds/{nsd_name}", headers=_domain_headers(domain))
     except StorageScaleAPIError as e:
-        raise StorageScaleAPIError(
-            f"Failed to delete NSD '{nsd_name}': {str(e)}"
-        ) from e
+        raise StorageScaleAPIError(f"Failed to delete NSD '{nsd_name}': {str(e)}") from e
 
 
 async def batch_create_nsds_api(
     nsds_data: dict,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Create one or more NSDs (LRO).
 
@@ -221,7 +216,7 @@ async def batch_create_nsds_api(
 
 async def batch_delete_nsds_api(
     nsds_data: dict,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Delete one or more NSDs (LRO).
 

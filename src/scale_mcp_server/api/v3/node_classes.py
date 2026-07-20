@@ -4,22 +4,23 @@ Node class endpoints for creating and managing user-defined node classes,
 following the 6.0.1 native REST API.
 """
 
-from typing import Optional, Any, Dict
-from scale_mcp_server.utils.client import StorageScaleClient, StorageScaleAPIError
+from typing import Any
+
+from scale_mcp_server.utils.client import StorageScaleAPIError, StorageScaleClient
 
 
-def _domain_headers(domain: Optional[str]) -> Dict[str, str]:
+def _domain_headers(domain: str | None) -> dict[str, str]:
     """Build request headers for the optional X-StorageScaleDomain."""
-    headers: Dict[str, str] = {}
+    headers: dict[str, str] = {}
     if domain:
         headers["X-StorageScaleDomain"] = domain
     return headers
 
 
 async def list_node_classes_api(
-    page_size: Optional[int] = None,
-    page_token: Optional[str] = None,
-    domain: Optional[str] = None,
+    page_size: int | None = None,
+    page_token: str | None = None,
+    domain: str | None = None,
 ) -> Any:
     """List all node classes registered to the cluster.
 
@@ -34,7 +35,7 @@ async def list_node_classes_api(
     Raises:
         StorageScaleAPIError: If API call fails
     """
-    params: Dict[str, Any] = {}
+    params: dict[str, Any] = {}
     if page_size is not None:
         params["page_size"] = page_size
     if page_token is not None:
@@ -53,7 +54,7 @@ async def list_node_classes_api(
 
 async def get_node_class_api(
     node_class: str,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """List the members of the specified node class.
 
@@ -74,14 +75,12 @@ async def get_node_class_api(
                 headers=_domain_headers(domain),
             )
     except StorageScaleAPIError as e:
-        raise StorageScaleAPIError(
-            f"Failed to get node class '{node_class}': {str(e)}"
-        ) from e
+        raise StorageScaleAPIError(f"Failed to get node class '{node_class}': {str(e)}") from e
 
 
 async def create_node_class_api(
     nodeclass_data: dict,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Create a user-defined node class.
 
@@ -105,15 +104,13 @@ async def create_node_class_api(
             )
     except StorageScaleAPIError as e:
         name = nodeclass_data.get("name", "unknown")
-        raise StorageScaleAPIError(
-            f"Failed to create node class '{name}': {str(e)}"
-        ) from e
+        raise StorageScaleAPIError(f"Failed to create node class '{name}': {str(e)}") from e
 
 
 async def update_node_class_api(
     node_class: str,
     nodeclass_data: dict,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Update an existing node class.
 
@@ -137,14 +134,12 @@ async def update_node_class_api(
                 headers=_domain_headers(domain),
             )
     except StorageScaleAPIError as e:
-        raise StorageScaleAPIError(
-            f"Failed to update node class '{node_class}': {str(e)}"
-        ) from e
+        raise StorageScaleAPIError(f"Failed to update node class '{node_class}': {str(e)}") from e
 
 
 async def delete_node_class_api(
     node_class: str,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Delete an existing node class.
 
@@ -165,6 +160,4 @@ async def delete_node_class_api(
                 headers=_domain_headers(domain),
             )
     except StorageScaleAPIError as e:
-        raise StorageScaleAPIError(
-            f"Failed to delete node class '{node_class}': {str(e)}"
-        ) from e
+        raise StorageScaleAPIError(f"Failed to delete node class '{node_class}': {str(e)}") from e

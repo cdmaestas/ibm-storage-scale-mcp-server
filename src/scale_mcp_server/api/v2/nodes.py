@@ -1,13 +1,14 @@
 """IBM Storage Scale Node Health operations."""
 
-from typing import Optional, Any, Dict
-from scale_mcp_server.utils.client import StorageScaleClient, StorageScaleAPIError
+from typing import Any
+
+from scale_mcp_server.utils.client import StorageScaleAPIError, StorageScaleClient
 
 
 async def get_node_health_states_api(
     name: str,
-    fields: Optional[str] = None,
-    filter: Optional[str] = None,
+    fields: str | None = None,
+    filter: str | None = None,
 ) -> Any:
     """Get System Health states for nodes.
 
@@ -22,7 +23,7 @@ async def get_node_health_states_api(
     Raises:
         StorageScaleAPIError: If API call fails
     """
-    query_params: Dict[str, Any] = {}
+    query_params: dict[str, Any] = {}
     if fields:
         query_params["fields"] = fields
     if filter:
@@ -35,15 +36,13 @@ async def get_node_health_states_api(
                 params=query_params,
             )
     except StorageScaleAPIError as e:
-        raise StorageScaleAPIError(
-            f"Failed to get health states for node '{name}': {str(e)}"
-        ) from e
+        raise StorageScaleAPIError(f"Failed to get health states for node '{name}': {str(e)}") from e
 
 
 async def get_node_health_events_api(
     name: str,
-    fields: Optional[str] = None,
-    filter: Optional[str] = None,
+    fields: str | None = None,
+    filter: str | None = None,
 ) -> Any:
     """Get System Health events for a node or nodeclass.
 
@@ -73,6 +72,4 @@ async def get_node_health_events_api(
                 params=params,
             )
     except StorageScaleAPIError as e:
-        raise StorageScaleAPIError(
-            f"Failed to get health events for node '{name}': {str(e)}"
-        ) from e
+        raise StorageScaleAPIError(f"Failed to get health events for node '{name}': {str(e)}") from e

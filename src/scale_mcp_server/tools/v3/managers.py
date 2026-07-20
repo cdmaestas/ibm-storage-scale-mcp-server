@@ -3,8 +3,10 @@
 Manager tools for updating the cluster and file system manager nodes.
 """
 
-from typing import Optional, Any
-from fastmcp import FastMCP, Context
+from typing import Any
+
+from fastmcp import Context, FastMCP
+
 from scale_mcp_server.api.v3.managers import (
     set_cluster_manager_api,
     set_filesystem_manager_api,
@@ -18,7 +20,7 @@ mcp = FastMCP("managers", instructions="Cluster and filesystem manager node oper
 async def set_cluster_manager(
     ctx: Context,
     manager_data: dict,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Update the cluster manager node.
 
@@ -39,7 +41,7 @@ async def set_filesystem_manager(
     ctx: Context,
     filesystem: str,
     manager_data: dict,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Update the manager node of an existing file system.
 
@@ -50,9 +52,7 @@ async def set_filesystem_manager(
     """
     await ctx.info(f"Tool called: set_filesystem_manager with filesystem={filesystem}")
     try:
-        return await set_filesystem_manager_api(
-            filesystem=filesystem, manager_data=manager_data, domain=domain
-        )
+        return await set_filesystem_manager_api(filesystem=filesystem, manager_data=manager_data, domain=domain)
     except Exception as e:
         await ctx.error(f"Failed to set manager for {filesystem}: {str(e)}")
         raise

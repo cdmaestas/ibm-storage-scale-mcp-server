@@ -16,6 +16,17 @@ dev = [
  "pytest-asyncio>=0.25.0",
  "respx>=0.22.0",
  "ruff>=0.8.0",
+ "pip-audit>=2.7.0",
+ "pre-commit>=4.0.0",
+]
+
+[tool.uv]
+# Constrain transitive dependencies to versions that resolve known CVEs
+# (surfaced by pip-audit). These are not direct dependencies; the bounds only
+# steer the resolver away from the vulnerable releases.
+constraint-dependencies = [
+ "mcp>=1.28.1",       # CVE-2026-52870, CVE-2026-52869, CVE-2026-59950
+ "click>=8.3.3",      # PYSEC-2026-2132
 ]
 
 [build-system]
@@ -31,5 +42,9 @@ pythonpath = ["src"]
 asyncio_mode = "auto"
 
 [tool.ruff]
-line-length = 100
+line-length = 120
 target-version = "py312"
+
+[tool.ruff.lint]
+# E/F: pyflakes+pycodestyle, I: isort, UP: pyupgrade, B: bugbear, SIM: simplify
+select = ["E", "F", "I", "UP", "B", "SIM"]

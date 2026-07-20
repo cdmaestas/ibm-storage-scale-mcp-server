@@ -3,17 +3,19 @@
 AFM to Cloud Object Storage tools for COS relationships and object transfers.
 """
 
-from typing import Optional, Any
-from fastmcp import FastMCP, Context
+from typing import Any
+
+from fastmcp import Context, FastMCP
+
 from scale_mcp_server.api.v3.afmcos import (
-    get_cos_keys_api,
-    set_cos_keys_api,
-    delete_cos_keys_api,
     configure_afmcos_api,
     delete_afmcos_objects_api,
+    delete_cos_keys_api,
     download_afmcos_objects_api,
     evict_afmcos_objects_api,
+    get_cos_keys_api,
     reconcile_afmcos_api,
+    set_cos_keys_api,
     upload_afmcos_objects_api,
 )
 
@@ -25,10 +27,10 @@ mcp = FastMCP("afmcos", instructions="AFM to Cloud Object Storage (AFMCOS) opera
 async def get_cos_keys(
     ctx: Context,
     bucket_name: str,
-    bucket_region: Optional[str] = None,
-    bucket_exportmap: Optional[str] = None,
-    bucket_report: Optional[str] = None,
-    domain: Optional[str] = None,
+    bucket_region: str | None = None,
+    bucket_exportmap: str | None = None,
+    bucket_report: str | None = None,
+    domain: str | None = None,
 ) -> Any:
     """Retrieve keys for the given bucket for an AFM fileset.
 
@@ -58,7 +60,7 @@ async def set_cos_keys(
     ctx: Context,
     bucket_name: str,
     bucket_coskeys: dict,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Set keys for the given bucket for an AFM fileset.
 
@@ -70,9 +72,7 @@ async def set_cos_keys(
     """
     await ctx.info(f"Tool called: set_cos_keys with bucket_name={bucket_name}")
     try:
-        return await set_cos_keys_api(
-            bucket_name=bucket_name, bucket_coskeys=bucket_coskeys, domain=domain
-        )
+        return await set_cos_keys_api(bucket_name=bucket_name, bucket_coskeys=bucket_coskeys, domain=domain)
     except Exception as e:
         await ctx.error(f"Failed to set COS keys for {bucket_name}: {str(e)}")
         raise
@@ -82,9 +82,9 @@ async def set_cos_keys(
 async def delete_cos_keys(
     ctx: Context,
     bucket_name: str,
-    bucket_region: Optional[str] = None,
-    bucket_exportmap: Optional[str] = None,
-    domain: Optional[str] = None,
+    bucket_region: str | None = None,
+    bucket_exportmap: str | None = None,
+    domain: str | None = None,
 ) -> Any:
     """Delete keys for the given bucket for an AFM fileset.
 
@@ -113,7 +113,7 @@ async def configure_afmcos(
     filesystem: str,
     fileset: str,
     fileset_config: dict,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Configure an AFM to cloud object storage relationship for a fileset.
 
@@ -124,9 +124,7 @@ async def configure_afmcos(
             prefix, quotas, etc.)
         domain: Domain to be authorized against (default 'StorageScaleDomain')
     """
-    await ctx.info(
-        f"Tool called: configure_afmcos with filesystem={filesystem}, fileset={fileset}"
-    )
+    await ctx.info(f"Tool called: configure_afmcos with filesystem={filesystem}, fileset={fileset}")
     try:
         return await configure_afmcos_api(
             filesystem=filesystem,
@@ -145,7 +143,7 @@ async def delete_afmcos_objects(
     filesystem: str,
     fileset: str,
     delete_objects: dict,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Delete objects from cloud object storage for an AFM fileset.
 
@@ -156,9 +154,7 @@ async def delete_afmcos_objects(
             fromtarget_delete, policy options, etc.)
         domain: Domain to be authorized against (default 'StorageScaleDomain')
     """
-    await ctx.info(
-        f"Tool called: delete_afmcos_objects with filesystem={filesystem}, fileset={fileset}"
-    )
+    await ctx.info(f"Tool called: delete_afmcos_objects with filesystem={filesystem}, fileset={fileset}")
     try:
         return await delete_afmcos_objects_api(
             filesystem=filesystem,
@@ -177,7 +173,7 @@ async def download_afmcos_objects(
     filesystem: str,
     fileset: str,
     download_objects: dict,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Download objects from cloud object storage to the local fileset cache.
 
@@ -188,9 +184,7 @@ async def download_afmcos_objects(
             metadata, uid, gid, perm, etc.)
         domain: Domain to be authorized against (default 'StorageScaleDomain')
     """
-    await ctx.info(
-        f"Tool called: download_afmcos_objects with filesystem={filesystem}, fileset={fileset}"
-    )
+    await ctx.info(f"Tool called: download_afmcos_objects with filesystem={filesystem}, fileset={fileset}")
     try:
         return await download_afmcos_objects_api(
             filesystem=filesystem,
@@ -209,7 +203,7 @@ async def evict_afmcos_objects(
     filesystem: str,
     fileset: str,
     evict_objects: dict,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Evict objects from the local cache of an AFM fileset.
 
@@ -220,9 +214,7 @@ async def evict_afmcos_objects(
             evict_validate, scale_node_object_list_path)
         domain: Domain to be authorized against (default 'StorageScaleDomain')
     """
-    await ctx.info(
-        f"Tool called: evict_afmcos_objects with filesystem={filesystem}, fileset={fileset}"
-    )
+    await ctx.info(f"Tool called: evict_afmcos_objects with filesystem={filesystem}, fileset={fileset}")
     try:
         return await evict_afmcos_objects_api(
             filesystem=filesystem,
@@ -241,7 +233,7 @@ async def reconcile_afmcos(
     filesystem: str,
     fileset: str,
     reconcile_objects: dict,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Reconcile objects between the local cache and cloud object storage.
 
@@ -252,9 +244,7 @@ async def reconcile_afmcos(
             evict_reconcile, policy options, etc.)
         domain: Domain to be authorized against (default 'StorageScaleDomain')
     """
-    await ctx.info(
-        f"Tool called: reconcile_afmcos with filesystem={filesystem}, fileset={fileset}"
-    )
+    await ctx.info(f"Tool called: reconcile_afmcos with filesystem={filesystem}, fileset={fileset}")
     try:
         return await reconcile_afmcos_api(
             filesystem=filesystem,
@@ -273,7 +263,7 @@ async def upload_afmcos_objects(
     filesystem: str,
     fileset: str,
     upload_objects: dict,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Upload objects from the local AFM fileset to cloud object storage.
 
@@ -284,9 +274,7 @@ async def upload_afmcos_objects(
             scale_node_object_list_path)
         domain: Domain to be authorized against (default 'StorageScaleDomain')
     """
-    await ctx.info(
-        f"Tool called: upload_afmcos_objects with filesystem={filesystem}, fileset={fileset}"
-    )
+    await ctx.info(f"Tool called: upload_afmcos_objects with filesystem={filesystem}, fileset={fileset}")
     try:
         return await upload_afmcos_objects_api(
             filesystem=filesystem,

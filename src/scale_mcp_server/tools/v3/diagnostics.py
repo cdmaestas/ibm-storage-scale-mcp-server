@@ -1,7 +1,9 @@
 """IBM Storage Scale Diagnostics MCP Server."""
 
-from typing import Optional, Any
-from fastmcp import FastMCP, Context
+from typing import Any
+
+from fastmcp import Context, FastMCP
+
 from scale_mcp_server.api.v3.diagnostics import get_node_version_api
 
 # Create the diagnostics MCP server
@@ -12,7 +14,7 @@ mcp = FastMCP("diagnostics", instructions="Diagnostics operations")
 async def get_node_version(
     ctx: Context,
     node: str,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Get the mmfsd version of a node.
 

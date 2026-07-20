@@ -1,7 +1,9 @@
 """IBM Storage Scale Version Management MCP Server."""
 
-from typing import Optional, Any
-from fastmcp import FastMCP, Context
+from typing import Any
+
+from fastmcp import Context, FastMCP
+
 from scale_mcp_server.api.v3.version import get_version_api
 
 # Create the version MCP server
@@ -11,7 +13,7 @@ mcp = FastMCP("version", instructions="Version information operations")
 @mcp.tool()
 async def get_version(
     ctx: Context,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Get IBM Storage Scale version information.
 

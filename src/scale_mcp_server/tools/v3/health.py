@@ -7,13 +7,15 @@ Unlike v2 which had dedicated /health endpoints, v3 uses:
 - /nodes/{node}/diagnostics/* for diagnostics
 """
 
-from typing import Optional, Any
-from fastmcp import FastMCP, Context
+from typing import Any
+
+from fastmcp import Context, FastMCP
+
 from scale_mcp_server.api.v3.health import (
-    get_filesystem_health_api,
-    get_node_health_api,
-    get_node_diagnostics_api,
     get_cluster_health_summary_api,
+    get_filesystem_health_api,
+    get_node_diagnostics_api,
+    get_node_health_api,
 )
 
 # Create the health monitoring MCP server
@@ -27,7 +29,7 @@ mcp = FastMCP(
 async def get_filesystem_health(
     ctx: Context,
     filesystem: str,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Get health information for a filesystem.
 
@@ -41,31 +43,23 @@ async def get_filesystem_health(
     Returns:
         Dictionary containing filesystem health information
     """
-    await ctx.info(
-        f"Tool called: get_filesystem_health for filesystem: {filesystem}"
-    )
+    await ctx.info(f"Tool called: get_filesystem_health for filesystem: {filesystem}")
     await ctx.debug(f"Retrieving health information for filesystem: {filesystem}")
 
     try:
-        result = await get_filesystem_health_api(
-            filesystem=filesystem, domain=domain
-        )
-        await ctx.info(
-            f"Successfully retrieved health information for filesystem: {filesystem}"
-        )
+        result = await get_filesystem_health_api(filesystem=filesystem, domain=domain)
+        await ctx.info(f"Successfully retrieved health information for filesystem: {filesystem}")
         return result
     except Exception as e:
-        await ctx.error(
-            f"Failed to get health information for filesystem {filesystem}: {str(e)}"
-        )
+        await ctx.error(f"Failed to get health information for filesystem {filesystem}: {str(e)}")
         raise
 
 
 @mcp.tool()
 async def get_node_health(
     ctx: Context,
-    node: Optional[str] = None,
-    domain: Optional[str] = None,
+    node: str | None = None,
+    domain: str | None = None,
 ) -> Any:
     """Get health/status information for nodes.
 
@@ -96,7 +90,7 @@ async def get_node_health(
 async def get_node_diagnostics(
     ctx: Context,
     node: str,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Get diagnostic information for a specific node.
 
@@ -125,7 +119,7 @@ async def get_node_diagnostics(
 @mcp.tool()
 async def get_cluster_health_summary(
     ctx: Context,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Get overall cluster health summary.
 

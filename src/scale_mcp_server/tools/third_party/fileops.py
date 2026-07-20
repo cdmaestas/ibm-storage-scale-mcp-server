@@ -5,15 +5,13 @@ with the FastMCP server. These tools proxy requests to the external filesystem M
 """
 
 from typing import Any
+
 from fastmcp import FastMCP
+
 from scale_mcp_server.adapters.fileops import get_fileops_client
 
-
 # Create the file operations MCP server
-mcp = FastMCP(
-    "fileops",
-    instructions="File and directory operations"
-)
+mcp = FastMCP("fileops", instructions="File and directory operations")
 
 
 @mcp.tool()
@@ -63,9 +61,7 @@ async def write_file(path: str, content: str) -> str:
 
 
 @mcp.tool()
-async def edit_file(
-    path: str, edits: list[dict[str, Any]], dryRun: bool = False
-) -> str:
+async def edit_file(path: str, edits: list[dict[str, Any]], dryRun: bool = False) -> str:
     """Make line-based edits to a text file.
 
     Args:
@@ -77,9 +73,7 @@ async def edit_file(
         Result of the edit operation
     """
     client = await get_fileops_client()
-    result = await client.call_tool(
-        "edit_file", {"path": path, "edits": edits, "dryRun": dryRun}
-    )
+    result = await client.call_tool("edit_file", {"path": path, "edits": edits, "dryRun": dryRun})
     return str(result)
 
 
@@ -140,16 +134,12 @@ async def move_file(source: str, destination: str) -> str:
         Success message
     """
     client = await get_fileops_client()
-    result = await client.call_tool(
-        "move_file", {"source": source, "destination": destination}
-    )
+    result = await client.call_tool("move_file", {"source": source, "destination": destination})
     return str(result)
 
 
 @mcp.tool()
-async def search_files(
-    path: str, pattern: str, excludePatterns: list[str] | None = None
-) -> str:
+async def search_files(path: str, pattern: str, excludePatterns: list[str] | None = None) -> str:
     """Recursively search for files and directories matching a pattern.
 
     Args:

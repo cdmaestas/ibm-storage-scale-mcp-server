@@ -1,12 +1,13 @@
 """IBM Storage Scale Snapshot operations."""
 
-from typing import Optional, Any
-from scale_mcp_server.utils.client import StorageScaleClient, StorageScaleAPIError
+from typing import Any
+
+from scale_mcp_server.utils.client import StorageScaleAPIError, StorageScaleClient
 
 
 async def list_snapshots_api(
     filesystem: str,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """List all snapshots for a filesystem.
 
@@ -26,19 +27,15 @@ async def list_snapshots_api(
 
     try:
         async with StorageScaleClient() as client:
-            return await client.get(
-                f"/scalemgmt/v3/filesystems/{filesystem}/snapshots", headers=headers
-            )
+            return await client.get(f"/scalemgmt/v3/filesystems/{filesystem}/snapshots", headers=headers)
     except StorageScaleAPIError as e:
-        raise StorageScaleAPIError(
-            f"Failed to list snapshots for filesystem '{filesystem}': {str(e)}"
-        ) from e
+        raise StorageScaleAPIError(f"Failed to list snapshots for filesystem '{filesystem}': {str(e)}") from e
 
 
 async def create_snapshot_api(
     filesystem: str,
     snapshot_data: dict,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Create a new snapshot.
 
@@ -74,7 +71,7 @@ async def create_snapshot_api(
 async def get_snapshot_api(
     filesystem: str,
     snapshot_name: str,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Get information about a specific snapshot.
 
@@ -108,7 +105,7 @@ async def get_snapshot_api(
 async def delete_snapshot_api(
     filesystem: str,
     snapshot_name: str,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Delete a snapshot.
 
@@ -142,7 +139,7 @@ async def delete_snapshot_api(
 async def batch_delete_snapshots_api(
     filesystem: str,
     snapshot_data: dict,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Delete multiple snapshots.
 
@@ -169,14 +166,12 @@ async def batch_delete_snapshots_api(
                 headers=headers,
             )
     except StorageScaleAPIError as e:
-        raise StorageScaleAPIError(
-            f"Failed to batch delete snapshots for filesystem '{filesystem}': {str(e)}"
-        ) from e
+        raise StorageScaleAPIError(f"Failed to batch delete snapshots for filesystem '{filesystem}': {str(e)}") from e
 
 
 async def get_snapdir_settings_api(
     filesystem: str,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Get snapdir settings for a filesystem.
 
@@ -201,6 +196,4 @@ async def get_snapdir_settings_api(
                 headers=headers,
             )
     except StorageScaleAPIError as e:
-        raise StorageScaleAPIError(
-            f"Failed to get snapdir settings for filesystem '{filesystem}': {str(e)}"
-        ) from e
+        raise StorageScaleAPIError(f"Failed to get snapdir settings for filesystem '{filesystem}': {str(e)}") from e

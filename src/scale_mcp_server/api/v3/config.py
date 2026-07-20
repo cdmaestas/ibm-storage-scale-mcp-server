@@ -4,23 +4,24 @@ Configuration endpoints for the administration daemon (scaleadmd) and IO
 daemon (mmfsd) settings, following the 6.0.1 native REST API.
 """
 
-from typing import Optional, Any, Dict
-from scale_mcp_server.utils.client import StorageScaleClient, StorageScaleAPIError
+from typing import Any
+
+from scale_mcp_server.utils.client import StorageScaleAPIError, StorageScaleClient
 
 
-def _domain_headers(domain: Optional[str]) -> Dict[str, str]:
+def _domain_headers(domain: str | None) -> dict[str, str]:
     """Build request headers for the optional X-StorageScaleDomain."""
-    headers: Dict[str, str] = {}
+    headers: dict[str, str] = {}
     if domain:
         headers["X-StorageScaleDomain"] = domain
     return headers
 
 
 async def get_admin_config_api(
-    page_size: Optional[int] = None,
-    page_token: Optional[str] = None,
-    running: Optional[bool] = None,
-    domain: Optional[str] = None,
+    page_size: int | None = None,
+    page_token: str | None = None,
+    running: bool | None = None,
+    domain: str | None = None,
 ) -> Any:
     """List the configuration data for the administration daemon (scaleadmd).
 
@@ -36,7 +37,7 @@ async def get_admin_config_api(
     Raises:
         StorageScaleAPIError: If the API request fails
     """
-    params: Dict[str, Any] = {}
+    params: dict[str, Any] = {}
     if page_size is not None:
         params["page_size"] = page_size
     if page_token is not None:
@@ -57,8 +58,8 @@ async def get_admin_config_api(
 
 async def get_admin_config_attribute_api(
     name: str,
-    running: Optional[bool] = None,
-    domain: Optional[str] = None,
+    running: bool | None = None,
+    domain: str | None = None,
 ) -> Any:
     """Get the admin daemon configuration value for a specified attribute.
 
@@ -73,7 +74,7 @@ async def get_admin_config_attribute_api(
     Raises:
         StorageScaleAPIError: If the API request fails
     """
-    params: Dict[str, Any] = {}
+    params: dict[str, Any] = {}
     if running is not None:
         params["running"] = running
 
@@ -85,14 +86,12 @@ async def get_admin_config_attribute_api(
                 headers=_domain_headers(domain),
             )
     except StorageScaleAPIError as e:
-        raise StorageScaleAPIError(
-            f"Failed to get admin config attribute '{name}': {str(e)}"
-        ) from e
+        raise StorageScaleAPIError(f"Failed to get admin config attribute '{name}': {str(e)}") from e
 
 
 async def update_admin_config_api(
     config_data: dict,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Batch-update configuration values of the administration daemon.
 
@@ -118,11 +117,11 @@ async def update_admin_config_api(
 
 
 async def get_cluster_config_api(
-    view: Optional[str] = None,
-    page_size: Optional[int] = None,
-    page_token: Optional[str] = None,
-    running: Optional[bool] = None,
-    domain: Optional[str] = None,
+    view: str | None = None,
+    page_size: int | None = None,
+    page_token: str | None = None,
+    running: bool | None = None,
+    domain: str | None = None,
 ) -> Any:
     """List the configuration data for the IO daemon (mmfsd).
 
@@ -139,7 +138,7 @@ async def get_cluster_config_api(
     Raises:
         StorageScaleAPIError: If the API request fails
     """
-    params: Dict[str, Any] = {}
+    params: dict[str, Any] = {}
     if view is not None:
         params["view"] = view
     if page_size is not None:
@@ -162,8 +161,8 @@ async def get_cluster_config_api(
 
 async def get_cluster_config_attribute_api(
     name: str,
-    running: Optional[bool] = None,
-    domain: Optional[str] = None,
+    running: bool | None = None,
+    domain: str | None = None,
 ) -> Any:
     """Get the IO daemon configuration value for a specified attribute.
 
@@ -178,7 +177,7 @@ async def get_cluster_config_attribute_api(
     Raises:
         StorageScaleAPIError: If the API request fails
     """
-    params: Dict[str, Any] = {}
+    params: dict[str, Any] = {}
     if running is not None:
         params["running"] = running
 
@@ -190,14 +189,12 @@ async def get_cluster_config_attribute_api(
                 headers=_domain_headers(domain),
             )
     except StorageScaleAPIError as e:
-        raise StorageScaleAPIError(
-            f"Failed to get cluster config attribute '{name}': {str(e)}"
-        ) from e
+        raise StorageScaleAPIError(f"Failed to get cluster config attribute '{name}': {str(e)}") from e
 
 
 async def update_cluster_config_api(
     config_data: dict,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Batch-update configuration values of the IO daemon (mmfsd).
 

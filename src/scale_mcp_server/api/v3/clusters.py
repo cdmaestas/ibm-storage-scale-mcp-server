@@ -4,21 +4,22 @@ Cluster endpoints for creating and managing the local cluster, following the
 6.0.1 native REST API. Remote cluster endpoints live in remote_clusters.py.
 """
 
-from typing import Optional, Any, Dict
-from scale_mcp_server.utils.client import StorageScaleClient, StorageScaleAPIError
+from typing import Any
+
+from scale_mcp_server.utils.client import StorageScaleAPIError, StorageScaleClient
 
 
-def _domain_headers(domain: Optional[str]) -> Dict[str, str]:
+def _domain_headers(domain: str | None) -> dict[str, str]:
     """Build request headers for the optional X-StorageScaleDomain."""
-    headers: Dict[str, str] = {}
+    headers: dict[str, str] = {}
     if domain:
         headers["X-StorageScaleDomain"] = domain
     return headers
 
 
 async def list_clusters_api(
-    view: Optional[str] = None,
-    domain: Optional[str] = None,
+    view: str | None = None,
+    domain: str | None = None,
 ) -> Any:
     """List information about the local cluster.
 
@@ -32,7 +33,7 @@ async def list_clusters_api(
     Raises:
         StorageScaleAPIError: If API call fails
     """
-    params: Dict[str, Any] = {}
+    params: dict[str, Any] = {}
     if view:
         params["view"] = view
 
@@ -49,7 +50,7 @@ async def list_clusters_api(
 
 async def create_cluster_api(
     cluster_data: dict,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Create an IBM Storage Scale cluster.
 
@@ -78,8 +79,8 @@ async def create_cluster_api(
 
 
 async def migrate_cluster_api(
-    precheck: Optional[bool] = None,
-    domain: Optional[str] = None,
+    precheck: bool | None = None,
+    domain: str | None = None,
 ) -> Any:
     """Migrate a legacy cluster to the native REST API.
 
@@ -93,7 +94,7 @@ async def migrate_cluster_api(
     Raises:
         StorageScaleAPIError: If API call fails
     """
-    body: Dict[str, Any] = {}
+    body: dict[str, Any] = {}
     if precheck is not None:
         body["precheck"] = precheck
 
@@ -109,8 +110,8 @@ async def migrate_cluster_api(
 
 
 async def list_cluster_trust_api(
-    end_point: Optional[str] = None,
-    domain: Optional[str] = None,
+    end_point: str | None = None,
+    domain: str | None = None,
 ) -> Any:
     """List all CA chains that are currently trusted by the local cluster.
 
@@ -124,7 +125,7 @@ async def list_cluster_trust_api(
     Raises:
         StorageScaleAPIError: If API call fails
     """
-    params: Dict[str, Any] = {}
+    params: dict[str, Any] = {}
     if end_point is not None:
         params["end_point"] = end_point
 

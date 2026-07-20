@@ -1,11 +1,17 @@
 import argparse
-from importlib.metadata import PackageNotFoundError, version as package_version
-from fastmcp import FastMCP
+from importlib.metadata import PackageNotFoundError
+from importlib.metadata import version as package_version
 from pathlib import Path
-from scale_mcp_server.utils.read_config import read_config, setup_logging
+
+from fastmcp import FastMCP
+
 from scale_mcp_server.adapters.fileops import initialize_fileops_client
-from scale_mcp_server.tools.third_party import fileops
 from scale_mcp_server.tools.cli import policies as cli_policies
+from scale_mcp_server.tools.third_party import fileops
+from scale_mcp_server.tools.v2 import (
+    filesystems_health,
+    nodes_health,
+)
 from scale_mcp_server.tools.v3 import (
     afm,
     afmcos,
@@ -33,10 +39,7 @@ from scale_mcp_server.tools.v3 import (
     version,
     xcp,
 )
-from scale_mcp_server.tools.v2 import (
-    nodes_health,
-    filesystems_health,
-)
+from scale_mcp_server.utils.read_config import read_config, setup_logging
 
 
 def _server_version() -> str:
@@ -115,7 +118,10 @@ Examples:
 
     # Load configuration
     config_path = Path(__file__).parent.parent.parent / "config" / "mcp_config.ini"
-    config_data = read_config(config_path=config_path)
+    try:
+        config_data = read_config(config_path=config_path)
+    except FileNotFoundError as e:
+        parser.error(str(e))
     setup_logging(config_data)
 
     # Initialize MCP server
@@ -169,9 +175,7 @@ Examples:
             raise
 
     fastmcp_config = config_data.get("fastmcp", {})
-    log_level = (
-        args.log_level if args.log_level else fastmcp_config.get("level", "INFO")
-    )
+    log_level = args.log_level if args.log_level else fastmcp_config.get("level", "INFO")
 
     run_kwargs = {"transport": args.transport, "log_level": log_level}
 

@@ -4,13 +4,14 @@ Quota endpoints for managing quota information for file systems and filesets,
 following the 6.0.1 native REST API.
 """
 
-from typing import Optional, Any, Dict
-from scale_mcp_server.utils.client import StorageScaleClient, StorageScaleAPIError
+from typing import Any
+
+from scale_mcp_server.utils.client import StorageScaleAPIError, StorageScaleClient
 
 
-def _domain_headers(domain: Optional[str]) -> Dict[str, str]:
+def _domain_headers(domain: str | None) -> dict[str, str]:
     """Build request headers for the optional X-StorageScaleDomain."""
-    headers: Dict[str, str] = {}
+    headers: dict[str, str] = {}
     if domain:
         headers["X-StorageScaleDomain"] = domain
     return headers
@@ -18,12 +19,12 @@ def _domain_headers(domain: Optional[str]) -> Dict[str, str]:
 
 async def list_quotas_api(
     filesystem: str,
-    page_size: Optional[int] = None,
-    page_token: Optional[str] = None,
-    show_perfileset_quotas: Optional[bool] = None,
-    default: Optional[bool] = None,
-    filter: Optional[str] = None,
-    domain: Optional[str] = None,
+    page_size: int | None = None,
+    page_token: str | None = None,
+    show_perfileset_quotas: bool | None = None,
+    default: bool | None = None,
+    filter: str | None = None,
+    domain: str | None = None,
 ) -> Any:
     """Retrieve quota information for a file system.
 
@@ -42,7 +43,7 @@ async def list_quotas_api(
     Raises:
         StorageScaleAPIError: If the API request fails
     """
-    params: Dict[str, Any] = {}
+    params: dict[str, Any] = {}
     if page_size is not None:
         params["page_size"] = page_size
     if page_token is not None:
@@ -62,16 +63,14 @@ async def list_quotas_api(
                 headers=_domain_headers(domain),
             )
     except StorageScaleAPIError as e:
-        raise StorageScaleAPIError(
-            f"Failed to list quotas for filesystem '{filesystem}': {str(e)}"
-        ) from e
+        raise StorageScaleAPIError(f"Failed to list quotas for filesystem '{filesystem}': {str(e)}") from e
 
 
 async def set_quota_api(
     filesystem: str,
     quota_data: dict,
-    default: Optional[bool] = None,
-    domain: Optional[str] = None,
+    default: bool | None = None,
+    domain: str | None = None,
 ) -> Any:
     """Set quota limits for a file system.
 
@@ -88,7 +87,7 @@ async def set_quota_api(
     Raises:
         StorageScaleAPIError: If the API request fails
     """
-    params: Dict[str, Any] = {}
+    params: dict[str, Any] = {}
     if default is not None:
         params["default"] = default
 
@@ -101,15 +100,13 @@ async def set_quota_api(
                 headers=_domain_headers(domain),
             )
     except StorageScaleAPIError as e:
-        raise StorageScaleAPIError(
-            f"Failed to set quota for filesystem '{filesystem}': {str(e)}"
-        ) from e
+        raise StorageScaleAPIError(f"Failed to set quota for filesystem '{filesystem}': {str(e)}") from e
 
 
 async def check_quotas_api(
     filesystem: str,
-    check_data: Optional[dict] = None,
-    domain: Optional[str] = None,
+    check_data: dict | None = None,
+    domain: str | None = None,
 ) -> Any:
     """Check quotas for a file system (mmcheckquota equivalent).
 
@@ -133,15 +130,13 @@ async def check_quotas_api(
                 headers=_domain_headers(domain),
             )
     except StorageScaleAPIError as e:
-        raise StorageScaleAPIError(
-            f"Failed to check quotas for filesystem '{filesystem}': {str(e)}"
-        ) from e
+        raise StorageScaleAPIError(f"Failed to check quotas for filesystem '{filesystem}': {str(e)}") from e
 
 
 async def update_quota_config_api(
     filesystem: str,
     config_data: dict,
-    domain: Optional[str] = None,
+    domain: str | None = None,
 ) -> Any:
     """Update quota configuration settings for a file system.
 
@@ -167,18 +162,16 @@ async def update_quota_config_api(
                 headers=_domain_headers(domain),
             )
     except StorageScaleAPIError as e:
-        raise StorageScaleAPIError(
-            f"Failed to update quota config for filesystem '{filesystem}': {str(e)}"
-        ) from e
+        raise StorageScaleAPIError(f"Failed to update quota config for filesystem '{filesystem}': {str(e)}") from e
 
 
 async def list_fileset_quotas_api(
     filesystem: str,
     fileset: str,
-    page_size: Optional[int] = None,
-    page_token: Optional[str] = None,
-    default: Optional[bool] = None,
-    domain: Optional[str] = None,
+    page_size: int | None = None,
+    page_token: str | None = None,
+    default: bool | None = None,
+    domain: str | None = None,
 ) -> Any:
     """Retrieve quota information for a specific fileset.
 
@@ -196,7 +189,7 @@ async def list_fileset_quotas_api(
     Raises:
         StorageScaleAPIError: If the API request fails
     """
-    params: Dict[str, Any] = {}
+    params: dict[str, Any] = {}
     if page_size is not None:
         params["page_size"] = page_size
     if page_token is not None:
@@ -221,8 +214,8 @@ async def set_fileset_quota_api(
     filesystem: str,
     fileset: str,
     quota_data: dict,
-    default: Optional[bool] = None,
-    domain: Optional[str] = None,
+    default: bool | None = None,
+    domain: str | None = None,
 ) -> Any:
     """Set quota limits for a specific fileset.
 
@@ -240,7 +233,7 @@ async def set_fileset_quota_api(
     Raises:
         StorageScaleAPIError: If the API request fails
     """
-    params: Dict[str, Any] = {}
+    params: dict[str, Any] = {}
     if default is not None:
         params["default"] = default
 
@@ -261,8 +254,8 @@ async def set_fileset_quota_api(
 async def check_fileset_quotas_api(
     filesystem: str,
     fileset: str,
-    check_data: Optional[dict] = None,
-    domain: Optional[str] = None,
+    check_data: dict | None = None,
+    domain: str | None = None,
 ) -> Any:
     """Check user and group quotas for a specific fileset.
 
