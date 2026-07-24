@@ -286,8 +286,8 @@ enforces (lint, format, tests, and a dependency vulnerability audit):
 
 ```bash
 uv sync --all-groups
-uv run ruff check src tests
-uv run ruff format --check src tests
+uv run ruff check src tests scripts
+uv run ruff format --check src tests scripts
 uv run pytest
 uv run pip-audit
 ```
