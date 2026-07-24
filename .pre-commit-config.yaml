@@ -1,24 +1,26 @@
 # Local hooks reuse the project's pinned tools (dev dependency group) so
 # pre-commit, pre-push, and CI all run the exact same ruff/pytest versions.
-# Activate with:  uv run pre-commit install --hook-type pre-commit --hook-type pre-push
+# scripts/dev-tool.sh resolves the tool via uv, the project venv, or PATH, so
+# the hooks work regardless of how the environment is set up.
+# Activate with:  pre-commit install --hook-type pre-commit --hook-type pre-push
 repos:
   - repo: local
     hooks:
       - id: ruff-check
         name: ruff check
-        entry: uv run ruff check --fix
+        entry: scripts/dev-tool.sh ruff check --fix
         language: system
         types: [python]
         require_serial: true
       - id: ruff-format
         name: ruff format
-        entry: uv run ruff format
+        entry: scripts/dev-tool.sh ruff format
         language: system
         types: [python]
         require_serial: true
       - id: pytest
         name: pytest (full suite)
-        entry: uv run pytest -q
+        entry: scripts/dev-tool.sh pytest -q
         language: system
         pass_filenames: false
         always_run: true
