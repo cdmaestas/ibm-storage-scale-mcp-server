@@ -139,13 +139,13 @@ class SSHCommandExecutor(CommandExecutorInterface):
             CommandResult: Unified result structure with stdout, stderr, and returncode
 
         Raises:
-            CommandTimeoutError: If command exceeds timeout
-            CommandExecutionError: If command execution fails
+            CommandExecutionError: If command execution fails, including when
+                the command exceeds the configured timeout
             SSHConnectionError: If SSH connection fails
 
         Note:
-            Parameters like 'shell' and 'cwd' from local execution are not
-            applicable to SSH execution and will be ignored if provided.
+            Parameters like 'shell' and 'cwd' are not applicable to SSH
+            execution and will be ignored if provided.
         """
         command_str = " ".join(command)
 
