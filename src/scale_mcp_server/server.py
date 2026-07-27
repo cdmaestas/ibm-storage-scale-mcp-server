@@ -45,9 +45,23 @@ from scale_mcp_server.utils.read_config import read_config, setup_logging
 def _server_version() -> str:
     """Version from the installed package metadata (single source: pyproject)."""
     try:
-        return package_version("scale-mcp-server")
+        return package_version("ibm-storage-scale-mcp-server")
     except PackageNotFoundError:
         return "0.0.0+uninstalled"
+
+
+def _load_server_config() -> dict:
+    """Load MCP server configuration (logging, etc.).
+
+    The config file lives in the source checkout; when the package is
+    installed (e.g. via ``uvx`` or ``pip``) it is absent, so a missing file is
+    not an error - ``setup_logging`` applies sane defaults for every value.
+    """
+    config_path = Path(__file__).parent.parent.parent / "config" / "mcp_config.ini"
+    try:
+        return read_config(config_path=config_path)
+    except FileNotFoundError:
+        return {}
 
 
 def main():
@@ -116,12 +130,8 @@ Examples:
 
     args = parser.parse_args()
 
-    # Load configuration
-    config_path = Path(__file__).parent.parent.parent / "config" / "mcp_config.ini"
-    try:
-        config_data = read_config(config_path=config_path)
-    except FileNotFoundError as e:
-        parser.error(str(e))
+    # Load configuration (optional; defaults apply when installed as a package)
+    config_data = _load_server_config()
     setup_logging(config_data)
 
     # Initialize MCP server

@@ -5,6 +5,54 @@ Model Context Protocol (MCP) server for interacting with IBM Storage Scale.
 >[NOTE]
 >This MCP server supports both StreamableHTTP and stdio transports. By default, it uses StreamableHTTP transport on `127.0.0.1:8000`.
 
+## Quick Start with Claude
+
+Once the package is published to PyPI, you do not need to clone this repository
+or manage a Python environment. [uv](https://docs.astral.sh/uv/) fetches and
+runs the server on demand with `uvx`, and connection settings are passed as
+environment variables (no config file required).
+
+**Claude Desktop** — add this to your `claude_desktop_config.json`
+(Settings → Developer → Edit Config):
+
+```json
+{
+  "mcpServers": {
+    "ibm-storage-scale": {
+      "command": "uvx",
+      "args": ["ibm-storage-scale-mcp-server", "--transport", "stdio"],
+      "env": {
+        "SCALE_API_HOSTNAME": "your-scale-cluster.example.com",
+        "SCALE_API_USERNAME": "your-username",
+        "SCALE_API_PASSWORD": "your-password"
+      }
+    }
+  }
+}
+```
+
+Restart Claude Desktop; the IBM Storage Scale tools then appear in the tools menu.
+
+**Claude Code** — one command:
+
+```bash
+claude mcp add ibm-storage-scale \
+  --env SCALE_API_HOSTNAME=your-scale-cluster.example.com \
+  --env SCALE_API_USERNAME=your-username \
+  --env SCALE_API_PASSWORD=your-password \
+  -- uvx ibm-storage-scale-mcp-server --transport stdio
+```
+
+> [!TIP]
+> These credentials can perform destructive cluster operations. Use an account
+> scoped to a least-privilege RBAC domain rather than a full cluster
+> administrator, and prefer mTLS (`SCALE_API_CLIENT_CERT` / `SCALE_API_CLIENT_KEY`)
+> where the cluster supports it. See [Environment variable overrides](#installation)
+> for the full list, including `SCALE_API_CA_CERT` and `SCALE_API_ALLOW_INSECURE`.
+
+To run against a shared/remote deployment instead of a local subprocess, see
+the HTTP transport and Docker options below.
+
 ## Installation Guide
 
 ### Prerequisites
