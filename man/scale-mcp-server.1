@@ -1,0 +1,171 @@
+.\" Manpage for scale-mcp-server.
+.TH SCALE-MCP-SERVER 1 "2026-07-27" "scale-mcp-server" "User Commands"
+.SH NAME
+scale-mcp-server \- Model Context Protocol server for IBM Storage Scale
+.SH SYNOPSIS
+.B scale-mcp-server
+.RB [ \-\-transport
+.IR stdio | http ]
+.RB [ \-\-host
+.IR ADDRESS ]
+.RB [ \-\-port
+.IR PORT ]
+.RB [ \-\-log-level
+.IR LEVEL ]
+.RB [ \-\-filesystem-paths
+.IR PATH ...]
+.SH DESCRIPTION
+.B scale-mcp-server
+is a Model Context Protocol (MCP) server that exposes the IBM Storage Scale
+6.0.1 native REST API (\fB/scalemgmt/v3\fR) as MCP tools, alongside v2 GUI
+health-monitoring tools and SSH-based CLI tools. MCP clients (such as large
+language model agents) connect to the server and invoke these tools to manage
+filesystems, filesets, snapshots, quotas, NSDs, nodes, and related resources
+on an IBM Storage Scale cluster.
+.PP
+The server communicates with the cluster over the connection settings
+resolved from
+.B config/scale_config.ini
+and the
+.B SCALE_API_*
+environment variables (see
+.B ENVIRONMENT
+and
+.BR FILES ).
+.SH OPTIONS
+.TP
+.BI \-\-transport " " { stdio | http }
+Transport used to serve MCP clients.
+.B http
+serves StreamableHTTP;
+.B stdio
+serves over standard input/output (for clients that launch the server as a
+subprocess). Default:
+.BR http .
+.TP
+.BI \-\-host " " ADDRESS
+Host address to bind to for the
+.B http
+transport. Use
+.B 0.0.0.0
+to bind to all interfaces. Ignored for
+.B stdio
+transport. Default:
+.BR 127.0.0.1 .
+.TP
+.BI \-\-port " " PORT
+Port number for the
+.B http
+transport. Ignored for
+.B stdio
+transport. Default:
+.BR 8000 .
+.TP
+.BI \-\-log-level " " LEVEL
+Logging verbosity. One of
+.BR DEBUG ,
+.BR INFO ,
+.BR WARNING ,
+.BR ERROR ,
+or
+.BR CRITICAL .
+Default:
+.BR INFO .
+.TP
+.BI \-\-filesystem-paths " " "PATH ..."
+One or more space-separated directory paths to expose through the optional
+file-operations tools. When provided, the server mounts the MCP filesystem
+server (launched via
+.BR npx )
+restricted to these paths. Requires Node.js and
+.BR npx .
+.TP
+.B \-h ", " \-\-help
+Show a help message and exit.
+.SH ENVIRONMENT
+Every connection setting can be supplied, or overridden, by an environment
+variable. When these are set, the configuration file is optional for the REST
+API tools.
+.TP
+.B SCALE_API_HOSTNAME
+Cluster hostname (overrides \fBscale_api.hostname\fR).
+.TP
+.BR SCALE_API_V2_PORT ", " SCALE_API_V3_PORT
+GUI (v2) and native REST (v3) API ports.
+.TP
+.B SCALE_API_TIMEOUT
+Request timeout in seconds.
+.TP
+.BR SCALE_API_USERNAME ", " SCALE_API_PASSWORD
+Basic-auth credentials for the REST API.
+.TP
+.B SCALE_API_ALLOW_INSECURE
+When true, disables TLS certificate verification (for self-signed cluster
+certificates).
+.TP
+.BR SCALE_API_CLIENT_CERT ", " SCALE_API_CLIENT_KEY
+Paths to a PEM client certificate and key for mTLS authentication. When a
+client certificate is configured and no password is set, no basic-auth header
+is sent.
+.TP
+.B SCALE_API_CA_CERT
+Path to a CA bundle used to verify the server certificate instead of the
+system trust store.
+.SH FILES
+.TP
+.B config/scale_config.ini
+Cluster connection settings
+.RB ( [scale_api] ,
+.BR [authorization] ,
+.BR [domain] )
+and SSH settings
+.RB ( [ssh] )
+for the CLI tools. Copied from
+.BR config/scale_config.ini.example .
+Values here are overridden by the
+.B SCALE_API_*
+environment variables.
+.TP
+.B config/mcp_config.ini
+MCP server settings, including logging configuration. Required at startup;
+the server exits with an error if it is missing.
+.SH EXIT STATUS
+Returns
+.B 0
+on a clean shutdown. Returns a non-zero status on a usage error (for example,
+an invalid option or a missing
+.BR config/mcp_config.ini ).
+.SH EXAMPLES
+Run with HTTP transport on the default port (localhost only):
+.PP
+.RS 4
+.B scale-mcp-server --transport http
+.RE
+.PP
+Bind the HTTP transport to all interfaces:
+.PP
+.RS 4
+.B scale-mcp-server --transport http --host 0.0.0.0
+.RE
+.PP
+Serve over stdio (for a client that launches the server as a subprocess):
+.PP
+.RS 4
+.B scale-mcp-server --transport stdio
+.RE
+.PP
+Enable the file-operations tools for specific directories:
+.PP
+.RS 4
+.B scale-mcp-server --transport http --filesystem-paths /data /home/user/projects
+.RE
+.SH SEE ALSO
+Project documentation and the IBM Storage Scale native REST API reference:
+.PP
+.RS 4
+https://github.com/IBM/ibm-storage-scale-mcp-server
+.br
+https://www.ibm.com/docs/en/storage-scale/6.0.1?topic=reference-storage-scale-native-rest-api-endpoints
+.RE
+.SH AUTHORS
+IBM Storage Scale MCP Server contributors.
