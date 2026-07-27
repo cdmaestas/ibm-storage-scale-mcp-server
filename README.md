@@ -122,6 +122,13 @@ scale-mcp-server --transport stdio
 scale-mcp-server --transport http --host 0.0.0.0 --port 3000 --log-level DEBUG
 ```
 
+Full option, environment-variable, and file documentation is in the manpage
+([`man/scale-mcp-server.1`](man/scale-mcp-server.1)):
+
+```bash
+man ./man/scale-mcp-server.1
+```
+
 ## Third-Party Integrations
 
 The server supports optional third-party MCP server integrations to extend functionality beyond IBM Storage Scale management.
