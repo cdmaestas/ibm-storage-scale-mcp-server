@@ -1,15 +1,13 @@
 {
   "mcpServers": {
-    "scale-mcp-server": {
-      "command": "uv",
-      "args": [
-        "--directory",
-        "/absolute-path/ibm-storage-scale-mcp-server",
-        "run",
-        "scale-mcp-server",
-        "--transport",
-        "stdio"
-      ]
+    "ibm-storage-scale": {
+      "command": "uvx",
+      "args": ["ibm-storage-scale-mcp-server", "--transport", "stdio"],
+      "env": {
+        "SCALE_API_HOSTNAME": "your-scale-cluster.example.com",
+        "SCALE_API_USERNAME": "your-username",
+        "SCALE_API_PASSWORD": "your-password"
+      }
     }
   }
 }

@@ -1,14 +1,29 @@
 [project]
-name = "scale-mcp-server"
+name = "ibm-storage-scale-mcp-server"
 version = "1.0.0"
-description = "IBM Storage Scale MCP server"
+description = "Model Context Protocol (MCP) server for IBM Storage Scale"
 readme = "README.md"
 requires-python = ">=3.12"
+license = "Apache-2.0"
+license-files = ["LICENSE"]
+keywords = ["mcp", "ibm-storage-scale", "gpfs", "storage", "claude", "llm"]
+classifiers = [
+ "Development Status :: 4 - Beta",
+ "Intended Audience :: System Administrators",
+ "Programming Language :: Python :: 3.12",
+ "Programming Language :: Python :: 3.13",
+ "Topic :: System :: Systems Administration",
+]
 dependencies = [
  "fastmcp>=3.1.0",
  "httpx>=0.27.0",
  "paramiko>=4.0.0",
 ]
+
+[project.urls]
+Homepage = "https://github.com/IBM/ibm-storage-scale-mcp-server"
+Repository = "https://github.com/IBM/ibm-storage-scale-mcp-server"
+Issues = "https://github.com/IBM/ibm-storage-scale-mcp-server/issues"
 
 [dependency-groups]
 dev = [
@@ -30,10 +45,18 @@ constraint-dependencies = [
 ]
 
 [build-system]
-requires = ["uv_build>=0.10.0"]
+requires = ["uv_build>=0.10.0,<0.12"]
 build-backend = "uv_build"
 
+[tool.uv.build-backend]
+# The distribution is ibm-storage-scale-mcp-server; the import package keeps
+# its shorter name.
+module-name = "scale_mcp_server"
+
 [project.scripts]
+# Both names launch the same server. ibm-storage-scale-mcp-server matches the
+# distribution so `uvx ibm-storage-scale-mcp-server` works with no --from.
+ibm-storage-scale-mcp-server = "scale_mcp_server:main"
 scale-mcp-server = "scale_mcp_server:main"
 
 [tool.pytest.ini_options]
