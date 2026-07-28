@@ -185,6 +185,42 @@ Full option, environment-variable, and file documentation is in the manpage
 man ./man/scale-mcp-server.1
 ```
 
+## Running as a shared server (Docker)
+
+For a team or homelab deployment, run the HTTP transport from the published
+container image instead of on each person's machine. The image is on GitHub
+Container Registry and is configured entirely through `SCALE_API_*`
+environment variables:
+
+```bash
+docker run --rm -p 8000:8000 \
+  -e SCALE_API_HOSTNAME=your-scale-cluster.example.com \
+  -e SCALE_API_USERNAME=your-username \
+  -e SCALE_API_PASSWORD=your-password \
+  ghcr.io/IBM/ibm-storage-scale-mcp-server
+```
+
+The image serves the StreamableHTTP transport on port 8000. The optional local
+file-operations tools (`--filesystem-paths`) are not included in the image.
+
+Point Claude Code (or Claude Desktop) at the running server over HTTP:
+
+```bash
+claude mcp add --transport http ibm-storage-scale http://your-server:8000/mcp
+```
+
+> [!WARNING]
+> **The MCP HTTP endpoint has no authentication of its own.** It authenticates
+> *to the cluster* with the credentials you supply, but anyone who can reach
+> the server URL can invoke every tool, including destructive operations. Only
+> expose it on a trusted network, and put an authenticating reverse proxy (and
+> TLS) in front of it before making it reachable more widely.
+>
+> Adding it as a **Claude.ai web Custom Connector** additionally requires a
+> publicly resolvable HTTPS URL and an OAuth layer, which this project does not
+> ship — you must provide that fronting yourself. On a private network, the
+> Claude Code / Claude Desktop HTTP setup above is the practical path.
+
 ## Third-Party Integrations
 
 The server supports optional third-party MCP server integrations to extend functionality beyond IBM Storage Scale management.
