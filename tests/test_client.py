@@ -187,4 +187,15 @@ def test_server_version_comes_from_package_metadata():
 
     from scale_mcp_server.server import _server_version
 
-    assert _server_version() == package_version("scale-mcp-server")
+    assert _server_version() == package_version("ibm-storage-scale-mcp-server")
+
+
+def test_server_config_optional_when_file_missing(monkeypatch, tmp_path):
+    """A missing mcp_config.ini must not crash the server (installed usage)."""
+    import scale_mcp_server.server as server_module
+
+    # Point the module at a directory tree with no config/ file, mimicking an
+    # installed package where the source-tree config is absent.
+    monkeypatch.setattr(server_module, "__file__", str(tmp_path / "server.py"))
+
+    assert server_module._load_server_config() == {}
