@@ -47,3 +47,22 @@ jobs:
 
       - name: Audit dependencies for known vulnerabilities
         run: uv run pip-audit
+
+  extension:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate MCPB manifest
+        run: npx --yes @anthropic-ai/mcpb@latest validate extension/manifest.json
+
+      - name: Check manifest version matches the package
+        run: |
+          python3 - <<'PY'
+          import json, sys, tomllib
+          pkg = tomllib.load(open("pyproject.toml", "rb"))["project"]["version"]
+          man = json.load(open("extension/manifest.json"))["version"]
+          if pkg != man:
+              sys.exit(f"version mismatch: pyproject {pkg} != manifest {man}")
+          print("versions match:", pkg)
+          PY

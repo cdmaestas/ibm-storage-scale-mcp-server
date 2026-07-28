@@ -20,3 +20,6 @@ logs/
 
 # Bob agent artifacts
 .bob/
+
+# Built Claude Desktop Extension bundles
+*.mcpb
