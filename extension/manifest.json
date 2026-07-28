@@ -1,0 +1,54 @@
+{
+  "manifest_version": "0.2",
+  "name": "ibm-storage-scale-mcp-server",
+  "display_name": "IBM Storage Scale",
+  "version": "1.0.0",
+  "description": "Manage IBM Storage Scale clusters from Claude using the native REST API.",
+  "long_description": "Exposes the IBM Storage Scale 6.0.1 native REST API as MCP tools so Claude can inspect and manage filesystems, filesets, snapshots, quotas, NSDs, nodes, and more. The server is fetched and run on demand with uvx; enter your cluster connection details below. Requires uv (https://docs.astral.sh/uv/) to be installed.",
+  "author": {
+    "name": "IBM Storage Scale MCP Server contributors",
+    "url": "https://github.com/IBM/ibm-storage-scale-mcp-server"
+  },
+  "homepage": "https://github.com/IBM/ibm-storage-scale-mcp-server",
+  "documentation": "https://github.com/IBM/ibm-storage-scale-mcp-server#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/IBM/ibm-storage-scale-mcp-server"
+  },
+  "license": "Apache-2.0",
+  "keywords": ["ibm", "storage-scale", "gpfs", "storage", "mcp"],
+  "server": {
+    "type": "python",
+    "entry_point": "ibm-storage-scale-mcp-server",
+    "mcp_config": {
+      "command": "uvx",
+      "args": ["ibm-storage-scale-mcp-server", "--transport", "stdio"],
+      "env": {
+        "SCALE_API_HOSTNAME": "${user_config.hostname}",
+        "SCALE_API_USERNAME": "${user_config.username}",
+        "SCALE_API_PASSWORD": "${user_config.password}"
+      }
+    }
+  },
+  "user_config": {
+    "hostname": {
+      "type": "string",
+      "title": "Cluster hostname",
+      "description": "Hostname or IP of the IBM Storage Scale REST API server (scaleadmd).",
+      "required": true
+    },
+    "username": {
+      "type": "string",
+      "title": "Username",
+      "description": "REST API username. Prefer an account scoped to a least-privilege RBAC domain over a full cluster administrator.",
+      "required": true
+    },
+    "password": {
+      "type": "string",
+      "title": "Password",
+      "description": "REST API password for the username above.",
+      "sensitive": true,
+      "required": true
+    }
+  }
+}

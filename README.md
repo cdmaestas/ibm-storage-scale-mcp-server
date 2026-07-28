@@ -12,6 +12,14 @@ or manage a Python environment. [uv](https://docs.astral.sh/uv/) fetches and
 runs the server on demand with `uvx`, and connection settings are passed as
 environment variables (no config file required).
 
+**One-click (Claude Desktop Extension):** download the
+`ibm-storage-scale-mcp-server-<version>.mcpb` bundle from
+[Releases](https://github.com/IBM/ibm-storage-scale-mcp-server/releases) and
+open it with Claude Desktop. It prompts for the cluster hostname, username, and
+password in a form — no JSON editing. Requires `uv` to be installed. See
+[`extension/`](extension/) for details. For manual setup, use the config blocks
+below.
+
 **Claude Desktop** — add this to your `claude_desktop_config.json`
 (Settings → Developer → Edit Config):
 
