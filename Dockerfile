@@ -1,38 +1,38 @@
-FROM registry.redhat.io/rhel9/python-312
+# Public base image with uv preinstalled (no Red Hat registry auth required),
+# so this builds in CI and pulls for anyone.
+FROM ghcr.io/astral-sh/uv:python3.12-bookworm-slim
 
 WORKDIR /app
 
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
-    PIP_NO_CACHE_DIR=1 \
-    PIP_DISABLE_PIP_VERSION_CHECK=1
+    UV_COMPILE_BYTECODE=1 \
+    UV_LINK_MODE=copy \
+    UV_PYTHON_DOWNLOADS=never
 
-USER root
-
-# Install Node.js 22 and nsolid for filesystem operations support
-RUN curl -fsSL https://rpm.nodesource.com/setup_22.x | bash - && \
-    yum install -y nsolid && \
-    yum clean all
-
-COPY pyproject.toml uv.lock README.md ./
+# Install dependencies first (cached until the lockfile changes), then the
+# project itself.
+COPY pyproject.toml uv.lock README.md LICENSE ./
+RUN uv sync --locked --no-install-project --no-dev
 COPY src/ ./src/
-COPY config/ ./config/
+RUN uv sync --locked --no-dev
 
-RUN pip install --no-cache-dir uv
+# Run as an unprivileged user.
+RUN useradd --system --create-home --home-dir /home/app app \
+    && chown -R app:app /app
+USER app
 
-RUN uv sync --no-dev
-
-USER 1001
 EXPOSE 8000
 
-# Cluster connection settings can be supplied without baking a config file
-# into the image, via SCALE_API_* environment variables (see README):
-# docker run -e SCALE_API_HOSTNAME=... -e SCALE_API_USERNAME=... \
-#   -e SCALE_API_PASSWORD=... scale-mcp-server
-# Alternatively mount a config file: -v ./scale_config.ini:/app/config/scale_config.ini
+# Configure the cluster connection with SCALE_API_* environment variables
+# (no config file needed); see the README. Example:
+#   docker run --rm -p 8000:8000 \
+#     -e SCALE_API_HOSTNAME=cluster.example.com \
+#     -e SCALE_API_USERNAME=admin -e SCALE_API_PASSWORD=secret \
+#     ghcr.io/IBM/ibm-storage-scale-mcp-server
 #
-# To add filesystem paths, override CMD when running:
-# docker run -v /host/path:/container/path scale-mcp-server \
-#   --transport http --host 0.0.0.0 --port 8000 --filesystem-paths /container/path
-ENTRYPOINT [".venv/bin/scale-mcp-server"]
+# The container serves the HTTP (StreamableHTTP) transport; the optional local
+# file-operations tools (--filesystem-paths, which need Node/npx) are not
+# included in the image - use them with the local/desktop setup instead.
+ENTRYPOINT ["/app/.venv/bin/ibm-storage-scale-mcp-server"]
 CMD ["--transport", "http", "--host", "0.0.0.0", "--port", "8000"]
