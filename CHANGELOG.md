@@ -50,7 +50,8 @@ the server installable and runnable with no repository clone.
 - **SSH host-key verification is enforced by default** — the CLI policy tool no
   longer auto-trusts unknown host keys. Opt back in with
   `[ssh] auto_add_host_keys = true`.
-- Resolved known dependency CVEs (`mcp`, `click`); `pip-audit` reports no known
+- Resolved known dependency CVEs (`mcp`, `click`, `cryptography`, `anyio`,
+  `pip`) via `constraint-dependencies`; `pip-audit` reports no known
   vulnerabilities and runs in CI.
 - Credentials can be supplied entirely via environment variables, so no secrets
   need to live on disk.
