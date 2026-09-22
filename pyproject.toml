@@ -40,8 +40,11 @@ dev = [
 # (surfaced by pip-audit). These are not direct dependencies; the bounds only
 # steer the resolver away from the vulnerable releases.
 constraint-dependencies = [
- "mcp>=1.28.1",       # CVE-2026-52870, CVE-2026-52869, CVE-2026-59950
- "click>=8.3.3",      # PYSEC-2026-2132
+ "mcp>=1.28.1",          # CVE-2026-52870, CVE-2026-52869, CVE-2026-59950
+ "click>=8.3.3",         # PYSEC-2026-2132
+ "cryptography>=50.0.0", # PYSEC-2026-3552 (Bleichenbacher oracle in PKCS#7 EnvelopedData)
+ "anyio>=4.14.2",        # CVE-2026-63374, CVE-2026-64847
+ "pip>=26.2.0",          # PYSEC-2026-3721 (dev-only, transitive via pip-audit's own pip-api dep)
 ]
 
 [build-system]
